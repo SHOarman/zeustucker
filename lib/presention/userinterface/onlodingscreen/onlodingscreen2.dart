@@ -124,7 +124,7 @@ class _OnlodingScreen2State extends State<OnlodingScreen2> {
               // ── Logo ────────────────────────────────────────────────────
               Center(
                 child: Image.asset(
-                  'assets/image/Group.png',
+                  'assets/image/newlogu.png',
                   height: 100,
                   width: 100,
                 ),
@@ -261,7 +261,6 @@ class _OnlodingScreen2State extends State<OnlodingScreen2> {
 
               const SizedBox(height: 16),
 
-              // ── Step 2 of 3 ──────────────────────────────────────────────
               Center(
                 child: Text(
                   'Step 2 of 3',

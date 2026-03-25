@@ -21,7 +21,7 @@ class Onloding1 extends StatelessWidget {
 
               Center(
                 child: Image.asset(
-                  "assets/image/Group.png",
+                  "assets/image/newlogu.png",
                   height: 100,
                   width: 100,
                 ),

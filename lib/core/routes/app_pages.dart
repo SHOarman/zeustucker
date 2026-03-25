@@ -11,6 +11,7 @@ import 'package:zeustucker/presention/userinterface/library/library_screen.dart'
 import 'package:zeustucker/presention/userinterface/onlodingscreen/onloding1.dart';
 import 'package:zeustucker/presention/userinterface/onlodingscreen/onlodingscreen2.dart';
 import 'package:zeustucker/presention/userinterface/onlodingscreen/onlodaing3.dart';
+import 'package:zeustucker/presention/userinterface/onlodingscreen/selectuser.dart';
 import 'package:zeustucker/presention/userinterface/stats/stats_screen.dart';
 import 'package:zeustucker/presention/userinterface/schedule/schedule_screen.dart';
 import 'package:zeustucker/presention/userinterface/profile/profile_screen.dart';
@@ -40,10 +41,11 @@ class AppPages {
     GetPage(name: AppRoutes.onloading1, page: () => Onloding1()),
     GetPage(name: AppRoutes.onloading2, page: () => const OnlodingScreen2()),
     GetPage(name: AppRoutes.onloading3, page: () => const Onlodaing3()),
+    GetPage(name: AppRoutes.selectuser, page: ()=>Selectuser()),
 
     GetPage(
       name: AppRoutes.home,
-      page: () => const HomeScreen(),
+      page: () =>  HomeScreen(),
       transition: Transition.noTransition,
     ),
     GetPage(

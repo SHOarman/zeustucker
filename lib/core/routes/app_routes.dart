@@ -10,6 +10,7 @@ abstract class AppRoutes {
   static const onloading1="/onloading1";
   static const onloading2="/onloading2";
   static const onloading3="/onloading3";
+  static const selectuser="/selectuser";
 
 
 

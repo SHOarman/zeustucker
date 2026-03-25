@@ -83,7 +83,7 @@ class Onlodaing3 extends GetView<LoginController> {
               // ── Logo ───────────────────────────────────────────────────
               Center(
                 child: Image.asset(
-                  'assets/image/Group.png',
+                  'assets/image/newlogu.png',
                   height: 100,
                   width: 100,
                 ),
@@ -220,7 +220,7 @@ class Onlodaing3 extends GetView<LoginController> {
 
               const SizedBox(height: 20),
 
-              // ── Use for regeneration toggle ────────────────────────────
+
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,

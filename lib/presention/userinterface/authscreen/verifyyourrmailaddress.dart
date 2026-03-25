@@ -53,7 +53,7 @@ class _VerifyYourEmailAddressState extends State<VerifyYourEmailAddress> {
         shape: BoxShape.circle,
       ),
       child: Image.asset(
-        'assets/image/Group.png',
+        'assets/image/newlogu.png',
         errorBuilder: (ctx, err, stack) => const Icon(Icons.person, size: 50),
       ),
     );

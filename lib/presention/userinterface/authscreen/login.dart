@@ -25,8 +25,8 @@ class Login extends StatelessWidget {
 
               _buildLogo(),
 
-              const SizedBox(height: 16),
-              const Text(
+               SizedBox(height: 16),
+               Text(
                 'Log in or signup',
                 style: TextStyle(
                   fontSize: 18,
@@ -35,7 +35,7 @@ class Login extends StatelessWidget {
                 ),
               ),
 
-              const SizedBox(height: 32),
+               SizedBox(height: 32),
 
               // ── Email Field ──
               CustomTextField(
@@ -118,11 +118,10 @@ class Login extends StatelessWidget {
               Custombutton(
                 iconname: 'Continue',
                 ontap: () {
-                  Get.toNamed(AppRoutes.onloading1);
+                  Get.toNamed(AppRoutes.selectuser);
                 },
               ),
               const SizedBox(height: 24),
-              // ── Don't have an account? Sign up ──
               const SizedBox(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -184,14 +183,10 @@ class Login extends StatelessWidget {
 
   Widget _buildLogo() {
     return Container(
-      width: 100,
-      height: 100,
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.05),
-        shape: BoxShape.circle,
-      ),
+      width: 80,
+
       child: Image.asset(
-        "assets/image/Group.png",
+        "assets/icon/iconlogu.png",
         errorBuilder: (ctx, err, stack) => const Icon(Icons.person, size: 50),
       ),
     );
@@ -200,12 +195,12 @@ class Login extends StatelessWidget {
   Widget _buildDivider() {
     return Row(
       children: [
-        Expanded(child: Divider(color: Colors.grey.shade300)),
+        Expanded(child: Divider(color:Color(0xff6B7280))),
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 10),
           child: Text('or', style: TextStyle(color: Colors.grey, fontSize: 13)),
         ),
-        Expanded(child: Divider(color: Colors.grey.shade300)),
+        Expanded(child: Divider(color:Color(0xff6B7280))),
       ],
     );
   }
