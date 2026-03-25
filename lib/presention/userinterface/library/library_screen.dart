@@ -217,7 +217,7 @@ class _ImageCard extends StatelessWidget {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.08),
+                    color: Colors.black.withValues(alpha: 0.08),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -234,7 +234,7 @@ class _ImageCard extends StatelessWidget {
                     end: Alignment.bottomCenter,
                     colors: [
                       Colors.transparent,
-                      Colors.black.withOpacity(0.8),
+                      Colors.black.withValues(alpha: 0.8),
                     ],
                     stops: const [0.5, 1.0],
                   ),

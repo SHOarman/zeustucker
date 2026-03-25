@@ -182,7 +182,7 @@ class Login extends StatelessWidget {
   }
 
   Widget _buildLogo() {
-    return Container(
+    return SizedBox(
       width: 80,
 
       child: Image.asset(

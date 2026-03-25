@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:zeustucker/core/routes/app_routes.dart';
-import 'package:zeustucker/presention/customwidget/custombutton.dart';
 
 class Selectuser extends StatelessWidget {
   const Selectuser({super.key});
@@ -66,7 +65,7 @@ class Selectuser extends StatelessWidget {
               title: "Coach",
               imagePath: "assets/image/coach.png",
               onTap: () {
-                print("Coach Selected");
+                debugPrint("Coach Selected");
 
               },
             ),
@@ -100,7 +99,7 @@ class Selectuser extends StatelessWidget {
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 10,
                   offset: const Offset(0, 5),
                 ),

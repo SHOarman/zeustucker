@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:zeustucker/presention/customwidget/custom_bottom_nav.dart';
-import 'package:zeustucker/presention/userinterface/home/widget/RoutineNoteInput.dart';
+import 'package:zeustucker/presention/userinterface/home/widget/routine_note_input.dart';
 import 'package:zeustucker/presention/userinterface/home/widget/marcotargets.dart';
-import 'package:zeustucker/presention/userinterface/home/widget/workoutSection.dart';
+import 'package:zeustucker/presention/userinterface/home/widget/workout_section.dart';
 
 import '../../../core/services/controller/homecontroller.dart';
 
@@ -174,7 +174,7 @@ class HomeScreen extends StatelessWidget {
                     ],
                   ),
                   GestureDetector(
-                    onTap: () => print("Profile"),
+                    onTap: () => debugPrint("Profile"),
                     child: ClipOval(
                       child: Image.asset(
                         "assets/image/Ellipse 1.png",

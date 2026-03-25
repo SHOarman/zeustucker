@@ -248,7 +248,7 @@ class Onlodaing3 extends GetView<LoginController> {
                       Switch(
                         value: controller.useForRegeneration.value,
                         onChanged: (_) => controller.toggleUseForRegeneration(),
-                        activeColor: Colors.white,
+                        activeThumbColor: Colors.white,
                         activeTrackColor: _primary,
                         inactiveThumbColor: Colors.white,
                         inactiveTrackColor: Colors.grey.shade300,

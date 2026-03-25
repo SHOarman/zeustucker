@@ -5,7 +5,7 @@ import 'package:image_picker/image_picker.dart';
 class LoginController extends GetxController {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
-  final Usernamecontroller = TextEditingController();
+  final usernameController = TextEditingController();
 
   // ==============================Create New Password=========================
   final newPasswordController = TextEditingController();

@@ -82,7 +82,7 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                       ),
                       recognizer: TapGestureRecognizer()
                         ..onTap = () {
-                          // TODO: navigate to account recovery
+                          // todo: navigate to account recovery
                         },
                     ),
                     const TextSpan(text: '.'),
@@ -162,7 +162,7 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                             ),
                             recognizer: TapGestureRecognizer()
                               ..onTap = () {
-                                // TODO: open Terms of Use
+                                // todo: open Terms of Use
                               },
                           ),
                           const TextSpan(text: ' and '),
@@ -174,7 +174,7 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                             ),
                             recognizer: TapGestureRecognizer()
                               ..onTap = () {
-                                // TODO: open Privacy Policy
+                                // todo: open Privacy Policy
                               },
                           ),
                           const TextSpan(text: '.'),
@@ -194,7 +194,7 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                     child: GestureDetector(
                       onTap: () {
                         Get.toNamed(AppRoutes.verifyEmail);
-                        print("arman");
+                        debugPrint("arman");
                       },
                       child: Container(
                         height: 48,

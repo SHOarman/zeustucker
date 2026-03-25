@@ -46,7 +46,7 @@ class HomeController extends GetxController {
   void postNote() {
     String note = noteController.text.trim();
     if (note.isNotEmpty) {
-      print("Note Posted: $note");
+      debugPrint("Note Posted: $note");
       noteController.clear();
       Get.snackbar("Success", "Note added to your routine!",
           snackPosition: SnackPosition.BOTTOM);

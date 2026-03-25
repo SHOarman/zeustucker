@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_instance/src/extension_instance.dart';
-import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 import 'package:zeustucker/core/routes/app_routes.dart';
 import 'package:zeustucker/presention/customwidget/custom_text_field.dart';
 import 'package:zeustucker/presention/customwidget/custombutton.dart';
 
 import '../../../core/services/controller/login_controller.dart';
-import '../../customwidget/buildDropdownCustom.dart';
+import '../../customwidget/build_dropdown_custom.dart';
 
 class Createyouraccound extends StatelessWidget {
   const Createyouraccound({super.key});
@@ -59,7 +56,7 @@ class Createyouraccound extends StatelessWidget {
               CustomTextField(
                 labelText: "Username",
                 hintText: "Enter your name",
-                controller: controller.Usernamecontroller,
+                controller: controller.usernameController,
               ),
 
               SizedBox(height: 16),

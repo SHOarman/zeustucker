@@ -92,18 +92,16 @@ class Onloding1 extends StatelessWidget {
                 children: [
                   const SizedBox(height: 10),
 
-                  Container(
-                    child: Center(
-                      child: Text(
-                        'Step 1 of 3',
-                        style: TextStyle(
-                          color: Color(0xff2D292E),
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          decoration: TextDecoration.underline,
-                          decorationColor: Color(0xff2D292E),
-                          decorationThickness: 1.5,
-                        ),
+                  Center(
+                    child: Text(
+                      'Step 1 of 3',
+                      style: TextStyle(
+                        color: Color(0xff2D292E),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        decoration: TextDecoration.underline,
+                        decorationColor: Color(0xff2D292E),
+                        decorationThickness: 1.5,
                       ),
                     ),
                   ),

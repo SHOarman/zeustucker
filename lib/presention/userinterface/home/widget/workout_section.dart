@@ -28,7 +28,7 @@ class CustomDottedCard extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(vertical: 30),
           decoration: BoxDecoration(
-            color: const Color(0xFFF2F2F2).withOpacity(0.5),
+            color: const Color(0xFFF2F2F2).withValues(alpha: 0.5),
             borderRadius: BorderRadius.circular(15),
           ),
           child: Column(

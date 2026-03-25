@@ -176,7 +176,7 @@ class _VerifyYourEmailAddressState extends State<VerifyYourEmailAddress> {
                 child: ElevatedButton(
                   onPressed: () {
                     final otp = _controllers.map((c) => c.text).join();
-                    print('OTP entered: $otp');
+                    debugPrint('OTP entered: $otp');
                     Get.toNamed(AppRoutes.createNewPassword);
                   },
                   style: ElevatedButton.styleFrom(
