@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:zeustucker/core/routes/app_routes.dart';
 import 'package:zeustucker/presention/customwidget/custom_bottom_nav.dart';
 
 class ScheduleScreen extends StatelessWidget {
@@ -38,23 +40,23 @@ class ScheduleScreen extends StatelessWidget {
                   Text(
                     '🔥 Weekly Status',
                     style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
                       color: Color(0xFF2D292E),
                     ),
                   ),
                 ],
               ),
-              const Padding(
+              Padding(
                 padding: EdgeInsets.symmetric(vertical: 8),
-                child: Divider(color: Color(0xFFE5E7EB)),
+                child: Divider(color: Color(0xFF000000)),
               ),
               const Text(
                 '4 Days Week',
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 18,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF2D292E),
+                  color: Color(0xFF323232),
                 ),
               ),
               const SizedBox(height: 20),
@@ -68,25 +70,36 @@ class ScheduleScreen extends StatelessWidget {
               Row(
                 children: [
                   _buildMetricCard(
-                    icon: Icons.fitness_center,
                     title: 'Workout',
                     value: '4/5',
                     progress: 0.8,
                     color: const Color(0xFF38B8E6),
+                    imagePath: 'assets/image/Group (2).png',
+                      ontap: (){
+
+                      Get.toNamed(AppRoutes.workout);
+                      }
                   ),
                   _buildMetricCard(
-                    icon: Icons.restaurant,
                     title: 'Meals',
                     value: '5/7',
                     progress: 0.71,
                     color: const Color(0xFFFACC15),
+                    imagePath: 'assets/image/Group (3).png', ontap: (){
+
+                    Get.toNamed(AppRoutes.meal);
+                  },
                   ),
                   _buildMetricCard(
-                    icon: Icons.assignment,
                     title: 'Tasks',
                     value: '7/8',
                     progress: 0.87,
                     color: const Color(0xFF34D399),
+                    imagePath: 'assets/image/To do list.png',
+                      ontap: (){
+
+                        Get.toNamed(AppRoutes.task);
+                      }
                   ),
                 ],
               ),
@@ -141,7 +154,7 @@ class ScheduleScreen extends StatelessWidget {
         ClipRRect(
           borderRadius: BorderRadius.circular(16),
           child: Image.asset(
-            'assets/image/chapter1.png',
+            'assets/image/unnamed.jpg',
             width: double.infinity,
             height: 180,
             fit: BoxFit.cover,
@@ -172,7 +185,7 @@ class ScheduleScreen extends StatelessWidget {
                     color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
-                  )
+                  ),
                 ],
               ),
               child: const Text(
@@ -191,11 +204,11 @@ class ScheduleScreen extends StatelessWidget {
   }
 
   Widget _buildBarChart() {
-    final heights = [120.0, 80.0, 160.0, 200.0, 110.0, 140.0, 180.0];
+    final heights = [280.0, 80.0, 300.0, 140.0, 110.0, 140.0, 280.0];
     final labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
     return SizedBox(
-      height: 220,
+      height: 400,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -228,16 +241,17 @@ class ScheduleScreen extends StatelessWidget {
   }
 
   Widget _buildMetricCard({
-    required IconData icon,
+    required String imagePath,
     required String title,
     required String value,
     required double progress,
     required Color color,
+    required Function ontap,
   }) {
     return Expanded(
       child: GestureDetector(
         onTap: () {
-          debugPrint('$title tapped');
+          ontap();
         },
         child: Container(
           margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -247,11 +261,11 @@ class ScheduleScreen extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: const Color(0xFFE5E7EB)),
             boxShadow: [
-               BoxShadow(
-                 color: Colors.black.withValues(alpha: 0.02),
-                 blurRadius: 4,
-                 offset: const Offset(0, 2),
-               ),
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.02),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
             ],
           ),
           child: Column(
@@ -259,8 +273,14 @@ class ScheduleScreen extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Icon(icon, size: 14, color: color),
-                  const SizedBox(width: 4),
+                  // Icon er bodole ekhane image use kora hoyeche
+                  Image.asset(
+                    imagePath,
+                    height: 16,
+                    width: 16,
+                    fit: BoxFit.contain,
+                  ),
+                  const SizedBox(width: 6),
                   Expanded(
                     child: Text(
                       title,

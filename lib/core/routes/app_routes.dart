@@ -20,4 +20,17 @@ abstract class AppRoutes {
   static const schedule = "/schedule";
   static const profile = "/profile";
   static const learn = "/learn";
+
+  //==================================weekly===========================
+
+static const workout="/workout";
+static const meal="/meal";
+static const task="/task";
+
+
+
+//==============================profile===============================
+static const settings="/settings";
+
+
 }

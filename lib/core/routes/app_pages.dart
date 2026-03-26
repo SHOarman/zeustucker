@@ -12,12 +12,16 @@ import 'package:zeustucker/presention/userinterface/onlodingscreen/onloding1.dar
 import 'package:zeustucker/presention/userinterface/onlodingscreen/onlodingscreen2.dart';
 import 'package:zeustucker/presention/userinterface/onlodingscreen/onlodaing3.dart';
 import 'package:zeustucker/presention/userinterface/onlodingscreen/selectuser.dart';
+import 'package:zeustucker/presention/userinterface/profile/setting.dart';
+import 'package:zeustucker/presention/userinterface/schedule/meals.dart';
+import 'package:zeustucker/presention/userinterface/schedule/taks.dart';
+import 'package:zeustucker/presention/userinterface/schedule/workout.dart';
 import 'package:zeustucker/presention/userinterface/stats/stats_screen.dart';
 import 'package:zeustucker/presention/userinterface/schedule/schedule_screen.dart';
 import 'package:zeustucker/presention/userinterface/profile/profile_screen.dart';
 
 class AppPages {
-  static const initial = AppRoutes.login;
+  static const initial = AppRoutes.home;
 
   static final routes = [
     //==========================authscreen============================
@@ -68,5 +72,14 @@ class AppPages {
       page: () => const ProfileScreen(),
       transition: Transition.noTransition,
     ),
+
+    //=========================================weekly========================================
+    GetPage(name: AppRoutes.workout, page: ()=>Workout()),
+    GetPage(name: AppRoutes.meal, page: ()=>Meals()),
+    GetPage(name: AppRoutes.task, page: ()=>Taks()),
+
+
+    //==========================================profile========================================
+    GetPage(name: AppRoutes.settings, page: ()=>const Setting()),
   ];
 }
