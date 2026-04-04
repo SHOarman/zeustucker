@@ -1,3 +1,4 @@
+// ignore_for_file: file_names
 import 'package:flutter/material.dart';
 
 class WorkoutDayCard extends StatelessWidget {
@@ -58,7 +59,7 @@ class WorkoutDayCard extends StatelessWidget {
             iconPath,
             width: 24,
             height: 24,
-            color: isNoWorkout ? Colors.grey.withOpacity(0.5) : null,
+            color: isNoWorkout ? Colors.grey.withValues(alpha: 0.5) : null,
           ),
           const SizedBox(width: 15),
 

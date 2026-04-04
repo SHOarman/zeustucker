@@ -1,0 +1,108 @@
+// ignore_for_file: file_names
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import '../../../../../core/services/controller/adminpenelcontroller/clientcontoller.dart';
+
+class ManageClientsHeader extends StatelessWidget {
+  ManageClientsHeader({super.key});
+
+  final ClientController controller = Get.put(ClientController());
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.only(top: 32, left: 24, right: 24, bottom: 24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(32),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Back Button, Title and Filter Icon
+          Row(
+            children: [
+              GestureDetector(
+                onTap: () => Get.back(),
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF5F5F5),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.arrow_back_ios_new, size: 18, color: Colors.black),
+                ),
+              ),
+              const SizedBox(width: 12),
+
+              // Title
+              const Expanded(
+                child: Text(
+                  'Manage Clients',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black87,
+                  ),
+                ),
+              ),
+
+              // Filter Button
+              _buildFilterButton(),
+            ],
+          ),
+          const SizedBox(height: 24),
+
+          // Reactive Search Bar
+          TextField(
+            controller: controller.searchController,
+            style: const TextStyle(color: Colors.black),
+            onChanged: (value) => controller.updateSearch(value),
+            onSubmitted: (value) => controller.updateSearch(value),
+            decoration: InputDecoration(
+              hintText: 'Search Clients...',
+              hintStyle: const TextStyle(color: Colors.black54),
+              prefixIcon: const Icon(Icons.search, color: Colors.black),
+              suffixIcon: Obx(() => controller.searchText.value.isNotEmpty
+                  ? IconButton(
+                icon: const Icon(Icons.clear, color: Colors.black),
+                onPressed: controller.clearSearch,
+              )
+                  : const SizedBox.shrink()),
+              filled: true,
+              fillColor: const Color(0xFFF5F5F5),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(20),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding: const EdgeInsets.symmetric(vertical: 10),
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterButton() {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Color(0xFFE0E0E0),
+        shape: BoxShape.circle,
+      ),
+      child: IconButton(
+        icon: const Icon(Icons.tune, size: 20, color: Colors.black),
+        onPressed: () {
+          // Filter logic
+        },
+      ),
+    );
+  }
+}

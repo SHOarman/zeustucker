@@ -65,7 +65,7 @@ class Selectuser extends StatelessWidget {
               title: "Coach",
               imagePath: "assets/image/coach.png",
               onTap: () {
-                debugPrint("Coach Selected");
+               Get.toNamed(AppRoutes.adminhome);
 
               },
             ),

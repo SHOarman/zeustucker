@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:zeustucker/core/routes/app_routes.dart';
+import 'package:zeustucker/presention/customwidget/customalertDilog.dart';
 
 class Setting extends StatelessWidget {
   const Setting({super.key});
@@ -30,7 +33,7 @@ class Setting extends StatelessWidget {
               title: "Edit Profile",
               iconPath: "assets/image/Frame (2).png",
               onTap: () {
-                print("Edit Profile Clicked");
+                Get.toNamed(AppRoutes.editprofile);
               },
             ),
 
@@ -40,7 +43,7 @@ class Setting extends StatelessWidget {
               title: "Support & Help",
               iconPath: "assets/image/Frame.png",
               onTap: () {
-                print("Support Clicked");
+                Get.toNamed(AppRoutes.support$help);
               },
             ),
 
@@ -51,7 +54,15 @@ class Setting extends StatelessWidget {
               iconPath: "assets/image/Frame (1).png",
               isDelete: true,
               onTap: () {
-                print("Delete Account Clicked");
+                Get.dialog(
+                  CustomAlertDialog(
+                    title: "Delete Account",
+                    buttonText: "Delete",
+                    onTap: () {},
+                    titleColor: Colors.red,
+                    iconPath: 'assets/image/Vector (1).png',
+                  ),
+                );
               },
             ),
 
@@ -63,7 +74,14 @@ class Setting extends StatelessWidget {
               height: 56,
               child: ElevatedButton.icon(
                 onPressed: () {
-                  print("Logout Clicked");
+                  Get.dialog(
+                    CustomAlertDialog(
+                      title: "Logout from the app",
+                      buttonText: "Logout",
+                      onTap: () {},
+                      iconPath: 'assets/image/Frame (4).png',
+                    ),
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xffFF5252),
@@ -74,7 +92,11 @@ class Setting extends StatelessWidget {
                 ),
                 icon: const Text(
                   "Logout",
-                  style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 label: const Icon(Icons.logout, color: Colors.white),
               ),
@@ -112,7 +134,7 @@ class CustomSettingCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.01),
+              color: Colors.black.withValues(alpha: 0.01),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -123,7 +145,9 @@ class CustomSettingCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: isDelete ? Colors.red.withOpacity(0.1) : Colors.blue.withOpacity(0.1),
+                color: isDelete
+                    ? Colors.red.withValues(alpha: 0.1)
+                    : Colors.blue.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Image.asset(

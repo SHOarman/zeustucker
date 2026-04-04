@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:zeustucker/presention/customwidget/custom_bottom_nav.dart';
+import 'package:zeustucker/core/routes/app_routes.dart';
+
+import '../../customwidget/custom_bottom_nav.dart';
+
 
 class LibraryScreen extends StatelessWidget {
   const LibraryScreen({super.key});
@@ -8,8 +12,9 @@ class LibraryScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
       bottomNavigationBar: const CustomBottomNav(selectIndex: 1),
+
+      backgroundColor: const Color(0xFFF9FAFB),
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
         child: Padding(
@@ -47,8 +52,20 @@ class LibraryScreen extends StatelessWidget {
                 statusColor: const Color(0xFF166534),
                 statusBg: const Color(0xFFDCFCE7),
                 chapterData: [
-                  {"image": "assets/image/card1 (1).png", "name": "The Awakening"},
-                  {"image": "assets/image/card1 (2).png", "name": "Flow State"},
+                  {
+                    "image": "assets/image/card1 (1).png",
+                    "name": "The Awakening",
+                    "onTap": (){
+                      Get.toNamed(AppRoutes.librarydetails);
+                    }
+                  },
+                  {
+                    "image": "assets/image/card1 (2).png",
+                    "name": "Flow State",
+                    "onTap": (){
+                      Get.toNamed(AppRoutes.librarydetails);
+                    }
+                  },
                 ],
               ),
 
@@ -62,50 +79,38 @@ class LibraryScreen extends StatelessWidget {
                 statusColor: const Color(0xFF166534),
                 statusBg: const Color(0xFFDCFCE7),
                 chapterData: [
-                  {"image": "assets/image/chapter22.png", "name": "Golden Hour"},
-                  {"image": "assets/image/chapter21.png", "name": "High Mountain"},
+                  {
+                    "image": "assets/image/chapter22.png",
+                    "name": "Golden Hour",
+                    "onTap": (){
+                      Get.toNamed(AppRoutes.librarydetails);
+                    }
+                  },
+                  {
+                    "image": "assets/image/chapter21.png",
+                    "name": "High Mountain",
+                    "onTap": (){
+                      Get.toNamed(AppRoutes.librarydetails);
+                    }
+                  },
                 ],
               ),
 
-              const SizedBox(height: 45),
-
-              // --- CHAPTER 1 ---
-              _buildChapterSection(
-                chapter: "Chapter 1",
-                routine: "POWERLIFTING CORE",
-                status: "ORIGIN STORY",
-                statusColor: const Color(0xFF166534),
-                statusBg: const Color(0xFFDCFCE7),
-                chapterData: [
-                  {"image": "assets/image/chapter1.png", "name": "The Lift"},
-                  {"image": "assets/image/chapter12.png", "name": "Momentum"},
-                ],
-              ),
 
               const SizedBox(height: 40),
-
+              // Footer Section
               Row(
-                crossAxisAlignment: .center,
-                mainAxisAlignment: .center,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Image.asset("assets/image/Container.png"),
+                  // Image.asset("assets/image/Container.png"), // Asset check korun
                   const SizedBox(width: 6),
-                  Text(
+                  const Text(
                     "EndOf History",
-                    style: TextStyle(
-                      color: Color(0xffA1A1AA),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: TextStyle(color: Color(0xffA1A1AA), fontSize: 12, fontWeight: FontWeight.w600),
                   ),
                 ],
               ),
               const SizedBox(height: 40),
-
-
-
-
-
             ],
           ),
         ),
@@ -119,7 +124,7 @@ class LibraryScreen extends StatelessWidget {
     required String status,
     required Color statusColor,
     required Color statusBg,
-    required List<Map<String, String>> chapterData,
+    required List<Map<String, dynamic>> chapterData, // String theke dynamic kora holo function neuar jonno
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -129,41 +134,16 @@ class LibraryScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                chapter,
-                style: const TextStyle(
-                  color: Color(0xff18181B),
-                  fontSize: 24,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
+              Text(chapter, style: const TextStyle(color: Color(0xff18181B), fontSize: 24, fontWeight: FontWeight.w700)),
               const SizedBox(height: 6),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    routine,
-                    style: TextStyle(
-                      color: statusColor,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 11,
-                      letterSpacing: 0.8,
-                    ),
-                  ),
+                  Text(routine, style: TextStyle(color: statusColor, fontWeight: FontWeight.bold, fontSize: 11, letterSpacing: 0.8)),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: statusBg,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Text(
-                      status,
-                      style: TextStyle(
-                        color: statusColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 10,
-                      ),
-                    ),
+                    decoration: BoxDecoration(color: statusBg, borderRadius: BorderRadius.circular(6)),
+                    child: Text(status, style: TextStyle(color: statusColor, fontWeight: FontWeight.bold, fontSize: 10)),
                   ),
                 ],
               ),
@@ -174,12 +154,11 @@ class LibraryScreen extends StatelessWidget {
           scrollDirection: Axis.horizontal,
           physics: const BouncingScrollPhysics(),
           child: Row(
-            children: chapterData
-                .map((data) => _ImageCard(
+            children: chapterData.map((data) => _ImageCard(
               imagePath: data['image']!,
               imageName: data['name']!,
-            ))
-                .toList(),
+              onTap: data['onTap'],
+            )).toList(),
           ),
         ),
       ],
@@ -190,41 +169,32 @@ class LibraryScreen extends StatelessWidget {
 class _ImageCard extends StatelessWidget {
   final String imagePath;
   final String imageName;
+  final VoidCallback onTap; // Callback define kora holo
 
   const _ImageCard({
     required this.imagePath,
     required this.imageName,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        debugPrint("Tapped on: $imageName");
-      },
+      onTap: onTap, // Custom action trigger hoba
       child: Container(
         margin: const EdgeInsets.only(right: 16),
-        width: 192,  // Width
-        height: 256, // Height
+        width: 192,
+        height: 256,
         child: Stack(
           children: [
+            // Image Layer
             Container(
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(32), // Radius 32
-                image: DecorationImage(
-                  image: AssetImage(imagePath),
-                  fit: BoxFit.cover,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.08),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+                borderRadius: BorderRadius.circular(32),
+                image: DecorationImage(image: AssetImage(imagePath), fit: BoxFit.cover),
               ),
             ),
-
+            // Gradient Overlay
             Positioned.fill(
               child: Container(
                 decoration: BoxDecoration(
@@ -232,16 +202,13 @@ class _ImageCard extends StatelessWidget {
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      Colors.black.withValues(alpha: 0.8),
-                    ],
+                    colors: [Colors.transparent, Colors.black.withValues(alpha: 0.8)],
                     stops: const [0.5, 1.0],
                   ),
                 ),
               ),
             ),
-
+            // Text Layer
             Positioned(
               bottom: 24,
               left: 20,
@@ -249,12 +216,7 @@ class _ImageCard extends StatelessWidget {
               child: Text(
                 imageName,
                 overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.poppins(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w600,
-                 color: Color(0xFFFFFFFF),
-                  letterSpacing: 0.5,
-                ),
+                style: GoogleFonts.poppins(fontSize: 10, fontWeight: FontWeight.w600, color: Colors.white),
               ),
             ),
           ],

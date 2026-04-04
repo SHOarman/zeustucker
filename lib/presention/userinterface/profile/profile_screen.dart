@@ -75,7 +75,7 @@ class ProfileScreen extends StatelessWidget {
               // Reference Image Card
               GestureDetector(
                 onTap: () {
-                  // TODO: Handle reference image card tap
+                  // Handle reference image card tap
                   debugPrint('Reference Image Card clicked');
                 },
                 child: _buildCard(
@@ -144,7 +144,7 @@ class ProfileScreen extends StatelessWidget {
                           ),
                           GestureDetector(
                             onTap: () {
-                              // TODO: Implement replace action
+                              // Implement replace action
                               debugPrint('Replace clicked');
                             },
                             child: Container(

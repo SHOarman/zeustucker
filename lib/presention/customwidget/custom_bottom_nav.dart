@@ -10,7 +10,7 @@ class CustomBottomNav extends StatelessWidget {
   static const _items = [
     _NavItem(icon: 'assets/icon/home.svg', label: 'Home', route: '/home'),
     _NavItem(
-      icon: 'assets/icon/library.svg',
+      icon: 'assets/icon/Library.svg',
       label: 'Library',
       route: '/library',
     ),
