@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:zeustucker/core/routes/app_routes.dart';
-import 'package:zeustucker/presention/admininterface/ui_interface/adminstory/widget/DualButtonWidget.dart';
 import 'package:zeustucker/presention/admininterface/ui_interface/adminstory/widget/panelcard.dart';
 import 'package:zeustucker/presention/admininterface/ui_interface/adminstory/widget/routine_needs_review_card.dart';
 import 'package:zeustucker/presention/admininterface/ui_interface/adminstory/widget/stories_management_card.dart';
@@ -24,7 +23,7 @@ class Adminstory extends StatelessWidget {
               StoriesManagementCard(
                 totalStories: 124,
                 starImageUrl: "assets/image/Overlay+OverlayBlur.png",
-                bookImageUrl: "assets/image/notes.png",
+                // bookImageUrl: "assets/image/notes.png",
                 onBulkReviewTap: () {
                   Get.toNamed(AppRoutes.blukreview);
                 },

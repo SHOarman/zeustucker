@@ -72,7 +72,7 @@ class RoutineNeedsReviewCard extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 decoration: BoxDecoration(
-                  color: buttonColor.withOpacity(0.1),
+                  color: buttonColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(

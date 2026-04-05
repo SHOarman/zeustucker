@@ -3,14 +3,12 @@ import 'package:flutter/material.dart';
 class StoriesManagementCard extends StatelessWidget {
   final int totalStories;
   final String starImageUrl;
-  final String bookImageUrl;
   final VoidCallback onBulkReviewTap;
 
   const StoriesManagementCard({
     super.key,
     required this.totalStories,
     required this.starImageUrl,
-    required this.bookImageUrl,
     required this.onBulkReviewTap,
   });
 
@@ -32,23 +30,7 @@ class StoriesManagementCard extends StatelessWidget {
       ),
       child: Stack(
         children: [
-          Positioned(
-            bottom: 0,
-            right: 0,
-            child: ClipRRect(
-              borderRadius: const BorderRadius.only(
-                bottomRight: Radius.circular(32),
-              ),
-              child: Opacity(
-                opacity: 0.1,
-                child: Image.network(
-                  bookImageUrl,
-                  width: 140,
-                  fit: BoxFit.contain,
-                ),
-              ),
-            ),
-          ),
+
           Padding(
             padding: const EdgeInsets.all(24.0),
             child: Column(
