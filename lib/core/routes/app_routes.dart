@@ -72,6 +72,20 @@ static const clientdetails="/clientdetails";
 //===================================adminstory==============================================================
 static const storiesmanagement="/storiesmanagement";
 static const blukreview="/blukreview";
+static const regenerateall="/regenerateall";
+
+
+//=====================adminsetting===================================================
+static const accoundperferences="/accoundperferences";
+static const clientmanagementlimits="/clientmanagementlimits";
+static const subscriptionbilling="/subscriptionbilling";
+static const notificationsettings="/notificationsettings";
+static const logout="/logout";
+static const deleteaccount1="/deleteaccount1";
+
+
+
+
 
 
 

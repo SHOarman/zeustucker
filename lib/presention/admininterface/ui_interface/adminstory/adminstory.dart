@@ -120,7 +120,7 @@ class Adminstory extends StatelessWidget {
                     borderRadius: BorderRadius.circular(30),
                     child: InkWell(
                       onTap: () {
-                        debugPrint("Regenerate All Tap");
+                        Get.toNamed(AppRoutes.regenerateall);
                       },
                       borderRadius: BorderRadius.circular(30),
                       child: Container(

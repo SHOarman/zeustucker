@@ -2,6 +2,12 @@ import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 
 class ClientController extends GetxController {
+
+  RxString userName = "Alexander Mitchell".obs;
+  RxString emailaddress = "alexander.m@dailey.ai".obs;
+  RxString phonenumber = "+1 (555) 902-3482".obs;
+  RxString coachbio = "Specializing in routine-building through narrative psychology. Helping over 50 clients find their daily flow since 2022.".obs;
+
   // --- Search & Daily Goals Logic ---
   var searchText = "".obs;
   var drinkWater = true.obs;

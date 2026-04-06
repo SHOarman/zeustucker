@@ -6,6 +6,7 @@ import 'package:zeustucker/presention/admininterface/ui_interface/adminclients/c
 import 'package:zeustucker/presention/admininterface/ui_interface/adminhome/addnewclient.dart';
 import 'package:zeustucker/presention/admininterface/ui_interface/adminhome/editruting.dart';
 import 'package:zeustucker/presention/admininterface/ui_interface/adminhome/magaeclients.dart';
+import 'package:zeustucker/presention/admininterface/ui_interface/adminsetting/accoundperferences.dart';
 import 'package:zeustucker/presention/admininterface/ui_interface/adminstory/adminstory.dart';
 import 'package:zeustucker/presention/admininterface/ui_interface/adminsetting/adminsetting.dart';
 import 'package:zeustucker/presention/admininterface/ui_interface/adminhome/adminhome.dart';
@@ -36,13 +37,15 @@ import 'package:zeustucker/presention/userinterface/schedule/schedule_screen.dar
 import 'package:zeustucker/presention/userinterface/profile/profile_screen.dart';
 
 import '../../presention/admininterface/ui_interface/adminhome/viewstory.dart';
+import '../../presention/admininterface/ui_interface/adminsetting/clientmanagementlimirs.dart';
+import '../../presention/admininterface/ui_interface/adminstory/regenerateall.dart';
 import '../../presention/userinterface/profile/editprofile.dart';
 import '../../presention/userinterface/profile/supportandhelp.dart';
 import '../../presention/userinterface/profile/termsconditions.dart';
 
 
 class AppPages {
-  static const initial = AppRoutes.login;
+  static const initial = AppRoutes.adminhome;
 
   static final routes = [
     //==========================authscreen============================
@@ -136,6 +139,13 @@ class AppPages {
     //===========================================adminstory================================================
 
     GetPage(name: AppRoutes.blukreview, page: ()=>const Blukreview(), transition: Transition.noTransition),
+    GetPage(name: AppRoutes.regenerateall, page: ()=>const Regenerateall(), transition: Transition.noTransition),
+
+
+
+    //==============================================adminsetting================================================
+    GetPage(name: AppRoutes.accoundperferences, page: ()=>const Accoundperferences(), transition: Transition.noTransition),
+    GetPage(name: AppRoutes.clientmanagementlimits, page: ()=>const Clientmanagementlimirs(), transition: Transition.noTransition),
 
 
 
