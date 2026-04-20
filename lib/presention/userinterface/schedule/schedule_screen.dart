@@ -118,7 +118,10 @@ class ScheduleScreen extends StatelessWidget {
                   ),
                   child: ElevatedButton(
                     onPressed: () {
-                      debugPrint('Generate Weekly Story Tapped');
+
+                      //=====================================================
+                      Get.toNamed(AppRoutes.weeklystoty);
+
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.transparent,

@@ -28,6 +28,7 @@ import 'package:zeustucker/presention/userinterface/profile/contactsupport.dart'
 import 'package:zeustucker/presention/userinterface/profile/privacypolicy.dart';
 import 'package:zeustucker/presention/userinterface/profile/reportproblem.dart';
 import 'package:zeustucker/presention/userinterface/profile/setting.dart';
+import 'package:zeustucker/presention/userinterface/schedule/generatestory.dart';
 
 import 'package:zeustucker/presention/userinterface/schedule/meals.dart';
 import 'package:zeustucker/presention/userinterface/schedule/taks.dart';
@@ -45,7 +46,7 @@ import '../../presention/userinterface/profile/termsconditions.dart';
 
 
 class AppPages {
-  static const initial = AppRoutes.adminhome;
+  static const initial = AppRoutes.login;
 
   static final routes = [
     //==========================authscreen============================
@@ -103,6 +104,7 @@ class AppPages {
     GetPage(name: AppRoutes.workout, page: ()=>Workout()),
     GetPage(name: AppRoutes.meal, page: ()=>Meals()),
     GetPage(name: AppRoutes.task, page: ()=>Taks()),
+    GetPage(name: AppRoutes.weeklystoty, page: ()=>GenerateStory()),
 
 
     //==========================================profile========================================

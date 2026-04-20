@@ -27,6 +27,7 @@ abstract class AppRoutes {
 static const workout="/workout";
 static const meal="/meal";
 static const task="/task";
+static const weeklystoty="/weeklystoty";
 
 
 
