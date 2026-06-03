@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:zeustucker/core/routes/app_routes.dart';
+import '../../../core/services/controller/authcontroller.dart';
 
 class VerifyYourEmailAddress extends StatefulWidget {
   const VerifyYourEmailAddress({super.key});
@@ -173,29 +174,40 @@ class _VerifyYourEmailAddressState extends State<VerifyYourEmailAddress> {
               SizedBox(
                 width: double.infinity,
                 height: 48,
-                child: ElevatedButton(
-                  onPressed: () {
-                    final otp = _controllers.map((c) => c.text).join();
-                    debugPrint('OTP entered: $otp');
-                    Get.toNamed(AppRoutes.createNewPassword);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _primary,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                child: Obx(() {
+                  final authController = Get.put(Authcontroller());
+                  return ElevatedButton(
+                    onPressed: authController.isLoading.value ? null : () {
+                      final otp = _controllers.map((c) => c.text).join();
+                      debugPrint('OTP entered: $otp');
+                      authController.verifyEmail(
+                        email: authController.registeredEmail.value,
+                        code: otp,
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _primary,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
-                  ),
-                  child: const Text(
-                    'Verify',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
+                    child: authController.isLoading.value 
+                        ? const SizedBox(
+                            width: 20, height: 20,
+                            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                          )
+                        : const Text(
+                            'Verify',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
+                  );
+                }),
               ),
 
               const SizedBox(height: 20),

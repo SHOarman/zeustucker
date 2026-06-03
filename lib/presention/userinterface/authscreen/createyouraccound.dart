@@ -4,6 +4,7 @@ import 'package:zeustucker/core/routes/app_routes.dart';
 import 'package:zeustucker/presention/customwidget/custom_text_field.dart';
 import 'package:zeustucker/presention/customwidget/custombutton.dart';
 
+import '../../../core/services/controller/authcontroller.dart';
 import '../../../core/services/controller/login_controller.dart';
 import '../../customwidget/build_dropdown_custom.dart';
 
@@ -13,6 +14,7 @@ class Createyouraccound extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final LoginController controller = Get.put(LoginController());
+    final Authcontroller authController = Get.put(Authcontroller());
 
     return Scaffold(
       body: SingleChildScrollView(
@@ -113,12 +115,89 @@ class Createyouraccound extends StatelessWidget {
               ),
 
               const SizedBox(height: 20),
+              CustomTextField(
+                labelText: "Select Role",
+                hintText: "Select your role",
+                controller: authController.roleController,
+                readOnly: true,
+                suffixIcon: const Icon(Icons.arrow_drop_down, color: Color(0xFFAAAAAA)),
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text('Select Role', style: TextStyle(fontWeight: FontWeight.bold)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        content: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      authController.selectedRole.value = 'user';
+                                      authController.roleController.text = 'user';
+                                      Get.back();
+                                    },
+                                    child: Card(
+                                      color: Colors.white,
+                                      elevation: 0,
+                                      shape: RoundedRectangleBorder(
+                                        side: BorderSide(color: Colors.grey.shade300, width: 1.5),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: const Padding(
+                                        padding: EdgeInsets.symmetric(vertical: 12),
+                                        child: Center(
+                                          child: Text('User', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      authController.selectedRole.value = 'coach';
+                                      authController.roleController.text = 'coach';
+                                      Get.back();
+                                    },
+                                    child: Card(
+                                      color: Colors.white,
+                                      elevation: 0,
+                                      shape: RoundedRectangleBorder(
+                                        side: BorderSide(color: Colors.grey.shade300, width: 1.5),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: const Padding(
+                                        padding: EdgeInsets.symmetric(vertical: 12),
+                                        child: Center(
+                                          child: Text('Coach', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+
+              const SizedBox(height: 20),
               Row(
                 children: [
                   Obx(
                     () => Checkbox(
-                      value: controller.rememberMe.value,
-                      onChanged: (val) => controller.toggleRememberMe(),
+                      value: controller.agreeToTerms.value,
+                      onChanged: (val) => controller.toggleTerms(),
                       activeColor: const Color(0xFF00A97D),
                     ),
                   ),
@@ -139,9 +218,32 @@ class Createyouraccound extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 16),
-              Custombutton(iconname: 'Create account', ontap: () {
-                Get.toNamed(AppRoutes.login);
-              }),
+              Obx(() => authController.isLoading.value 
+                ? const Center(child: CircularProgressIndicator(color: Color(0xFF00A97D)))
+                : Custombutton(
+                    iconname: 'Create account', 
+                    ontap: () {
+                      if (!controller.agreeToTerms.value) {
+                         Get.snackbar('Error', 'Please accept the Terms and Conditions', backgroundColor: Colors.red, colorText: Colors.white);
+                         return;
+                      }
+                      
+                      String dob = "\${controller.selectedYear.value}-\${controller.selectedMonth.value.padLeft(2, '0')}-\${controller.selectedDay.value.padLeft(2, '0')}";
+                      if (controller.selectedYear.value.isEmpty) {
+                        dob = "1990-01-01"; // Fallback
+                      }
+
+                      authController.register(
+                        username: controller.usernameController.text.trim(),
+                        email: controller.emailController.text.trim(),
+                        password: controller.passwordController.text,
+                        confirmPassword: controller.passwordController.text, // Assuming no confirm pass field in UI
+                        dateOfBirth: dob,
+                        role: authController.selectedRole.value,
+                      );
+                    },
+                  ),
+              ),
               const SizedBox(height: 20),
               Center(
                 child: GestureDetector(

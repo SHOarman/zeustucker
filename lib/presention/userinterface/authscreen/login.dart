@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:zeustucker/core/routes/app_routes.dart';
+import '../../../core/services/controller/authcontroller.dart';
 import '../../../core/services/controller/login_controller.dart';
 import '../../customwidget/custom_text_field.dart';
 import '../../customwidget/custombutton.dart';
@@ -115,12 +116,20 @@ class Login extends StatelessWidget {
               ),
 
               const SizedBox(height: 12),
-              Custombutton(
-                iconname: 'Continue',
-                ontap: () {
-                  Get.toNamed(AppRoutes.selectuser);
-                },
-              ),
+              Obx(() {
+                final authController = Get.put(Authcontroller());
+                return authController.isLoading.value
+                    ? const Center(child: CircularProgressIndicator(color: Color(0xFF00A97D)))
+                    : Custombutton(
+                        iconname: 'Continue',
+                        ontap: () {
+                          authController.login(
+                            email: controller.emailController.text.trim(),
+                            password: controller.passwordController.text,
+                          );
+                        },
+                      );
+              }),
               const SizedBox(height: 24),
               const SizedBox(height: 24),
               Row(
