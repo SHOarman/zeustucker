@@ -10,6 +10,7 @@ class LoginController extends GetxController {
   // ==============================Create New Password=========================
   final newPasswordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
+  final codeController = TextEditingController();
 
   final isPasswordVisible = false.obs;
   final isConfirmPasswordVisible = false.obs;

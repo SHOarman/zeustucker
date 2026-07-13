@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:zeustucker/core/routes/app_routes.dart';
 import '../../../core/services/controller/authcontroller.dart';
+import '../../customwidget/custombutton.dart';
 
 class VerifyYourEmailAddress extends StatefulWidget {
   const VerifyYourEmailAddress({super.key});
@@ -126,31 +127,35 @@ class _VerifyYourEmailAddressState extends State<VerifyYourEmailAddress> {
 
               const SizedBox(height: 12),
 
-              // ── Description ───────────────────────────────────────────────
-              RichText(
-                text: const TextSpan(
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: _textGrey,
-                    height: 1.55,
-                    letterSpacing: 0.2,
-                  ),
-                  children: [
-                    TextSpan(text: 'We emailed you a six-digit code to\n'),
-                    TextSpan(
-                      text: 'name@company.com',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        color: _textDark,
+              Obx(() {
+                final authController = Get.put(Authcontroller());
+                final email = authController.registeredEmail.value.isEmpty
+                    ? 'your email'
+                    : authController.registeredEmail.value;
+                return RichText(
+                  text: TextSpan(
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: _textGrey,
+                      height: 1.55,
+                      letterSpacing: 0.2,
+                    ),
+                    children: [
+                      const TextSpan(text: 'We emailed you a six-digit code to\n'),
+                      TextSpan(
+                        text: email,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          color: _textDark,
+                        ),
                       ),
-                    ),
-                    TextSpan(
-                      text:
-                          '. Enter the code below to confirm your email adress.',
-                    ),
-                  ],
-                ),
-              ),
+                      const TextSpan(
+                        text: '. Enter the code below to confirm your email address.',
+                      ),
+                    ],
+                  ),
+                );
+              }),
 
               const SizedBox(height: 28),
 
@@ -171,13 +176,13 @@ class _VerifyYourEmailAddressState extends State<VerifyYourEmailAddress> {
               const SizedBox(height: 28),
 
               // ── Verify button ─────────────────────────────────────────────
-              SizedBox(
-                width: double.infinity,
-                height: 48,
+              Center(
                 child: Obx(() {
                   final authController = Get.put(Authcontroller());
-                  return ElevatedButton(
-                    onPressed: authController.isLoading.value ? null : () {
+                  return Custombutton(
+                    iconname: 'Verify',
+                    isLoading: authController.isLoading.value,
+                    ontap: () {
                       final otp = _controllers.map((c) => c.text).join();
                       debugPrint('OTP entered: $otp');
                       authController.verifyEmail(
@@ -185,27 +190,6 @@ class _VerifyYourEmailAddressState extends State<VerifyYourEmailAddress> {
                         code: otp,
                       );
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _primary,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: authController.isLoading.value 
-                        ? const SizedBox(
-                            width: 20, height: 20,
-                            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                          )
-                        : const Text(
-                            'Verify',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                            ),
-                          ),
                   );
                 }),
               ),

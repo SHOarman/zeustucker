@@ -118,17 +118,16 @@ class Login extends StatelessWidget {
               const SizedBox(height: 12),
               Obx(() {
                 final authController = Get.put(Authcontroller());
-                return authController.isLoading.value
-                    ? const Center(child: CircularProgressIndicator(color: Color(0xFF00A97D)))
-                    : Custombutton(
-                        iconname: 'Continue',
-                        ontap: () {
-                          authController.login(
-                            email: controller.emailController.text.trim(),
-                            password: controller.passwordController.text,
-                          );
-                        },
-                      );
+                return Custombutton(
+                  iconname: 'Continue',
+                  isLoading: authController.isLoading.value,
+                  ontap: () {
+                    authController.login(
+                      email: controller.emailController.text.trim(),
+                      password: controller.passwordController.text,
+                    );
+                  },
+                );
               }),
               const SizedBox(height: 24),
               const SizedBox(height: 24),

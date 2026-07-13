@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:zeustucker/core/routes/app_routes.dart';
 import 'package:zeustucker/core/services/controller/login_controller.dart';
+import '../../../core/services/controller/authcontroller.dart';
+import '../../customwidget/custombutton.dart';
 
 class CreateNewPassword extends GetView<LoginController> {
   const CreateNewPassword({super.key});
@@ -204,31 +206,43 @@ class CreateNewPassword extends GetView<LoginController> {
               const SizedBox(height: 28),
 
               // Submit button
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: ElevatedButton(
-                  onPressed: () {
-                    controller.submitNewPassword();
-                   Get.toNamed(AppRoutes.verified);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _primary,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  child: const Text(
-                    'Forget Passwoaed',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
+              Center(
+                child: Obx(() {
+                  final authController = Get.put(Authcontroller());
+                  return Custombutton(
+                    iconname: 'Reset Password',
+                    isLoading: authController.isLoading.value,
+                    ontap: () {
+                      final code = controller.codeController.text.trim();
+                      final password = controller.newPasswordController.text;
+                      final confirmPassword = controller.confirmPasswordController.text;
+
+                      if (code.isEmpty) {
+                        Get.snackbar('Error', 'Please enter the reset code', backgroundColor: Colors.red, colorText: Colors.white);
+                        return;
+                      }
+                      if (password.isEmpty) {
+                        Get.snackbar('Error', 'Please enter your new password', backgroundColor: Colors.red, colorText: Colors.white);
+                        return;
+                      }
+                      if (password != confirmPassword) {
+                        Get.snackbar('Error', 'Passwords do not match', backgroundColor: Colors.red, colorText: Colors.white);
+                        return;
+                      }
+                      if (!controller.agreeToTerms.value) {
+                        Get.snackbar('Error', 'Please agree to the Terms and Privacy Policy', backgroundColor: Colors.red, colorText: Colors.white);
+                        return;
+                      }
+
+                      authController.resetPassword(
+                        email: authController.registeredEmail.value,
+                        code: code,
+                        password: password,
+                        confirmPassword: confirmPassword,
+                      );
+                    },
+                  );
+                }),
               ),
 
               const SizedBox(height: 20),

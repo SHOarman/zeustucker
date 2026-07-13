@@ -2,6 +2,8 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:zeustucker/core/routes/app_routes.dart';
+import '../../../core/services/controller/authcontroller.dart';
+import '../../customwidget/custombutton.dart';
 
 class ForgetPasswordScreen extends StatefulWidget {
   const ForgetPasswordScreen({super.key});
@@ -186,49 +188,41 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
               ),
               const SizedBox(height: 28),
 
-              // ── Action buttons row ────────────────────────────────────────
-              Row(
-                children: [
-                  // Forget password button
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        Get.toNamed(AppRoutes.verifyEmail);
-                        debugPrint("arman");
-                      },
-                      child: Container(
-                        height: 48,
-                        decoration: BoxDecoration(
-                          color: _primary,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        alignment: Alignment.center,
-                        child: const Text(
-                          'Forget passwoaed',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
+              // ── Action buttons ──────────────────────────────────────────
+              Obx(() {
+                final authController = Get.put(Authcontroller());
+                return Center(
+                  child: Custombutton(
+                    iconname: 'Forget password',
+                    isLoading: authController.isLoading.value,
+                    ontap: () {
+                      final email = _emailController.text.trim();
+                      if (email.isEmpty) {
+                        Get.snackbar('Error', 'Please enter your email', backgroundColor: Colors.red, colorText: Colors.white);
+                        return;
+                      }
+                      if (!_agreeToTerms) {
+                        Get.snackbar('Error', 'Please agree to the Terms and Privacy Policy', backgroundColor: Colors.red, colorText: Colors.white);
+                        return;
+                      }
+                      authController.forgotPassword(email: email);
+                    },
+                  ),
+                );
+              }),
+              const SizedBox(height: 20),
+              Center(
+                child: GestureDetector(
+                  onTap: () => Get.offNamed(AppRoutes.login),
+                  child: const Text(
+                    'Return to login',
+                    style: TextStyle(
+                      color: _primary,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(width: 16),
-
-                  // Return to login text button
-                  GestureDetector(
-                    onTap: () => Get.offNamed(AppRoutes.login),
-                    child: const Text(
-                      'Return to login',
-                      style: TextStyle(
-                        color: _primary,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
             ],
           ),
