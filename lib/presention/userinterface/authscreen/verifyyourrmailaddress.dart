@@ -1,48 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:zeustucker/core/routes/app_routes.dart';
 import '../../../core/services/controller/authcontroller.dart';
 import '../../customwidget/custombutton.dart';
 
-class VerifyYourEmailAddress extends StatefulWidget {
+class VerifyYourEmailAddress extends StatelessWidget {
   const VerifyYourEmailAddress({super.key});
 
-  @override
-  State<VerifyYourEmailAddress> createState() => _VerifyYourEmailAddressState();
-}
-
-class _VerifyYourEmailAddressState extends State<VerifyYourEmailAddress> {
   static const int _otpLength = 6;
   static const Color _primary = Color(0xFF00A97D);
   static const Color _textDark = Color(0xFF2D292E);
   static const Color _textGrey = Color(0xFF2D292E);
 
-  final List<TextEditingController> _controllers = List.generate(
-    _otpLength,
-    (_) => TextEditingController(),
-  );
-  final List<FocusNode> _focusNodes = List.generate(
-    _otpLength,
-    (_) => FocusNode(),
-  );
-
-  @override
-  void dispose() {
-    for (final c in _controllers) {
-      c.dispose();
-    }
-    for (final f in _focusNodes) {
-      f.dispose();
-    }
-    super.dispose();
-  }
-
-  void _onOtpDigitChanged(String value, int index) {
+  void _onOtpDigitChanged(String value, int index, Authcontroller authController) {
     if (value.length == 1 && index < _otpLength - 1) {
-      _focusNodes[index + 1].requestFocus();
+      authController.otpFocusNodes[index + 1].requestFocus();
     } else if (value.isEmpty && index > 0) {
-      _focusNodes[index - 1].requestFocus();
+      authController.otpFocusNodes[index - 1].requestFocus();
     }
   }
 
@@ -62,13 +36,13 @@ class _VerifyYourEmailAddressState extends State<VerifyYourEmailAddress> {
   }
 
   // ── Single OTP box ────────────────────────────────────────────────────────
-  Widget _buildOtpBox(int index) {
+  Widget _buildOtpBox(int index, Authcontroller authController) {
     return SizedBox(
       width: 46,
       height: 52,
       child: TextField(
-        controller: _controllers[index],
-        focusNode: _focusNodes[index],
+        controller: authController.otpControllers[index],
+        focusNode: authController.otpFocusNodes[index],
         textAlign: TextAlign.center,
         keyboardType: TextInputType.number,
         maxLength: 1,
@@ -92,13 +66,14 @@ class _VerifyYourEmailAddressState extends State<VerifyYourEmailAddress> {
           filled: true,
           fillColor: Colors.white,
         ),
-        onChanged: (value) => _onOtpDigitChanged(value, index),
+        onChanged: (value) => _onOtpDigitChanged(value, index, authController),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final authController = Get.put(Authcontroller());
     return Scaffold(
       backgroundColor: const Color(0xFFF2F2F2),
       body: SafeArea(
@@ -128,7 +103,6 @@ class _VerifyYourEmailAddressState extends State<VerifyYourEmailAddress> {
               const SizedBox(height: 12),
 
               Obx(() {
-                final authController = Get.put(Authcontroller());
                 final email = authController.registeredEmail.value.isEmpty
                     ? 'your email'
                     : authController.registeredEmail.value;
@@ -162,13 +136,13 @@ class _VerifyYourEmailAddressState extends State<VerifyYourEmailAddress> {
               // ── OTP boxes ────────────────────────────────────────────────
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: List.generate(_otpLength, (i) => _buildOtpBox(i)),
+                children: List.generate(_otpLength, (i) => _buildOtpBox(i, authController)),
               ),
 
               const SizedBox(height: 20),
 
               // ── Info note ────────────────────────────────────────────────
-              Text(
+              const Text(
                 'Make sure to keep this window open while check your inbox',
                 style: TextStyle(fontSize: 13, color: _textGrey, height: 1.5),
               ),
@@ -178,12 +152,11 @@ class _VerifyYourEmailAddressState extends State<VerifyYourEmailAddress> {
               // ── Verify button ─────────────────────────────────────────────
               Center(
                 child: Obx(() {
-                  final authController = Get.put(Authcontroller());
                   return Custombutton(
                     iconname: 'Verify',
                     isLoading: authController.isLoading.value,
                     ontap: () {
-                      final otp = _controllers.map((c) => c.text).join();
+                      final otp = authController.otpControllers.map((c) => c.text).join();
                       debugPrint('OTP entered: $otp');
                       authController.verifyEmail(
                         email: authController.registeredEmail.value,

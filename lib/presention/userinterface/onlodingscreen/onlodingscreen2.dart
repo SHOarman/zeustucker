@@ -2,30 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:zeustucker/core/routes/app_routes.dart';
+import 'package:zeustucker/core/services/controller/authcontroller.dart';
 import 'package:zeustucker/presention/customwidget/custom_text_field.dart';
 import 'package:zeustucker/presention/customwidget/custombutton.dart';
 
-class OnlodingScreen2 extends StatefulWidget {
+class OnlodingScreen2 extends StatelessWidget {
   const OnlodingScreen2({super.key});
 
-  @override
-  State<OnlodingScreen2> createState() => _OnlodingScreen2State();
-}
-
-class _OnlodingScreen2State extends State<OnlodingScreen2> {
   static const Color _primary = Color(0xFF00A97D);
   static const Color _textDark = Color(0xFF2D292E);
   static const Color _textGrey = Color(0xFF6B7280);
   static const Color _borderColor = Color(0xFFDDDDDD);
 
-  final _nameController = TextEditingController();
-  final _ageController = TextEditingController();
-  final _occupationController = TextEditingController();
-  final _bioController = TextEditingController();
-
-  String? _selectedGoal;
-
-  final List<String> _fitnessGoals = [
+  static final List<String> _fitnessGoals = [
     'Lose Weight',
     'Build Muscle',
     'Improve Endurance',
@@ -36,17 +25,14 @@ class _OnlodingScreen2State extends State<OnlodingScreen2> {
     'General Fitness',
   ];
 
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _ageController.dispose();
-    _occupationController.dispose();
-    _bioController.dispose();
-    super.dispose();
-  }
+  static final List<String> _genders = [
+    'Male',
+    'Female',
+    'Other',
+  ];
 
   // Show fitness goal bottom-sheet picker
-  void _showFitnessGoalPicker() {
+  void _showFitnessGoalPicker(BuildContext context, Authcontroller authController) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
@@ -54,63 +40,140 @@ class _OnlodingScreen2State extends State<OnlodingScreen2> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (_) {
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 12),
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            const SizedBox(height: 14),
-            const Text(
-              'Select Fitness Goal',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: _textDark,
-              ),
-            ),
-            const Divider(height: 20),
-            ..._fitnessGoals.map(
-              (goal) => ListTile(
-                leading: Icon(
-                  Icons.fitness_center,
-                  color: _selectedGoal == goal ? _primary : Colors.grey,
-                  size: 20,
+        return Obx(() {
+          final selectedGoal = authController.rxSelectedGoal.value;
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 12),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                title: Text(
-                  goal,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: _textDark,
-                    fontWeight: _selectedGoal == goal
-                        ? FontWeight.w600
-                        : FontWeight.w400,
+              ),
+              const SizedBox(height: 14),
+              const Text(
+                'Select Fitness Goal',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: _textDark,
+                ),
+              ),
+              const Divider(height: 20),
+              ..._fitnessGoals.map(
+                (goal) => Material(
+                  color: Colors.transparent,
+                  child: ListTile(
+                    leading: Icon(
+                      Icons.fitness_center,
+                      color: selectedGoal == goal ? _primary : Colors.grey,
+                      size: 20,
+                    ),
+                    title: Text(
+                      goal,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: _textDark,
+                        fontWeight: selectedGoal == goal
+                            ? FontWeight.w600
+                            : FontWeight.w400,
+                      ),
+                    ),
+                    trailing: selectedGoal == goal
+                        ? const Icon(Icons.check, color: _primary, size: 18)
+                        : null,
+                    onTap: () {
+                      authController.rxSelectedGoal.value = goal;
+                      Navigator.pop(context);
+                    },
                   ),
                 ),
-                trailing: _selectedGoal == goal
-                    ? const Icon(Icons.check, color: _primary, size: 18)
-                    : null,
-                onTap: () {
-                  setState(() => _selectedGoal = goal);
-                  Navigator.pop(context);
-                },
               ),
-            ),
-            const SizedBox(height: 16),
-          ],
-        );
+              const SizedBox(height: 16),
+            ],
+          );
+        });
+      },
+    );
+  }
+
+  // Show gender bottom-sheet picker
+  void _showGenderPicker(BuildContext context, Authcontroller authController) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) {
+        return Obx(() {
+          final selectedGender = authController.rxSelectedGender.value;
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 12),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              const SizedBox(height: 14),
+              const Text(
+                'Select Gender',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: _textDark,
+                ),
+              ),
+              const Divider(height: 20),
+              ..._genders.map(
+                (gender) => Material(
+                  color: Colors.transparent,
+                  child: ListTile(
+                    leading: Icon(
+                      Icons.person,
+                      color: selectedGender == gender ? _primary : Colors.grey,
+                      size: 20,
+                    ),
+                    title: Text(
+                      gender,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: _textDark,
+                        fontWeight: selectedGender == gender
+                            ? FontWeight.w600
+                            : FontWeight.w400,
+                      ),
+                    ),
+                    trailing: selectedGender == gender
+                        ? const Icon(Icons.check, color: _primary, size: 18)
+                        : null,
+                    onTap: () {
+                      authController.rxSelectedGender.value = gender;
+                      Navigator.pop(context);
+                    },
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+          );
+        });
       },
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final authController = Get.put(Authcontroller());
     return Scaffold(
       backgroundColor: const Color(0xFFF2F2F2),
       body: SafeArea(
@@ -152,42 +215,13 @@ class _OnlodingScreen2State extends State<OnlodingScreen2> {
               const SizedBox(height: 32),
 
               // ── Section title ────────────────────────────────────────────
-              const Text(
-                'Tell Us About You',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w700,
-                  color: _textDark,
-                ),
-              ),
-
               const SizedBox(height: 24),
-
-              // ── Name ─────────────────────────────────────────────────────
-              CustomTextField(
-                labelText: 'Name',
-                hintText: 'Bonnie Green',
-                controller: _nameController,
-                keyboardType: TextInputType.name,
-              ),
-
-              const SizedBox(height: 16),
-
-              // ── Age ──────────────────────────────────────────────────────
-              CustomTextField(
-                labelText: 'Age',
-                hintText: 'write your age',
-                controller: _ageController,
-                keyboardType: TextInputType.number,
-              ),
-
-              const SizedBox(height: 16),
 
               // ── Occupation ───────────────────────────────────────────────
               CustomTextField(
                 labelText: 'Occupation',
                 hintText: 'write occupation',
-                controller: _occupationController,
+                controller: authController.occupationController,
               ),
 
               const SizedBox(height: 16),
@@ -206,7 +240,7 @@ class _OnlodingScreen2State extends State<OnlodingScreen2> {
                   ),
                   const SizedBox(height: 8),
                   GestureDetector(
-                    onTap: _showFitnessGoalPicker,
+                    onTap: () => _showFitnessGoalPicker(context, authController),
                     child: Container(
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(
@@ -221,15 +255,18 @@ class _OnlodingScreen2State extends State<OnlodingScreen2> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            _selectedGoal ?? 'Select fitness goal',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: _selectedGoal != null
-                                  ? _textDark
-                                  : const Color(0xFFAAAAAA),
-                            ),
-                          ),
+                          Obx(() {
+                            final selectedGoal = authController.rxSelectedGoal.value;
+                            return Text(
+                              selectedGoal ?? 'Select fitness goal',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: selectedGoal != null
+                                    ? _textDark
+                                    : const Color(0xFFAAAAAA),
+                              ),
+                            );
+                          }),
                           const Icon(
                             Icons.keyboard_arrow_down,
                             color: _textGrey,
@@ -244,11 +281,95 @@ class _OnlodingScreen2State extends State<OnlodingScreen2> {
 
               const SizedBox(height: 16),
 
+              // ── Gender Selection ──────────────────────────────────────────
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Gender',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: _textDark,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  GestureDetector(
+                    onTap: () => _showGenderPicker(context, authController),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 14,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: _borderColor, width: 1),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Obx(() {
+                            final selectedGender = authController.rxSelectedGender.value;
+                            return Text(
+                              selectedGender ?? 'Select gender',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: selectedGender != null
+                                    ? _textDark
+                                    : const Color(0xFFAAAAAA),
+                              ),
+                            );
+                          }),
+                          const Icon(
+                            Icons.keyboard_arrow_down,
+                            color: _textGrey,
+                            size: 22,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 16),
+
+              // ── Height ───────────────────────────────────────────────────
+              CustomTextField(
+                labelText: 'Height (e.g., 170 cm)',
+                hintText: 'Enter height',
+                controller: authController.heightController,
+              ),
+
+              const SizedBox(height: 16),
+
+              // ── Weight ───────────────────────────────────────────────────
+              CustomTextField(
+                labelText: 'Weight (kg)',
+                hintText: 'Enter weight',
+                controller: authController.weightController,
+                keyboardType: TextInputType.number,
+              ),
+
+              const SizedBox(height: 16),
+
+              // ── Target Weight ────────────────────────────────────────────
+              CustomTextField(
+                labelText: 'Target Weight (kg)',
+                hintText: 'Enter target weight',
+                controller: authController.targetWeightController,
+                keyboardType: TextInputType.number,
+              ),
+
+              const SizedBox(height: 16),
+
               // ── Short Bio ────────────────────────────────────────────────
               CustomTextField(
                 labelText: 'Short Bio',
                 hintText: 'write short bio (Optional)',
-                controller: _bioController,
+                controller: authController.bioController,
               ),
 
               const SizedBox(height: 32),
@@ -256,7 +377,16 @@ class _OnlodingScreen2State extends State<OnlodingScreen2> {
               // ── Continue button ──────────────────────────────────────────
               Custombutton(
                 iconname: 'Continue',
-                ontap: () => Get.toNamed(AppRoutes.onloading3),
+                ontap: () {
+                  authController.tempOccupation = authController.occupationController.text.trim();
+                  authController.tempFitnessGoal = authController.rxSelectedGoal.value ?? '';
+                  authController.tempBio = authController.bioController.text.trim();
+                  authController.tempGender = authController.rxSelectedGender.value ?? '';
+                  authController.tempHeight = authController.heightController.text.trim();
+                  authController.tempWeight = int.tryParse(authController.weightController.text.trim());
+                  authController.tempTargetWeight = int.tryParse(authController.targetWeightController.text.trim());
+                  Get.toNamed(AppRoutes.onloading3);
+                },
               ),
 
               const SizedBox(height: 16),

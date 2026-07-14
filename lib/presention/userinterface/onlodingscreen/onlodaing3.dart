@@ -1,8 +1,9 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:zeustucker/core/routes/app_routes.dart';
+import 'package:zeustucker/core/services/controller/authcontroller.dart';
 import 'package:zeustucker/core/services/controller/login_controller.dart';
 import 'package:zeustucker/presention/customwidget/custombutton.dart';
 
@@ -145,7 +146,9 @@ class Onlodaing3 extends GetView<LoginController> {
                             child: Stack(
                               fit: StackFit.expand,
                               children: [
-                                Image.file(File(path), fit: BoxFit.cover),
+                                kIsWeb
+                                    ? Image.network(path, fit: BoxFit.cover)
+                                    : Image.file(File(path), fit: BoxFit.cover),
                                 Positioned(
                                   bottom: 10,
                                   right: 10,
@@ -261,10 +264,19 @@ class Onlodaing3 extends GetView<LoginController> {
               const SizedBox(height: 48),
 
               // ── Continue button ────────────────────────────────────────
-              Custombutton(
-                iconname: 'Continue',
-                ontap: () => Get.offAllNamed(AppRoutes.home),
-              ),
+              Obx(() {
+                final authController = Get.put(Authcontroller());
+                return Custombutton(
+                  iconname: 'Continue',
+                  isLoading: authController.isLoading.value,
+                  ontap: () {
+                    authController.completeOnboarding(
+                      profileImagePath: controller.profileImagePath.value,
+                      useForRegeneration: controller.useForRegeneration.value,
+                    );
+                  },
+                );
+              }),
 
               const SizedBox(height: 16),
 

@@ -44,7 +44,6 @@ import '../../presention/userinterface/profile/editprofile.dart';
 import '../../presention/userinterface/profile/supportandhelp.dart';
 import '../../presention/userinterface/profile/termsconditions.dart';
 
-
 class AppPages {
   static const initial = AppRoutes.login;
 
@@ -70,11 +69,11 @@ class AppPages {
     GetPage(name: AppRoutes.onloading1, page: () => Onloding1()),
     GetPage(name: AppRoutes.onloading2, page: () => const OnlodingScreen2()),
     GetPage(name: AppRoutes.onloading3, page: () => const Onlodaing3()),
-    GetPage(name: AppRoutes.selectuser, page: ()=>Selectuser()),
+    GetPage(name: AppRoutes.selectuser, page: () => Selectuser()),
 
     GetPage(
       name: AppRoutes.home,
-      page: () =>  HomeScreen(),
+      page: () => HomeScreen(),
       transition: Transition.noTransition,
     ),
     GetPage(
@@ -101,55 +100,98 @@ class AppPages {
     ),
 
     //=========================================weekly========================================
-    GetPage(name: AppRoutes.workout, page: ()=>Workout()),
-    GetPage(name: AppRoutes.meal, page: ()=>Meals()),
-    GetPage(name: AppRoutes.task, page: ()=>Taks()),
-    GetPage(name: AppRoutes.weeklystoty, page: ()=>GenerateStory()),
-
+    GetPage(name: AppRoutes.workout, page: () => Workout()),
+    GetPage(name: AppRoutes.meal, page: () => Meals()),
+    GetPage(name: AppRoutes.task, page: () => Taks()),
+    GetPage(name: AppRoutes.weeklystoty, page: () => GenerateStory()),
 
     //==========================================profile========================================
-    GetPage(name: AppRoutes.settings, page: ()=>const Setting()),
-    GetPage(name: AppRoutes.editprofile, page: ()=>const EditProfile()),
-    GetPage(name: AppRoutes.support$help, page: ()=>Supportandhelp()),
-    GetPage(name: AppRoutes.contactus, page: ()=>ContactSupport()),
-    GetPage(name: AppRoutes.reportproblem, page: ()=>ReportProblem()),
-    GetPage(name: AppRoutes.privacy, page: ()=>PrivacyPolicy()),
-     GetPage(name: AppRoutes.terms, page: ()=>TermsConditions()),
+    GetPage(name: AppRoutes.settings, page: () => const Setting()),
+    GetPage(name: AppRoutes.editprofile, page: () => const EditProfile()),
+    GetPage(name: AppRoutes.support$help, page: () => Supportandhelp()),
+    GetPage(name: AppRoutes.contactus, page: () => ContactSupport()),
+    GetPage(name: AppRoutes.reportproblem, page: () => ReportProblem()),
+    GetPage(name: AppRoutes.privacy, page: () => PrivacyPolicy()),
+    GetPage(name: AppRoutes.terms, page: () => TermsConditions()),
 
     //==========================================Admin========================================
-     GetPage(name: AppRoutes.adminhome, page: ()=>Adminhome( ), transition: Transition.noTransition),
-     GetPage(name: AppRoutes.adminclient, page: ()=>const Adminclient(), transition: Transition.noTransition),
-     GetPage(name: AppRoutes.adminstory, page: ()=>const Adminstory(), transition: Transition.noTransition),
-     GetPage(name: AppRoutes.adminsettings, page: ()=>const Adminsetting(), transition: Transition.noTransition),
-
-
+    GetPage(
+      name: AppRoutes.adminhome,
+      page: () => Adminhome(),
+      transition: Transition.noTransition,
+    ),
+    GetPage(
+      name: AppRoutes.adminclient,
+      page: () => const Adminclient(),
+      transition: Transition.noTransition,
+    ),
+    GetPage(
+      name: AppRoutes.adminstory,
+      page: () => const Adminstory(),
+      transition: Transition.noTransition,
+    ),
+    GetPage(
+      name: AppRoutes.adminsettings,
+      page: () => const Adminsetting(),
+      transition: Transition.noTransition,
+    ),
 
     //=======================admincontroller===============================================
-    GetPage(name: AppRoutes.mageclient, page: ()=>Magaeclients(), transition: Transition.noTransition),
-    GetPage(name: AppRoutes.addnewclient, page: ()=>Addnewclient(), transition: Transition.noTransition),
-    GetPage(name: AppRoutes.editroutine, page: ()=>Editruting(), transition: Transition.noTransition),
-    GetPage(name: AppRoutes.viewstory, page: ()=>const Viewstory(), transition: Transition.noTransition),
-
-
+    GetPage(
+      name: AppRoutes.mageclient,
+      page: () => Magaeclients(),
+      transition: Transition.noTransition,
+    ),
+    GetPage(
+      name: AppRoutes.addnewclient,
+      page: () => Addnewclient(),
+      transition: Transition.noTransition,
+    ),
+    GetPage(
+      name: AppRoutes.editroutine,
+      page: () => Editruting(),
+      transition: Transition.noTransition,
+    ),
+    GetPage(
+      name: AppRoutes.viewstory,
+      page: () => const Viewstory(),
+      transition: Transition.noTransition,
+    ),
 
     //==============================adminclient====================================
-    GetPage(name: AppRoutes.clientaddnew, page: ()=>Clientaddnew(), transition: Transition.noTransition),
-    GetPage(name: AppRoutes.clientdetails, page: ()=>Clientdetels(), transition: Transition.noTransition),
-
-
+    GetPage(
+      name: AppRoutes.clientaddnew,
+      page: () => Clientaddnew(),
+      transition: Transition.noTransition,
+    ),
+    GetPage(
+      name: AppRoutes.clientdetails,
+      page: () => Clientdetels(),
+      transition: Transition.noTransition,
+    ),
 
     //===========================================adminstory================================================
-
-    GetPage(name: AppRoutes.blukreview, page: ()=>const Blukreview(), transition: Transition.noTransition),
-    GetPage(name: AppRoutes.regenerateall, page: ()=>const Regenerateall(), transition: Transition.noTransition),
-
-
+    GetPage(
+      name: AppRoutes.blukreview,
+      page: () => const Blukreview(),
+      transition: Transition.noTransition,
+    ),
+    GetPage(
+      name: AppRoutes.regenerateall,
+      page: () => const Regenerateall(),
+      transition: Transition.noTransition,
+    ),
 
     //==============================================adminsetting================================================
-    GetPage(name: AppRoutes.accoundperferences, page: ()=>const Accoundperferences(), transition: Transition.noTransition),
-    GetPage(name: AppRoutes.clientmanagementlimits, page: ()=>const Clientmanagementlimirs(), transition: Transition.noTransition),
-
-
-
+    GetPage(
+      name: AppRoutes.accoundperferences,
+      page: () => const Accoundperferences(),
+      transition: Transition.noTransition,
+    ),
+    GetPage(
+      name: AppRoutes.clientmanagementlimits,
+      page: () => const Clientmanagementlimirs(),
+      transition: Transition.noTransition,
+    ),
   ];
 }

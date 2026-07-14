@@ -124,6 +124,43 @@ class CreateNewPassword extends GetView<LoginController> {
 
               const SizedBox(height: 28),
 
+              // Verification Code
+              const Text(
+                'Verification Code',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: _textDark,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: _borderColor, width: 1),
+                ),
+                child: TextField(
+                  controller: controller.codeController,
+                  keyboardType: TextInputType.number,
+                  style: const TextStyle(fontSize: 14, color: _textDark),
+                  decoration: const InputDecoration(
+                    hintText: 'Enter 6-digit code',
+                    hintStyle: TextStyle(
+                      color: Color(0xFFAAAAAA),
+                      fontSize: 14,
+                    ),
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 18),
+
               // New Password
               _buildPasswordField(
                 label: 'New Password',
@@ -218,7 +255,7 @@ class CreateNewPassword extends GetView<LoginController> {
                       final confirmPassword = controller.confirmPasswordController.text;
 
                       if (code.isEmpty) {
-                        Get.snackbar('Error', 'Please enter the reset code', backgroundColor: Colors.red, colorText: Colors.white);
+                        Get.snackbar('Error', 'Please enter the verification code', backgroundColor: Colors.red, colorText: Colors.white);
                         return;
                       }
                       if (password.isEmpty) {

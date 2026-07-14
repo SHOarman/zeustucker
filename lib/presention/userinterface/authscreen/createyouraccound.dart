@@ -56,7 +56,7 @@ class Createyouraccound extends StatelessWidget {
               SizedBox(height: 16),
 
               CustomTextField(
-                labelText: "Username",
+                labelText: "Enter your name",
                 hintText: "Enter your name",
                 controller: controller.usernameController,
               ),
