@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
 
 class ClientCard extends StatelessWidget {
   final String name;
   final String imageUrl;
   final bool isActive;
+  final bool hasRoutine;
   final VoidCallback onEditRoutine;
   final VoidCallback onDelete;
 
@@ -12,6 +14,7 @@ class ClientCard extends StatelessWidget {
     required this.name,
     required this.imageUrl,
     required this.isActive,
+    required this.hasRoutine,
     required this.onEditRoutine,
     required this.onDelete,
   });
@@ -20,7 +23,6 @@ class ClientCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: 335,
-      // height: ,
       margin: const EdgeInsets.symmetric(vertical: 4),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -40,7 +42,17 @@ class ClientCard extends StatelessWidget {
           // Client Image
           CircleAvatar(
             radius: 25,
-            backgroundImage: imageUrl.startsWith('http') ? NetworkImage(imageUrl) as ImageProvider : AssetImage(imageUrl),
+            backgroundImage: () {
+              if (imageUrl.startsWith('http')) {
+                return NetworkImage(imageUrl) as ImageProvider;
+              }
+              if (imageUrl.length > 100) {
+                try {
+                  return MemoryImage(base64Decode(imageUrl));
+                } catch (_) {}
+              }
+              return AssetImage(imageUrl);
+            }(),
           ),
           const SizedBox(width: 8),
 
@@ -53,7 +65,7 @@ class ClientCard extends StatelessWidget {
                   name,
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: 16,
+                    fontSize: 13,
                     color: Colors.black,
                   ),
                 ),
@@ -69,18 +81,17 @@ class ClientCard extends StatelessWidget {
             ),
           ),
 
-          // Edit Routine Button
           GestureDetector(
             onTap: onEditRoutine,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: const Color(0xFF00B171), // Green Button
+                color: const Color(0xFF00B171),
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: const Text(
-                "EDIT ROUTINE",
-                style: TextStyle(
+              child: Text(
+                hasRoutine ? "EDIT ROUTINE" : "CREATE ROUTINE",
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 10,
                   fontWeight: FontWeight.bold,

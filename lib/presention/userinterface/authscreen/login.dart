@@ -146,7 +146,7 @@ class Login extends StatelessWidget {
                       Get.toNamed(AppRoutes.createyouraccound);
                     },
                     child: const Text(
-                      'Sign up',
+                      ' Sign up',
                       style: TextStyle(
                         fontSize: 14,
                         color: Color(0xFF00A97D),

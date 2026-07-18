@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/services/controller/profilecontroller.dart';
@@ -44,12 +45,17 @@ class EditProfile extends StatelessWidget {
                             final base64Img = controller.profileData['profile_image'];
                             ImageProvider imgProvider;
                             if (path.isNotEmpty && path != "base64") {
-                              imgProvider = FileImage(File(path));
+                              imgProvider = kIsWeb ? NetworkImage(path) : FileImage(File(path));
                             } else if (base64Img != null && base64Img.toString().isNotEmpty && base64Img != 'string') {
-                              try {
-                                imgProvider = MemoryImage(base64Decode(base64Img.toString()));
-                              } catch (e) {
-                                imgProvider = const AssetImage('assets/image/newprofile.png');
+                              final String imgStr = base64Img.toString();
+                              if (imgStr.startsWith('http://') || imgStr.startsWith('https://')) {
+                                imgProvider = NetworkImage(imgStr);
+                              } else {
+                                try {
+                                  imgProvider = MemoryImage(base64Decode(imgStr));
+                                } catch (e) {
+                                  imgProvider = const AssetImage('assets/image/newprofile.png');
+                                }
                               }
                             } else {
                               imgProvider = const AssetImage('assets/image/newprofile.png');
@@ -106,55 +112,77 @@ class EditProfile extends StatelessWidget {
                 const SizedBox(height: 20),
 
                 // INPUT FIELD CARDS
-                _buildInputField(label: 'Full Name', controller: controller.nameController),
-                _buildInputField(label: 'Email Address', controller: controller.emailController, readOnly: true),
-                _buildInputField(label: 'Profession', controller: controller.professionController, readOnly: true),
-
-                // DATE OF BIRTH CARD
-                _buildLabel('Date of Birth (Age)'),
-                GestureDetector(
-                  onTap: () => controller.chooseDate(context),
-                  child: _buildCardContainer(
-                    child: Row(
+                Obx(() {
+                  final String role = controller.profileData['role'] ?? '';
+                  final isCoach = role.toUpperCase() == 'COACH';
+                  
+                  if (isCoach) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.calendar_today_outlined, size: 18, color: Colors.black54),
-                        const SizedBox(width: 12),
-                        Obx(() => Text(
-                          controller.dob.value.isEmpty ? 'Select Date of Birth' : controller.dob.value,
-                          style: const TextStyle(fontSize: 14, color: Colors.black, fontWeight: FontWeight.w500),
-                        )),
-                        const Spacer(),
-                        Obx(() => controller.age.value > 0 ? Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(color: Colors.teal.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6)),
-                          child: Text(
-                            '${controller.age.value}',
-                            style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.teal, fontSize: 13),
+                        _buildInputField(label: 'Full Name', controller: controller.nameController),
+                        _buildInputField(label: 'Email Address', controller: controller.emailController, readOnly: true),
+                        _buildInputField(label: 'Biography', controller: controller.bioController),
+                      ],
+                    );
+                  } else {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildInputField(label: 'Full Name', controller: controller.nameController),
+                        _buildInputField(label: 'Email Address', controller: controller.emailController, readOnly: true),
+                        _buildInputField(label: 'Profession', controller: controller.professionController),
+                        _buildInputField(label: 'Biography', controller: controller.bioController),
+
+                        // DATE OF BIRTH CARD
+                        _buildLabel('Date of Birth (Age)'),
+                        GestureDetector(
+                          onTap: () => controller.chooseDate(context),
+                          child: _buildCardContainer(
+                            child: Row(
+                              children: [
+                                const Icon(Icons.calendar_today_outlined, size: 18, color: Colors.black54),
+                                const SizedBox(width: 12),
+                                Text(
+                                  controller.dob.value.isEmpty ? 'Select Date of Birth' : controller.dob.value,
+                                  style: const TextStyle(fontSize: 14, color: Colors.black, fontWeight: FontWeight.w500),
+                                ),
+                                const Spacer(),
+                                controller.age.value > 0 ? Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                  decoration: BoxDecoration(color: Colors.teal.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6)),
+                                  child: Text(
+                                    '${controller.age.value}',
+                                    style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.teal, fontSize: 13),
+                                  ),
+                                ) : const SizedBox.shrink(),
+                              ],
+                            ),
                           ),
-                        ) : const SizedBox.shrink()),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
+                        ),
+                        const SizedBox(height: 20),
 
-                // GENDER CARD
-                _buildLabel('Gender'),
-                GestureDetector(
-                  onTap: () => controller.showGenderSelection(context),
-                  child: _buildCardContainer(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Obx(() => Text(
-                          controller.selectedGender.value.isEmpty ? 'Select Gender' : controller.selectedGender.value,
-                          style: const TextStyle(color: Colors.black, fontWeight: FontWeight.w500),
-                        )),
-                        const Icon(Icons.keyboard_arrow_down, color: Colors.black54),
+                        // GENDER CARD
+                        _buildLabel('Gender'),
+                        GestureDetector(
+                          onTap: () => controller.showGenderSelection(context),
+                          child: _buildCardContainer(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  controller.selectedGender.value.isEmpty ? 'Select Gender' : controller.selectedGender.value,
+                                  style: const TextStyle(color: Colors.black, fontWeight: FontWeight.w500),
+                                ),
+                                const Icon(Icons.keyboard_arrow_down, color: Colors.black54),
+                              ],
+                            ),
+                          ),
+                        ),
                       ],
-                    ),
-                  ),
-                ),
+                    );
+                  }
+                }),
 
                 const SizedBox(height: 40),
 
@@ -162,37 +190,34 @@ class EditProfile extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   height: 55,
-                  child: ElevatedButton(
-                    onPressed: () => controller.saveProfileChanges(),
+                  child: Obx(() => ElevatedButton(
+                    onPressed: controller.isLoading.value ? null : () => controller.saveProfileChanges(),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF00A97D),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       elevation: 2,
                     ),
-                    child: const Text('Save Changes',
-                        style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-                  ),
+                    child: controller.isLoading.value
+                        ? const SizedBox(
+                            height: 24,
+                            width: 24,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2.5,
+                            ),
+                          )
+                        : const Text('Save Changes',
+                            style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                  )),
                 ),
               ],
             ),
           ),
-          Obx(() {
-            if (controller.isLoading.value) {
-              return Container(
-                color: Colors.black26,
-                child: const Center(
-                  child: CircularProgressIndicator(color: Color(0xFF00A97D)),
-                ),
-              );
-            }
-            return const SizedBox.shrink();
-          }),
         ],
       ),
     );
   }
 
-  // BUILD INDIVIDUAL INPUT CARD
   Widget _buildInputField({required String label, required TextEditingController controller, bool readOnly = false}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

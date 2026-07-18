@@ -40,20 +40,29 @@ class StoriesManagementCard extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      "Stories\nManagement",
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w800,
-                        color: Color(0xFF1F2937),
-                        height: 1.1,
+                    const Expanded(
+                      child: Text(
+                        "Stories\nManagement",
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF1F2937),
+                          height: 1.1,
+                        ),
                       ),
                     ),
-                    Image.network(
-                      starImageUrl,
-                      width: 45,
-                      height: 45,
-                    ),
+                    const SizedBox(width: 8),
+                    starImageUrl.startsWith('http')
+                        ? Image.network(
+                            starImageUrl,
+                            width: 45,
+                            height: 45,
+                          )
+                        : Image.asset(
+                            starImageUrl,
+                            width: 45,
+                            height: 45,
+                          ),
                   ],
                 ),
                 const SizedBox(height: 8),
@@ -70,30 +79,33 @@ class StoriesManagementCard extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "$totalStories",
-                          style: const TextStyle(
-                            fontSize: 44,
-                            fontWeight: FontWeight.w900,
-                            color: Color(0xFF00B171),
-                            height: 1.0,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "$totalStories",
+                            style: const TextStyle(
+                              fontSize: 44,
+                              fontWeight: FontWeight.w900,
+                              color: Color(0xFF00B171),
+                              height: 1.0,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 4),
-                        const Text(
-                          "TOTAL STORIES GENERATED",
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF9CA3AF),
-                            letterSpacing: 0.5,
+                          const SizedBox(height: 4),
+                          const Text(
+                            "TOTAL STORIES GENERATED",
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF9CA3AF),
+                              letterSpacing: 0.5,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
+                    const SizedBox(width: 8),
                     Material(
                       color: const Color(0xFF00B171),
                       borderRadius: BorderRadius.circular(24),

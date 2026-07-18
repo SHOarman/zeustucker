@@ -6,6 +6,7 @@ import 'package:zeustucker/presention/admininterface/ui_interface/adminhome/home
 import 'package:zeustucker/presention/admininterface/ui_interface/adminhome/homewidget/user_story_tile.dart';
 import 'package:zeustucker/presention/admininterface/ui_interface/adminhome/homewidget/storycard.dart';
 import 'package:zeustucker/presention/admininterface/widget/customnevadminbutton.dart';
+import '../../../../core/services/controller/adminpenelcontroller/clientcontoller.dart';
 
 import 'homewidget/CoachPortalCard.dart';
 
@@ -14,6 +15,8 @@ class Adminhome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ClientController controller = Get.put(ClientController());
+
     return Scaffold(
       bottomNavigationBar: Customnevadminbutton(selectIndex: 0),
 
@@ -24,12 +27,12 @@ class Adminhome extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
 
             children: [
-              SizedBox(height: 70),
+              const SizedBox(height: 70),
 
               //=============================Coach Portal Card====================================================
               CoachPortalCard(),
 
-              SizedBox(height: 30),
+              const SizedBox(height: 30),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -44,7 +47,6 @@ class Adminhome extends StatelessWidget {
                   GestureDetector(
                     onTap: () {
                       debugPrint("done");
-                      // Get.toNamed(AppRoutes.adminclients);
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(
@@ -69,7 +71,7 @@ class Adminhome extends StatelessWidget {
               ),
 
               //==================================storycard================================
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
 
               SizedBox(
                 height: 310, // Ensure enough height for the card
@@ -110,7 +112,7 @@ class Adminhome extends StatelessWidget {
                 ),
               ),
 
-              SizedBox(height: 30),
+              const SizedBox(height: 30),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -123,7 +125,9 @@ class Adminhome extends StatelessWidget {
                     ),
                   ),
                   TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Get.toNamed(AppRoutes.adminclient);
+                    },
                     child: Text(
                       "View All",
                       style: GoogleFonts.plusJakartaSans(
@@ -138,37 +142,60 @@ class Adminhome extends StatelessWidget {
 
 
               //=============================UserStoryTile======================================================
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
 
-              UserStoryTile(imageUrl: "assets/image/David Park.png", name: "Marcus Chen", status: "Marcus Chen", onViewStory: (){
-                Future.microtask(() => Get.toNamed(AppRoutes.viewstory));
-              }),
-              // SizedBox(height: 5),
-              UserStoryTile(imageUrl: "assets/image/Sarah.png", name: "Sarah Jenkins", status: "Routine Updated", onViewStory: (){
-                Future.microtask(() => Get.toNamed(AppRoutes.viewstory));
-              }),
-              // SizedBox(height: 5),
-              UserStoryTile(imageUrl: "assets/image/David Park.png", name: "Marcus Chen", status: "Marcus Chen", onViewStory: (){
-                Future.microtask(() => Get.toNamed(AppRoutes.viewstory));
-              }),
-              // SizedBox(height: 5),
-              UserStoryTile(imageUrl: "assets/image/Sarah.png", name: "Sarah Jenkins", status: "Routine Updated", onViewStory: (){
-                Future.microtask(() => Get.toNamed(AppRoutes.viewstory));
+              Obx(() {
+                if (controller.isLoading.value && controller.clientList.isEmpty) {
+                  return const Center(child: Padding(
+                    padding: EdgeInsets.all(20.0),
+                    child: CircularProgressIndicator(),
+                  ));
+                }
+
+                if (controller.clientList.isEmpty) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Text(
+                        "No clients managed by this coach",
+                        style: GoogleFonts.plusJakartaSans(color: Colors.grey, fontSize: 14),
+                      ),
+                    ),
+                  );
+                }
+
+                return ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding: EdgeInsets.zero,
+                  itemCount: controller.clientList.length,
+                  separatorBuilder: (context, index) => const SizedBox(height: 5),
+                  itemBuilder: (context, index) {
+                    final client = controller.clientList[index];
+                    final String name = client['name'] ?? client['email'] ?? 'Client';
+                    final String imageUrl = (client['profile_image'] != null && client['profile_image'].toString().isNotEmpty && client['profile_image'] != 'string')
+                        ? client['profile_image']
+                        : "assets/image/David Park.png";
+
+                    return UserStoryTile(
+                      imageUrl: imageUrl,
+                      name: name,
+                      status: client['fitness_goal'] ?? "Active Client",
+                      onViewStory: () {
+                        Future.microtask(() => Get.toNamed(AppRoutes.viewstory, arguments: client));
+                      },
+                    );
+                  },
+                );
               }),
               
-              
-              SizedBox(height: 30),
+              const SizedBox(height: 30),
               
               CustomIconButton(title: "Add New Client", iconPath: "assets/icon/Container (6).png", onTap: (){
                 Get.toNamed(AppRoutes.addnewclient);
-              })
+              }),
               
-
-
-
-
-
-
+              const SizedBox(height: 30),
             ],
           ),
         ),

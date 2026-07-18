@@ -1,15 +1,17 @@
-// ignore_for_file: file_names
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'dart:convert';
 
 class EditRoutineHeader extends StatelessWidget {
   final String clientName;
   final String imageUrl;
+  final bool isCreateMode;
 
   const EditRoutineHeader({
     super.key,
     required this.clientName,
     required this.imageUrl,
+    this.isCreateMode = false,
   });
 
   @override
@@ -60,9 +62,9 @@ class EditRoutineHeader extends StatelessWidget {
           const SizedBox(height: 16),
 
           // Main Title
-          const Text(
-            'Edit Routine',
-            style: TextStyle(
+          Text(
+            isCreateMode ? 'Create Routine' : 'Edit Routine',
+            style: const TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.w700,
               color: Color(0xFF2D2D2D),
@@ -76,7 +78,17 @@ class EditRoutineHeader extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 18,
-                backgroundImage: imageUrl.startsWith('http') ? NetworkImage(imageUrl) as ImageProvider : AssetImage(imageUrl),
+                backgroundImage: () {
+                  if (imageUrl.startsWith('http')) {
+                    return NetworkImage(imageUrl) as ImageProvider;
+                  }
+                  if (imageUrl.length > 100) {
+                    try {
+                      return MemoryImage(base64Decode(imageUrl));
+                    } catch (_) {}
+                  }
+                  return AssetImage(imageUrl);
+                }(),
               ),
               const SizedBox(width: 12),
               Text(

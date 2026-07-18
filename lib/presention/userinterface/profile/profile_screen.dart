@@ -1,36 +1,12 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:zeustucker/core/routes/app_routes.dart';
 import 'package:zeustucker/presention/customwidget/custom_bottom_nav.dart';
 import 'package:zeustucker/core/services/controller/profilecontroller.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
-
-  Future<void> _updateImage(BuildContext context, EditProfileController profileController, bool isReferenceImage) async {
-    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 50);
-    if (pickedFile != null) {
-      try {
-        final bytes = await pickedFile.readAsBytes();
-        final base64Image = base64Encode(bytes);
-        
-        bool success;
-        if (isReferenceImage) {
-          success = await profileController.updateSelfProfileSettings(referenceImage: base64Image);
-        } else {
-          success = await profileController.updateSelfProfileSettings(profileImage: base64Image);
-        }
-        
-        if (success) {
-          await profileController.fetchAndSaveProfile();
-        }
-      } catch (e) {
-        print("Error picking/updating profile image: $e");
-      }
-    }
-  }
 
   void _showEditNameDialog(BuildContext context, EditProfileController profileController, String currentName) {
     final textController = TextEditingController(text: currentName);
@@ -49,15 +25,9 @@ class ProfileScreen extends StatelessWidget {
               child: const Text('Cancel'),
             ),
             ElevatedButton(
-              onPressed: () async {
-                final newName = textController.text.trim();
-                if (newName.isNotEmpty) {
-                  Navigator.pop(context);
-                  final success = await profileController.updateSelfProfileSettings(name: newName);
-                  if (success) {
-                    await profileController.fetchAndSaveProfile();
-                  }
-                }
+              onPressed: () {
+                Navigator.pop(context);
+                profileController.updateName(textController.text.trim());
               },
               child: const Text('Save'),
             ),
@@ -71,7 +41,6 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final profileController = Get.put(EditProfileController());
     
-    // Fetch profile on screen load
     WidgetsBinding.instance.addPostFrameCallback((_) {
       profileController.fetchAndSaveProfile();
     });
@@ -86,7 +55,7 @@ class ProfileScreen extends StatelessWidget {
             children: [
               const SizedBox(height: 16),
               
-              // Profile Image (Tapping updates main profile image)
+              // Profile Image
               Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
@@ -104,17 +73,22 @@ class ProfileScreen extends StatelessWidget {
                   final profileImgBase64 = profile['profile_image'];
                   ImageProvider imgProvider;
                   if (profileImgBase64 != null && profileImgBase64.toString().isNotEmpty && profileImgBase64 != 'string') {
-                    try {
-                      imgProvider = MemoryImage(base64Decode(profileImgBase64));
-                    } catch (e) {
-                      imgProvider = const AssetImage('assets/image/newprofile.png');
+                    final String imgStr = profileImgBase64.toString();
+                    if (imgStr.startsWith('http://') || imgStr.startsWith('https://')) {
+                      imgProvider = NetworkImage(imgStr);
+                    } else {
+                      try {
+                        imgProvider = MemoryImage(base64Decode(imgStr));
+                      } catch (_) {
+                        imgProvider = const AssetImage('assets/image/newprofile.png');
+                      }
                     }
                   } else {
                     imgProvider = const AssetImage('assets/image/newprofile.png');
                   }
                   
                   return GestureDetector(
-                    onTap: () => _updateImage(context, profileController, false),
+                    onTap: () => profileController.pickAndUpdateImage(context, false),
                     child: CircleAvatar(
                       radius: 56,
                       backgroundImage: imgProvider,
@@ -125,7 +99,7 @@ class ProfileScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               
-              // Name and Age (Tapping triggers name edit)
+              // Name and Age
               Obx(() {
                 final profile = profileController.profileData;
                 final name = profile['name'] ?? 'John';
@@ -152,8 +126,6 @@ class ProfileScreen extends StatelessWidget {
                           color: Colors.grey,
                         ),
                       ),
-                      const SizedBox(width: 4),
-
                     ],
                   ),
                 );
@@ -174,6 +146,7 @@ class ProfileScreen extends StatelessWidget {
               }),
               const SizedBox(height: 32),
 
+              // Reference Image Card
               Obx(() {
                 final profile = profileController.profileData;
                 final refImgBase64 = profile['reference_image'];
@@ -183,10 +156,15 @@ class ProfileScreen extends StatelessWidget {
                 
                 ImageProvider refImgProvider;
                 if (refImgBase64 != null && refImgBase64.toString().isNotEmpty && refImgBase64 != 'string') {
-                  try {
-                    refImgProvider = MemoryImage(base64Decode(refImgBase64));
-                  } catch (e) {
-                    refImgProvider = const AssetImage('assets/image/newprofile.png');
+                  final String refStr = refImgBase64.toString();
+                  if (refStr.startsWith('http://') || refStr.startsWith('https://')) {
+                    refImgProvider = NetworkImage(refStr);
+                  } else {
+                    try {
+                      refImgProvider = MemoryImage(base64Decode(refStr));
+                    } catch (_) {
+                      refImgProvider = const AssetImage('assets/image/newprofile.png');
+                    }
                   }
                 } else {
                   refImgProvider = const AssetImage('assets/image/newprofile.png');
@@ -257,12 +235,9 @@ class ProfileScreen extends StatelessWidget {
                             ),
                           ),
                           GestureDetector(
-                            onTap: () => _updateImage(context, profileController, true),
+                            onTap: () => profileController.pickAndUpdateImage(context, true),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 14,
-                                vertical: 8,
-                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                               decoration: BoxDecoration(
                                 color: const Color(0xFFF3F3F3),
                                 borderRadius: BorderRadius.circular(8),
@@ -370,10 +345,7 @@ class ProfileScreen extends StatelessWidget {
                           ],
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 8,
-                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                           decoration: BoxDecoration(
                             color: const Color(0xFF00BFA5),
                             borderRadius: BorderRadius.circular(8),
@@ -442,11 +414,186 @@ class ProfileScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
 
+              // Coach Requests Card
+              Obx(() {
+                if (profileController.coachRequests.isEmpty) {
+                  return const SizedBox.shrink();
+                }
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.only(left: 4, bottom: 8),
+                      child: Text(
+                        'PENDING COACH REQUESTS',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                    ListView.separated(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: profileController.coachRequests.length,
+                      separatorBuilder: (context, index) => const SizedBox(height: 12),
+                      itemBuilder: (context, index) {
+                        final req = profileController.coachRequests[index];
+                        debugPrint("COACH_REQUEST_ITEM: $req");
+                        final reqId = req['id'] ?? '';
+                        final message = req['personalized_message'];
+                        
+                        // Parse coach details with high robustness
+                        String coachName = 'Coach Connection Request';
+                        String? coachImg;
+                        
+                        final coachVal = req['coach'] ?? req['coach_detail'] ?? req['coach_details'];
+                        if (coachVal is Map) {
+                          final fName = coachVal['first_name'] ?? coachVal['firstName'];
+                          final lName = coachVal['last_name'] ?? coachVal['lastName'];
+                          if (fName != null || lName != null) {
+                            coachName = "${fName ?? ''} ${lName ?? ''}".trim();
+                          } else {
+                            coachName = coachVal['name'] ?? coachVal['email'] ?? coachVal['username'] ?? 'Coach Connection Request';
+                          }
+                          coachImg = coachVal['profile_image'] ?? coachVal['image'] ?? coachVal['profile_image_path'];
+                        } else if (coachVal is String) {
+                          coachName = coachVal;
+                        } else {
+                          coachName = req['coach_name'] ?? req['coach_email'] ?? req['coach_username'] ?? req['name'] ?? req['email'] ?? 'Coach Connection Request';
+                          coachImg = req['coach_image'] ?? req['image'] ?? req['profile_image'] ?? req['coach_profile_image'];
+                        }
+                        
+                        ImageProvider coachImageProvider;
+                        if (coachImg != null && coachImg.toString().isNotEmpty && coachImg.toString() != 'string') {
+                          final String imgStr = coachImg.toString();
+                          if (imgStr.startsWith('http://') || imgStr.startsWith('https://')) {
+                            coachImageProvider = NetworkImage(imgStr);
+                          } else {
+                            try {
+                              coachImageProvider = MemoryImage(base64Decode(imgStr));
+                            } catch (_) {
+                              coachImageProvider = const AssetImage('assets/image/David Park.png');
+                            }
+                          }
+                        } else {
+                          coachImageProvider = const AssetImage('assets/image/David Park.png');
+                        }
+                        
+                        final planVal = req['assign_initial_plan'] ?? req['plan'];
+                        String planName = 'Pro Coaching Plan';
+                        if (planVal is bool) {
+                          planName = planVal ? 'Pro Coaching Plan' : 'Basic Plan';
+                        } else if (planVal is String && planVal.isNotEmpty) {
+                          planName = planVal;
+                        }
+                        
+                        return _buildCard(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  CircleAvatar(
+                                    backgroundImage: coachImageProvider,
+                                    radius: 24,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          coachName,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 15,
+                                            color: Colors.black87,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          'Plan: $planName',
+                                          style: const TextStyle(
+                                            color: Color(0xFF00A97D),
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        const Text(
+                                          'Pending response',
+                                          style: TextStyle(
+                                            color: Colors.grey,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              if (message != null && message.toString().isNotEmpty && message.toString() != 'string') ...[
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.shade50,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    '"$message"',
+                                    style: TextStyle(
+                                      color: Colors.grey.shade700,
+                                      fontSize: 13,
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                              ],
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  TextButton(
+                                    onPressed: () => profileController.declineCoachRequest(reqId),
+                                    style: TextButton.styleFrom(
+                                      foregroundColor: Colors.red.shade400,
+                                    ),
+                                    child: const Text('Decline'),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  ElevatedButton(
+                                    onPressed: () => profileController.acceptCoachRequest(reqId),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFF00BFA5),
+                                      foregroundColor: Colors.white,
+                                      elevation: 0,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                    ),
+                                    child: const Text('Accept'),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+                );
+              }),
+
               // Setting Card
               GestureDetector(
-                onTap: () {
-                  Get.toNamed(AppRoutes.settings);
-                },
+                onTap: () => Get.toNamed(AppRoutes.settings),
                 child: _buildCard(
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,

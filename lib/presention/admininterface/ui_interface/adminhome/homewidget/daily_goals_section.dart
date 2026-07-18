@@ -4,10 +4,24 @@ import 'package:get/get.dart';
 import '../../../../../core/services/controller/adminpenelcontroller/clientcontoller.dart';
 
 class DailyGoalsSection extends StatelessWidget {
-  final ClientController controller = Get.put(ClientController());
   final VoidCallback onSave;
+  final RxBool drinkWater;
+  final RxBool steps10k;
+  final RxBool noSugar;
+  final RxBool sleep8Hours;
+  final Function(RxBool) toggleGoal;
+  final String clientName;
 
-  DailyGoalsSection({super.key, required this.onSave});
+  const DailyGoalsSection({
+    super.key,
+    required this.onSave,
+    required this.drinkWater,
+    required this.steps10k,
+    required this.noSugar,
+    required this.sleep8Hours,
+    required this.toggleGoal,
+    this.clientName = 'SARAH JENKINS',
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -27,13 +41,13 @@ class DailyGoalsSection extends StatelessWidget {
           ),
           child: Column(
             children: [
-              _buildGoalItem("Drink 3L Water", controller.drinkWater),
+              _buildGoalItem("Drink 3L Water", drinkWater),
               _buildDivider(),
-              _buildGoalItem("10k Steps", controller.steps10k),
+              _buildGoalItem("10k Steps", steps10k),
               _buildDivider(),
-              _buildGoalItem("No Sugar Today", controller.noSugar),
+              _buildGoalItem("No Sugar Today", noSugar),
               _buildDivider(),
-              _buildGoalItem("8 Hours Sleep", controller.sleep8Hours),
+              _buildGoalItem("8 Hours Sleep", sleep8Hours),
             ],
           ),
         ),
@@ -49,7 +63,7 @@ class DailyGoalsSection extends StatelessWidget {
   // Individual Goal Row with InkWell for better Tap feel
   Widget _buildGoalItem(String title, RxBool goalState) {
     return InkWell(
-      onTap: () => controller.toggleGoal(goalState),
+      onTap: () => toggleGoal(goalState),
       borderRadius: BorderRadius.circular(12),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
@@ -123,7 +137,7 @@ class DailyGoalsSection extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'NOTIFIES SARAH JENKINS',
+                  'NOTIFIES ${clientName.toUpperCase()}',
                   style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.7),
                       fontSize: 11,

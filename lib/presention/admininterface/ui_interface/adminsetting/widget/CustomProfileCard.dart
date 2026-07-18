@@ -5,46 +5,11 @@ class CustomProfileCard extends StatelessWidget {
   final String label;
   final RxString value;
 
-  CustomProfileCard({
+  const CustomProfileCard({
     super.key,
     required this.label,
     required this.value,
   });
-
-  // Edit Popup Function
-  void _showEditPopup() {
-    final TextEditingController controller = TextEditingController(text: value.value);
-
-    Get.defaultDialog(
-      title: "Edit $label",
-      titleStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-      content: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        child: TextField(
-          controller: controller,
-          decoration: InputDecoration(
-            hintText: "Enter new $label",
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-          ),
-        ),
-      ),
-      confirm: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF06D7A0),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        ),
-        onPressed: () {
-          value.value = controller.text; // Value update
-          Get.back(); // Popup close
-        },
-        child: const Text("Save", style: TextStyle(color: Colors.white)),
-      ),
-      cancel: TextButton(
-        onPressed: () => Get.back(),
-        child: const Text("Cancel", style: TextStyle(color: Colors.grey)),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +21,7 @@ class CustomProfileCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -79,7 +44,6 @@ class CustomProfileCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 5),
-                // Obx use kora hoyeche jate value change holei ekhane update hoy
                 Obx(() => Text(
                   value.value,
                   style: const TextStyle(
@@ -89,22 +53,6 @@ class CustomProfileCard extends StatelessWidget {
                   ),
                 )),
               ],
-            ),
-          ),
-          // Edit Icon Button
-          GestureDetector(
-            onTap: _showEditPopup,
-            child: Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.grey[100],
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.edit_outlined,
-                size: 20,
-                color: Colors.blueGrey,
-              ),
             ),
           ),
         ],

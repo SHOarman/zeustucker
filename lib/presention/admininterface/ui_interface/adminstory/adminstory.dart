@@ -110,42 +110,43 @@ class Adminstory extends StatelessWidget {
               //========================button=======================================================
 
               Row(
-                mainAxisSize: MainAxisSize.min,
                 children: [
                   // 1. REGENERATE ALL Button
-                  Material(
-                    elevation: 2,
-                    shadowColor: Colors.black26,
-                    color: const Color(0xff00A97D),
-                    borderRadius: BorderRadius.circular(30),
-                    child: InkWell(
-                      onTap: () {
-                        Get.toNamed(AppRoutes.regenerateall);
-                      },
+                  Expanded(
+                    flex: 3,
+                    child: Material(
+                      elevation: 2,
+                      shadowColor: Colors.black26,
+                      color: const Color(0xff00A97D),
                       borderRadius: BorderRadius.circular(30),
-                      child: Container(
-                        width: 240,
-                        height: 48,
-                        alignment: Alignment.center,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(
-                              Icons.refresh,
-                              color: Colors.white,
-                              size: 20,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              "REGENERATE ALL",
-                              style: GoogleFonts.plusJakartaSans(
+                      child: InkWell(
+                        onTap: () {
+                          Get.toNamed(AppRoutes.regenerateall);
+                        },
+                        borderRadius: BorderRadius.circular(30),
+                        child: Container(
+                          height: 48,
+                          alignment: Alignment.center,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                Icons.refresh,
                                 color: Colors.white,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 0.5,
+                                size: 20,
                               ),
-                            ),
-                          ],
+                              const SizedBox(width: 8),
+                              Text(
+                                "REGENERATE ALL",
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: Colors.white,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -154,30 +155,32 @@ class Adminstory extends StatelessWidget {
                   const SizedBox(width: 12),
 
                   // 2. EDIT Button
-                  Material(
-                    elevation: 2,
-                    shadowColor: Colors.black12,
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(30),
-                    child: InkWell(
-                      onTap: () {
-                        debugPrint("Edit Tap");
-                      },
+                  Expanded(
+                    flex: 1,
+                    child: Material(
+                      elevation: 2,
+                      shadowColor: Colors.black12,
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(30),
-                      child: Container(
-                        width: 80,
-                        height: 48,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(30),
-                          border: Border.all(color: const Color(0xffE5E7EB), width: 1),
-                        ),
-                        child: Text(
-                          "EDIT",
-                          style: GoogleFonts.plusJakartaSans(
-                            color: const Color(0xff374151),
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
+                      child: InkWell(
+                        onTap: () {
+                          debugPrint("Edit Tap");
+                        },
+                        borderRadius: BorderRadius.circular(30),
+                        child: Container(
+                          height: 48,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(30),
+                            border: Border.all(color: const Color(0xffE5E7EB), width: 1),
+                          ),
+                          child: Text(
+                            "EDIT",
+                            style: GoogleFonts.plusJakartaSans(
+                              color: const Color(0xff374151),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ),
                       ),

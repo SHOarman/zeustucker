@@ -63,11 +63,18 @@ class Adminclient extends StatelessWidget {
                 separatorBuilder: (context, index) => const SizedBox(height: 12),
                 itemBuilder: (context, index) {
                   var client = controller.clientList[index];
+                  final String name = client['name'] ?? client['email'] ?? 'Client';
+                  final String imageUrl = (client['profile_image'] != null && client['profile_image'].toString().isNotEmpty && client['profile_image'] != 'string')
+                      ? client['profile_image']
+                      : (client['image'] ?? "assets/image/David Park.png");
+                  final double progress = (client['progress'] != null) ? double.parse(client['progress'].toString()) : 0.0;
+                  final bool hasNotification = client['hasNotification'] ?? false;
+
                   return ClientProgressCard(
-                    name: client['name'],
-                    imageUrl: client['image'],
-                    progress: client['progress'],
-                    hasNotification: client['hasNotification'],
+                    name: name,
+                    imageUrl: imageUrl,
+                    progress: progress,
+                    hasNotification: hasNotification,
                     onTap: () {
                       Get.toNamed(AppRoutes.clientdetails, arguments: client);
                     },

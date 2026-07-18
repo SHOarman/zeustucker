@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -7,6 +8,7 @@ import 'package:zeustucker/presention/userinterface/home/widget/marcotargets.dar
 import 'package:zeustucker/presention/userinterface/home/widget/workout_section.dart';
 
 import '../../../core/services/controller/homecontroller.dart';
+import '../../../core/services/controller/profilecontroller.dart';
 
 class HomeScreen extends StatelessWidget {
   HomeScreen({super.key});
@@ -150,42 +152,68 @@ class HomeScreen extends StatelessWidget {
             children: [
               const SizedBox(height: 60),
               // Profile Header
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Good Morning, John!",
-                        style: GoogleFonts.poppins(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xff323232),
-                        ),
-                      ),
-                      Text(
-                        "Ready to build today's story?",
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          color: Colors.black54,
-                        ),
-                      ),
-                    ],
-                  ),
-                  GestureDetector(
-                    onTap: () => debugPrint("Profile"),
-                    child: ClipOval(
-                      child: Image.asset(
-                        "assets/image/Ellipse 1.png",
-                        height: 60,
-                        width: 60,
-                        fit: BoxFit.cover,
+              Obx(() {
+                final profileController = Get.put(EditProfileController());
+                final String name = profileController.profileData['name'] ?? profileController.profileData['full_name'] ?? 'User';
+                final String? profileImage = profileController.profileData['profile_image'];
+
+                ImageProvider imageProvider;
+                if (profileImage != null && profileImage.isNotEmpty && profileImage != 'string') {
+                  if (profileImage.startsWith('http://') || profileImage.startsWith('https://')) {
+                    imageProvider = NetworkImage(profileImage);
+                  } else {
+                    try {
+                      imageProvider = MemoryImage(base64Decode(profileImage));
+                    } catch (e) {
+                      imageProvider = const AssetImage("assets/image/Ellipse 1.png");
+                    }
+                  }
+                } else {
+                  imageProvider = const AssetImage("assets/image/Ellipse 1.png");
+                }
+
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Good Morning, $name!",
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.poppins(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xff323232),
+                            ),
+                          ),
+                          Text(
+                            "Ready to build today's story?",
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              color: Colors.black54,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-                ],
-              ),
+                    const SizedBox(width: 12),
+                    GestureDetector(
+                      onTap: () => debugPrint("Profile"),
+                      child: ClipOval(
+                        child: Image(
+                          image: imageProvider,
+                          height: 60,
+                          width: 60,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              }),
               const SizedBox(height: 40),
               // Book Card
               Container(

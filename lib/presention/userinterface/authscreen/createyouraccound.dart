@@ -56,8 +56,8 @@ class Createyouraccound extends StatelessWidget {
               SizedBox(height: 16),
 
               CustomTextField(
-                labelText: "Enter your name",
-                hintText: "Enter your name",
+                labelText: "Name",
+                hintText: "Type your name",
                 controller: controller.usernameController,
               ),
 
@@ -351,21 +351,48 @@ class Createyouraccound extends StatelessWidget {
                   ),
               ),
               const SizedBox(height: 20),
-              Center(
-                child: GestureDetector(
-                  onTap: () {
-                   Get.toNamed(AppRoutes.login);
-                  },
-                  child: Text(
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
                     "Already have an account?",
                     style: TextStyle(
-                      color: Color(0xff06D7A0),
+                      color: Color(0xff2D292E),
+
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                ),
+                  const SizedBox(width: 4),
+                  GestureDetector(
+                    onTap: () {
+                      Get.toNamed(AppRoutes.login);
+                    },
+                    child: Text("  Sing in",style: TextStyle(
+                      color: Color(0xff06D7A0),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),)
+                  )
+
+                ],
               ),
+              // Center(
+              //   child: GestureDetector(
+              //     onTap: () {
+              //      Get.toNamed(AppRoutes.login);
+              //     },
+              //     child: Text(
+              //       "Already have an account?",
+              //       style: TextStyle(
+              //         color: Color(0xff06D7A0),
+              //         fontSize: 14,
+              //         fontWeight: FontWeight.w500,
+              //       ),
+              //     ),
+              //   ),
+              // ),
 
               const SizedBox(height: 40),
             ],

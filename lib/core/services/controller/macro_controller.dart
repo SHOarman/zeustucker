@@ -31,16 +31,13 @@ class MacroController extends GetxController {
   final RxDouble misc = RxDouble(10.0);
   final RxDouble miscGoal = RxDouble(30.0);
 
-  // ── Logged Meals ────────────────────────────────────
   final RxList<LoggedMeal> loggedMeals = <LoggedMeal>[
     LoggedMeal(name: 'Avocado Toast & Egg', kcal: 380),
     LoggedMeal(name: 'Mediterranean Bowl', kcal: 420),
   ].obs;
 
-  // ── Daily Notes ─────────────────────────────────────
   final RxString dailyNotes = 'Add daily notes…'.obs;
 
-  // ── Recent Foods lists ──────────────────────────────
   final List<MacroFood> recentProteinFoods = [
     MacroFood(
       name: 'Chicken Breast',

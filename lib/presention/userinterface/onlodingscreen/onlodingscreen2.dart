@@ -64,33 +64,38 @@ class OnlodingScreen2 extends StatelessWidget {
                 ),
               ),
               const Divider(height: 20),
-              ..._fitnessGoals.map(
-                (goal) => Material(
-                  color: Colors.transparent,
-                  child: ListTile(
-                    leading: Icon(
-                      Icons.fitness_center,
-                      color: selectedGoal == goal ? _primary : Colors.grey,
-                      size: 20,
-                    ),
-                    title: Text(
-                      goal,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: _textDark,
-                        fontWeight: selectedGoal == goal
-                            ? FontWeight.w600
-                            : FontWeight.w400,
+              Flexible(
+                child: ListView(
+                  shrinkWrap: true,
+                  children: _fitnessGoals.map(
+                    (goal) => Material(
+                      color: Colors.transparent,
+                      child: ListTile(
+                        leading: Icon(
+                          Icons.fitness_center,
+                          color: selectedGoal == goal ? _primary : Colors.grey,
+                          size: 20,
+                        ),
+                        title: Text(
+                          goal,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: _textDark,
+                            fontWeight: selectedGoal == goal
+                                ? FontWeight.w600
+                                : FontWeight.w400,
+                          ),
+                        ),
+                        trailing: selectedGoal == goal
+                            ? const Icon(Icons.check, color: _primary, size: 18)
+                            : null,
+                        onTap: () {
+                          authController.rxSelectedGoal.value = goal;
+                          Navigator.pop(context);
+                        },
                       ),
                     ),
-                    trailing: selectedGoal == goal
-                        ? const Icon(Icons.check, color: _primary, size: 18)
-                        : null,
-                    onTap: () {
-                      authController.rxSelectedGoal.value = goal;
-                      Navigator.pop(context);
-                    },
-                  ),
+                  ).toList(),
                 ),
               ),
               const SizedBox(height: 16),

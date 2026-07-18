@@ -4,6 +4,7 @@ import 'package:zeustucker/core/routes/app_routes.dart';
 import 'package:zeustucker/presention/admininterface/ui_interface/adminsetting/widget/CoachPremiumCard.dart';
 import 'package:zeustucker/presention/admininterface/ui_interface/adminsetting/widget/CustomSettingTile.dart';
 
+import 'package:zeustucker/core/services/controller/profilecontroller.dart';
 import '../../widget/customnevadminbutton.dart';
 
 class Adminsetting extends StatelessWidget {
@@ -11,6 +12,7 @@ class Adminsetting extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.put(EditProfileController());
     return Scaffold(
       bottomNavigationBar: const Customnevadminbutton(selectIndex: 3),
       body: SingleChildScrollView(
@@ -66,7 +68,13 @@ class Adminsetting extends StatelessWidget {
                 borderRadius: BorderRadius.circular(40),
                 child: InkWell(
                   onTap: () {
-
+                    showConfirmationDialog(
+                      title: "Logout",
+                      message: "Are you sure you want to log out?",
+                      confirmButtonText: "Yes, Logout",
+                      onConfirm: () => controller.logout(),
+                      confirmColor: const Color(0xFFEF4444),
+                    );
                   },
                   borderRadius: BorderRadius.circular(40),
                   splashColor: Colors.black.withOpacity(0.1),
@@ -106,7 +114,13 @@ class Adminsetting extends StatelessWidget {
               Center(
                 child: InkWell(
                   onTap: () {
-                    // Delete account logic
+                    showConfirmationDialog(
+                      title: "Delete Account",
+                      message: "Are you sure you want to permanently delete your account?",
+                      confirmButtonText: "Yes, Delete",
+                      onConfirm: () => controller.deleteAccount(),
+                      confirmColor: const Color(0xFFEF4444),
+                    );
                   },
                   borderRadius: BorderRadius.circular(8),
                   splashColor: Colors.red.withOpacity(0.1),
@@ -133,4 +147,111 @@ class Adminsetting extends StatelessWidget {
       ),
     );
   }
+}
+
+void showConfirmationDialog({
+  required String title,
+  required String message,
+  required String confirmButtonText,
+  required VoidCallback onConfirm,
+  Color confirmColor = const Color(0xffFF5252),
+}) {
+  Get.dialog(
+    Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 40),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.warning_amber_rounded,
+              color: Colors.amber,
+              size: 56,
+            ),
+            const SizedBox(height: 20),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF2D2D2D),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 14,
+                color: Colors.grey,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 28),
+            Row(
+              children: [
+                Expanded(
+                  child: SizedBox(
+                    height: 48,
+                    child: OutlinedButton(
+                      onPressed: () => Get.back(),
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: Colors.grey.shade300),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'No',
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: SizedBox(
+                    height: 48,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Get.back();
+                        onConfirm();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: confirmColor,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        confirmButtonText,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
 }

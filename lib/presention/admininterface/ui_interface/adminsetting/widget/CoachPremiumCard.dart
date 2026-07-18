@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../../core/services/controller/profilecontroller.dart';
@@ -24,6 +25,7 @@ class CoachPremiumCard extends StatelessWidget {
         final profile = snapshot.data;
         final String name = profile?['name'] ?? 'Coach Alexander';
         final String email = profile?['email'] ?? 'COACH PREMIUM';
+        final String? profileImg = profile?['profile_image'];
 
         return Center(
           child: Container(
@@ -68,12 +70,26 @@ class CoachPremiumCard extends StatelessWidget {
                           shape: BoxShape.circle,
                         ),
                         child: ClipOval(
-                          child: Image.asset(
-                            'assets/image/Panel 2.png',
-                            width: 100,
-                            height: 100,
-                            fit: BoxFit.cover,
-                          ),
+                          child: profileImg != null && profileImg.isNotEmpty && profileImg != 'string'
+                              ? (profileImg.startsWith('http')
+                                  ? Image.network(
+                                      profileImg,
+                                      width: 100,
+                                      height: 100,
+                                      fit: BoxFit.cover,
+                                    )
+                                  : Image.memory(
+                                      base64Decode(profileImg),
+                                      width: 100,
+                                      height: 100,
+                                      fit: BoxFit.cover,
+                                    ))
+                              : Image.asset(
+                                  'assets/image/Panel 2.png',
+                                  width: 100,
+                                  height: 100,
+                                  fit: BoxFit.cover,
+                                ),
                         ),
                       ),
                     ),

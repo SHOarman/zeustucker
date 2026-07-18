@@ -61,8 +61,8 @@ class CustomBottomNav extends StatelessWidget {
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 300),
               padding: EdgeInsets.symmetric(
-                horizontal: isSelected ? 20 : 12,
-                vertical: 12,
+                horizontal: isSelected ? 14 : 8,
+                vertical: 10,
               ),
               decoration: BoxDecoration(
                 // The active item is a solid Teal/Green color
@@ -84,13 +84,13 @@ class CustomBottomNav extends StatelessWidget {
                     width: 24,
                   ),
                   if (isSelected) ...[
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 8),
                     Text(
                       item.label,
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w600,
-                        fontSize: 16,
+                        fontSize: 14,
                       ),
                     ),
                   ],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
 import '../../../../../unity/text.dart';
 
 class UserStoryTile extends StatelessWidget {
@@ -55,7 +56,17 @@ class UserStoryTile extends StatelessWidget {
               ),
               child: CircleAvatar(
                 radius: 30,
-                backgroundImage: imageUrl.startsWith('http') ? NetworkImage(imageUrl) as ImageProvider : AssetImage(imageUrl),
+                backgroundImage: () {
+                  if (imageUrl.startsWith('http')) {
+                    return NetworkImage(imageUrl) as ImageProvider;
+                  }
+                  if (imageUrl.length > 100) {
+                    try {
+                      return MemoryImage(base64Decode(imageUrl));
+                    } catch (_) {}
+                  }
+                  return AssetImage(imageUrl);
+                }(),
                 backgroundColor: Colors.grey.shade100,
               ),
             ),

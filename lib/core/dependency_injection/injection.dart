@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:zeustucker/core/services/controller/adminpenelcontroller/adminsendrequestcontroller.dart';
 import 'package:zeustucker/core/services/controller/adminpenelcontroller/clientcontoller.dart';
 import 'package:zeustucker/core/services/controller/authcontroller.dart';
 import 'package:zeustucker/core/services/controller/homecontroller.dart';
@@ -29,5 +30,9 @@ class DependencyInjection {
     
     //=========================adminpenlcontroller===============================
     Get.lazyPut(()=>ClientController());
+
+    //============================request========================================
+
+    Get.lazyPut(()=>Adminsendrequestcontroller());
   }
 }

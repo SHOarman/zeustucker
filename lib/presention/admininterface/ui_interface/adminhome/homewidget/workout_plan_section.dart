@@ -2,12 +2,16 @@ import 'package:flutter/material.dart';
 
 class WorkoutPlanSection extends StatelessWidget {
   final VoidCallback onAddPressed;
-  final TextEditingController exerciseController; // Controller-ta baire theke ana bhalo
+  final TextEditingController exerciseController;
+  final List<String> exercises;
+  final Function(int) onRemovePressed;
 
   const WorkoutPlanSection({
     super.key,
     required this.onAddPressed,
     required this.exerciseController,
+    required this.exercises,
+    required this.onRemovePressed,
   });
 
   @override
@@ -31,8 +35,15 @@ class WorkoutPlanSection extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Existing Exercise Item
-          _buildExerciseItem("45min HIIT Session"),
+          // Dynamic Exercise Items
+          ...exercises.asMap().entries.map((entry) {
+            final idx = entry.key;
+            final item = entry.value;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _buildExerciseItem(item, () => onRemovePressed(idx)),
+            );
+          }).toList(),
 
           const SizedBox(height: 16),
 
@@ -80,7 +91,7 @@ class WorkoutPlanSection extends StatelessWidget {
     );
   }
 
-  Widget _buildExerciseItem(String title) {
+  Widget _buildExerciseItem(String title, VoidCallback onRemove) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       decoration: BoxDecoration(
@@ -102,7 +113,10 @@ class WorkoutPlanSection extends StatelessWidget {
               ),
             ),
           ),
-          const Icon(Icons.close, color: Colors.black26, size: 20),
+          GestureDetector(
+            onTap: onRemove,
+            child: const Icon(Icons.close, color: Colors.black26, size: 20),
+          ),
         ],
       ),
     );

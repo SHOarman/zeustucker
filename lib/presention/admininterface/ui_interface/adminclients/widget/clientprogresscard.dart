@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
 
 class ClientProgressCard extends StatelessWidget {
   final String name;
@@ -48,7 +49,17 @@ class ClientProgressCard extends StatelessWidget {
                     CircleAvatar(
                       radius: 35,
                       backgroundColor: const Color(0xFFF3F4F6),
-                      backgroundImage: imageUrl.startsWith('http') ? NetworkImage(imageUrl) as ImageProvider : AssetImage(imageUrl),
+                      backgroundImage: () {
+                        if (imageUrl.startsWith('http')) {
+                          return NetworkImage(imageUrl) as ImageProvider;
+                        }
+                        if (imageUrl.length > 100) {
+                          try {
+                            return MemoryImage(base64Decode(imageUrl));
+                          } catch (_) {}
+                        }
+                        return AssetImage(imageUrl);
+                      }(),
                     ),
                     if (hasNotification)
                       Positioned(

@@ -1,24 +1,21 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-
+import 'package:get/get.dart';
+import '../../../../core/services/controller/adminpenelcontroller/adminsendrequestcontroller.dart';
 import 'homewidget/ClientInvitationCard.dart';
 import 'homewidget/Customadminbutton.dart';
 
-class Addnewclient extends StatefulWidget {
+class Addnewclient extends StatelessWidget {
   const Addnewclient({super.key});
 
-  @override
-  State<Addnewclient> createState() => _AddnewclientState();
-}
-
-class _AddnewclientState extends State<Addnewclient> {
-  String _selectedPlan = 'Pro Coaching Plan';
-  
   final Color _backgroundColor = const Color(0xFFF7F8FA);
   final Color _labelColor = const Color(0xFF9CA3AF);
   final Color _textColor = const Color(0xFF111827);
 
   @override
   Widget build(BuildContext context) {
+    final Adminsendrequestcontroller controller = Get.put(Adminsendrequestcontroller());
+
     return Scaffold(
       backgroundColor: _backgroundColor,
       body: SafeArea(
@@ -77,6 +74,7 @@ class _AddnewclientState extends State<Addnewclient> {
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: TextField(
+                  controller: controller.emailController,
                   style: TextStyle(color: _textColor, fontWeight: FontWeight.w500),
                   decoration: InputDecoration(
                     hintText: 'client@example.com',
@@ -110,45 +108,43 @@ class _AddnewclientState extends State<Addnewclient> {
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: DropdownButtonHideUnderline(
-                  child: DropdownButtonFormField<String>(
-                    initialValue: _selectedPlan,
-                    dropdownColor: Colors.white,
-                    isExpanded: true,
-                    borderRadius: BorderRadius.circular(16),
-                    icon: Icon(Icons.keyboard_arrow_down, color: Colors.grey.shade500),
-                    decoration: InputDecoration(
-                      prefixIcon: Icon(
-                        Icons.workspace_premium_outlined, 
-                        color: Colors.grey.shade500,
-                      ),
-                      border: OutlineInputBorder(
+                  child: Obx(() => DropdownButtonFormField<String>(
+                        value: controller.selectedPlan.value,
+                        dropdownColor: Colors.white,
+                        isExpanded: true,
                         borderRadius: BorderRadius.circular(16),
-                        borderSide: BorderSide.none,
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
-                    ),
-                    items: <String>['Pro Coaching Plan', 'Basic Plan', 'Premium Plan']
-                        .map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(
-                          value,
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: _textColor,
-                            fontWeight: FontWeight.w500,
+                        icon: Icon(Icons.keyboard_arrow_down, color: Colors.grey.shade500),
+                        decoration: InputDecoration(
+                          prefixIcon: Icon(
+                            Icons.workspace_premium_outlined, 
+                            color: Colors.grey.shade500,
                           ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide.none,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
                         ),
-                      );
-                    }).toList(),
-                    onChanged: (String? newValue) {
-                      if (newValue != null) {
-                        setState(() {
-                          _selectedPlan = newValue;
-                        });
-                      }
-                    },
-                  ),
+                        items: <String>['Pro Coaching Plan', 'Basic Plan', 'Premium Plan']
+                            .map<DropdownMenuItem<String>>((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(
+                              value,
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: _textColor,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                        onChanged: (String? newValue) {
+                          if (newValue != null) {
+                            controller.selectPlan(newValue);
+                          }
+                        },
+                      )),
                 ),
               ),
               const SizedBox(height: 24),
@@ -170,6 +166,7 @@ class _AddnewclientState extends State<Addnewclient> {
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: TextField(
+                  controller: controller.messageController,
                   maxLines: 5,
                   style: TextStyle(color: _textColor, fontWeight: FontWeight.w500),
                   decoration: InputDecoration(
@@ -187,26 +184,80 @@ class _AddnewclientState extends State<Addnewclient> {
                 ),
               ),
 
-              SizedBox(height:20 ,),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: CustomIconButton(title: "Send Invitation", iconPath: "assets/image/Container (8).png", onTap: (){}),
-                
-              ),
+              const SizedBox(height: 20),
+              Obx(() => Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: controller.isLoading.value
+                        ? Container(
+                            height: 56,
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF00A97D),
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            alignment: Alignment.center,
+                            child: const SizedBox(
+                              height: 24,
+                              width: 24,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2.5,
+                              ),
+                            ),
+                          )
+                        : CustomIconButton(
+                            title: "Send Invitation",
+                            iconPath: "assets/image/Container (8).png",
+                            onTap: () {
+                              controller.sendInvitation();
+                            },
+                          ),
+                  )),
               
-              SizedBox(height: 20,),
+              const SizedBox(height: 20),
               Text("Recent Invitations", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: _labelColor),),
-              SizedBox(height: 12,),
-              ClientInvitationCard(email: "julie.chen@gmail.com", timeText: "Sent 2 hours ago", status: "SENT"),
-              SizedBox(height: 12,),
-              ClientInvitationCard(email: "julie.chen@gmail.com", timeText: "Sent 2 hours ago", status: "Accepted"),
-              SizedBox(height: 12,),
+              const SizedBox(height: 12),
+              Obx(() {
+                if (controller.isListLoading.value && controller.invitationList.isEmpty) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: CircularProgressIndicator(),
+                    ),
+                  );
+                }
 
-              ClientInvitationCard(email: "julie.chen@gmail.com", timeText: "Sent 2 hours ago", status: "Expired"),
+                if (controller.invitationList.isEmpty) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text(
+                        "No recent invitations found",
+                        style: TextStyle(color: _labelColor, fontSize: 14),
+                      ),
+                    ),
+                  );
+                }
 
+                return ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: controller.invitationList.length,
+                  separatorBuilder: (context, index) => const SizedBox(height: 12),
+                  itemBuilder: (context, index) {
+                    final item = controller.invitationList[index];
+                    final email = controller.getEmail(item);
+                    final status = controller.getStatus(item);
+                    final timeText = controller.formatTimeAgo(item);
 
-
-
+                    return ClientInvitationCard(
+                      email: email,
+                      timeText: timeText,
+                      status: status,
+                    );
+                  },
+                );
+              }),
             ],
           ),
         ),

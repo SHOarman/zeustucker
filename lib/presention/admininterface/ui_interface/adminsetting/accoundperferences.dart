@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_instance/src/extension_instance.dart';
-import 'package:get/get_navigation/src/extension_navigation.dart';
+import 'package:get/get.dart';
 import 'package:zeustucker/presention/admininterface/ui_interface/adminsetting/widget/AccountPreferencesWidget.dart';
 import 'package:zeustucker/presention/admininterface/ui_interface/adminsetting/widget/CustomProfileCard.dart';
 import 'package:zeustucker/presention/admininterface/ui_interface/adminsetting/widget/CustomSettingTile.dart';
 import 'package:zeustucker/presention/admininterface/ui_interface/adminsetting/widget/tierBenefitsCard.dart';
 
-import '../../../../core/services/controller/adminpenelcontroller/clientcontoller.dart';
+import '../../../../core/services/controller/profilecontroller.dart';
+import '../../../../core/routes/app_routes.dart';
 import '../adminhome/homewidget/Customadminbutton.dart';
 
 class Accoundperferences extends StatelessWidget {
@@ -15,75 +14,90 @@ class Accoundperferences extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    ClientController clientController = Get.put(ClientController());
-    return Scaffold(
+    final profileController = Get.put(EditProfileController());
 
+    final userName = ''.obs;
+    final emailAddress = ''.obs;
+    final phoneNumber = ''.obs;
+    final coachBio = ''.obs;
+
+    ever(profileController.profileData, (data) {
+      userName.value = data['name'] ?? data['full_name'] ?? '';
+      emailAddress.value = data['email'] ?? '';
+      phoneNumber.value = data['phone_number'] ?? data['phone'] ?? 'Not Provided';
+      coachBio.value = data['bio'] ?? data['short_bio'] ?? '';
+    });
+
+    if (profileController.profileData.isNotEmpty) {
+      final data = profileController.profileData;
+      userName.value = data['name'] ?? data['full_name'] ?? '';
+      emailAddress.value = data['email'] ?? '';
+      phoneNumber.value = data['phone_number'] ?? data['phone'] ?? 'Not Provided';
+      coachBio.value = data['bio'] ?? data['short_bio'] ?? '';
+    }
+
+    return Scaffold(
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-
-              SizedBox(height: 70,),
-//==============================================AccountPreferencesCard ===========================================================
-              AccountHeaderCard(),
+              const SizedBox(height: 70),
+              const AccountHeaderCard(),
+              const SizedBox(height: 30),
               
-              SizedBox(height: 30,),
-              
-              Text("PROFILE DETAILS",style: TextStyle(color: Color(0xff9CA3AF),fontSize: 14,fontWeight: FontWeight.w700,letterSpacing: 1.5),),
-              SizedBox(height: 20,),
-
-
-              //========================CustomProfileCard========================================================
+              const Text(
+                "PROFILE DETAILS",
+                style: TextStyle(color: Color(0xff9CA3AF), fontSize: 14, fontWeight: FontWeight.w700, letterSpacing: 1.5),
+              ),
+              const SizedBox(height: 20),
 
               CustomProfileCard(
                 label: "Full Name",
-                value: clientController.userName,
+                value: userName,
               ),
 
-              SizedBox(height: 15,),
+              const SizedBox(height: 15),
 
               CustomProfileCard(
                 label: "EMAIL ADDRESS",
-                value: clientController.emailaddress,
+                value: emailAddress,
               ),
-              SizedBox(height: 15,),
+              const SizedBox(height: 15),
               CustomProfileCard(
                 label: "PHONE NUMBER",
-                value: clientController.phonenumber,
+                value: phoneNumber,
               ),
 
-              SizedBox(height: 30,),
+              const SizedBox(height: 30),
 
               CustomProfileCard(
                 label: "COACH BIOGRAPHY",
-                value: clientController.coachbio,
+                value: coachBio,
               ),
 
-              SizedBox(height: 20,),
-              Text("PASSWORD & SECURITY",style: TextStyle(color: Color(0xff9CA3AF),fontSize: 14,fontWeight: FontWeight.w700,letterSpacing: 1.5),),
-              SizedBox(height: 10,),
+              const SizedBox(height: 20),
+              const Text(
+                "PASSWORD & SECURITY",
+                style: TextStyle(color: Color(0xff9CA3AF), fontSize: 14, fontWeight: FontWeight.w700, letterSpacing: 1.5),
+              ),
+              const SizedBox(height: 10),
               CustomSettingTile(
                 imagePath: 'assets/icon/Container (13).png',
                 title: 'Update Password',
                 onTap: () {},
               ),
-              SizedBox(height: 20,),
+              const SizedBox(height: 20),
 
-              CustomIconButton(title: "Save Changes", iconPath: "assets/icon/Container (15).png", onTap: (){
-                Get.back();
-              }),
-              SizedBox(height: 20,),
-
-
-              //============================================tierBenefitscard=================================================================
-
-
-
-
-
-
+              CustomIconButton(
+                title: "Edit Profile",
+                iconPath: "assets/icon/Container (15).png",
+                onTap: () {
+                  Get.toNamed(AppRoutes.editprofile);
+                },
+              ),
+              const SizedBox(height: 20),
             ],
           ),
         ),
