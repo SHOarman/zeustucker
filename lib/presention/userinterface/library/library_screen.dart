@@ -5,7 +5,6 @@ import 'package:zeustucker/core/routes/app_routes.dart';
 
 import '../../customwidget/custom_bottom_nav.dart';
 
-
 class LibraryScreen extends StatelessWidget {
   const LibraryScreen({super.key});
 
@@ -24,7 +23,6 @@ class LibraryScreen extends StatelessWidget {
             children: [
               const SizedBox(height: 70),
 
-              // --- HEADER SECTION ---
               Text(
                 "Completed Chapters",
                 style: GoogleFonts.poppins(
@@ -44,7 +42,6 @@ class LibraryScreen extends StatelessWidget {
 
               const SizedBox(height: 30),
 
-              // --- CHAPTER 3 ---
               _buildChapterSection(
                 chapter: "Chapter 3",
                 routine: "MORNING ROUTINE V2",
@@ -55,23 +52,21 @@ class LibraryScreen extends StatelessWidget {
                   {
                     "image": "assets/image/card1 (1).png",
                     "name": "The Awakening",
-                    "onTap": (){
+                    "onTap": () {
                       Get.toNamed(AppRoutes.librarydetails);
-                    }
+                    },
                   },
                   {
                     "image": "assets/image/card1 (2).png",
                     "name": "Flow State",
-                    "onTap": (){
+                    "onTap": () {
                       Get.toNamed(AppRoutes.librarydetails);
-                    }
+                    },
                   },
                 ],
               ),
 
               const SizedBox(height: 45),
-
-              // --- CHAPTER 2 ---
               _buildChapterSection(
                 chapter: "Chapter 2",
                 routine: "NIGHT OWL REFLECTION",
@@ -82,31 +77,35 @@ class LibraryScreen extends StatelessWidget {
                   {
                     "image": "assets/image/chapter22.png",
                     "name": "Golden Hour",
-                    "onTap": (){
+                    "onTap": () {
                       Get.toNamed(AppRoutes.librarydetails);
-                    }
+                    },
                   },
                   {
                     "image": "assets/image/chapter21.png",
                     "name": "High Mountain",
-                    "onTap": (){
+                    "onTap": () {
                       Get.toNamed(AppRoutes.librarydetails);
-                    }
+                    },
                   },
                 ],
               ),
 
-
               const SizedBox(height: 40),
-              // Footer Section
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                   Image.asset("assets/image/Container.png"), // Asset check korun
+                  Image.asset(
+                    "assets/image/Container.png",
+                  ),
                   const SizedBox(width: 6),
                   const Text(
                     "EndOf History",
-                    style: TextStyle(color: Color(0xffA1A1AA), fontSize: 12, fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                      color: Color(0xffA1A1AA),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ],
               ),
@@ -124,7 +123,8 @@ class LibraryScreen extends StatelessWidget {
     required String status,
     required Color statusColor,
     required Color statusBg,
-    required List<Map<String, dynamic>> chapterData, // String theke dynamic kora holo function neuar jonno
+    required List<Map<String, dynamic>>
+    chapterData,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -134,16 +134,44 @@ class LibraryScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(chapter, style: const TextStyle(color: Color(0xff18181B), fontSize: 24, fontWeight: FontWeight.w700)),
+              Text(
+                chapter,
+                style: const TextStyle(
+                  color: Color(0xff18181B),
+                  fontSize: 24,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
               const SizedBox(height: 6),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(routine, style: TextStyle(color: statusColor, fontWeight: FontWeight.bold, fontSize: 11, letterSpacing: 0.8)),
+                  Text(
+                    routine,
+                    style: TextStyle(
+                      color: statusColor,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 11,
+                      letterSpacing: 0.8,
+                    ),
+                  ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(color: statusBg, borderRadius: BorderRadius.circular(6)),
-                    child: Text(status, style: TextStyle(color: statusColor, fontWeight: FontWeight.bold, fontSize: 10)),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: statusBg,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      status,
+                      style: TextStyle(
+                        color: statusColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 10,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -154,11 +182,15 @@ class LibraryScreen extends StatelessWidget {
           scrollDirection: Axis.horizontal,
           physics: const BouncingScrollPhysics(),
           child: Row(
-            children: chapterData.map((data) => _ImageCard(
-              imagePath: data['image']!,
-              imageName: data['name']!,
-              onTap: data['onTap'],
-            )).toList(),
+            children: chapterData
+                .map(
+                  (data) => _ImageCard(
+                    imagePath: data['image']!,
+                    imageName: data['name']!,
+                    onTap: data['onTap'],
+                  ),
+                )
+                .toList(),
           ),
         ),
       ],
@@ -169,7 +201,7 @@ class LibraryScreen extends StatelessWidget {
 class _ImageCard extends StatelessWidget {
   final String imagePath;
   final String imageName;
-  final VoidCallback onTap; // Callback define kora holo
+  final VoidCallback onTap;
 
   const _ImageCard({
     required this.imagePath,
@@ -180,21 +212,22 @@ class _ImageCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap, // Custom action trigger hoba
+      onTap: onTap,
       child: Container(
         margin: const EdgeInsets.only(right: 16),
         width: 192,
         height: 256,
         child: Stack(
           children: [
-            // Image Layer
             Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(32),
-                image: DecorationImage(image: AssetImage(imagePath), fit: BoxFit.cover),
+                image: DecorationImage(
+                  image: AssetImage(imagePath),
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
-            // Gradient Overlay
             Positioned.fill(
               child: Container(
                 decoration: BoxDecoration(
@@ -202,7 +235,10 @@ class _ImageCard extends StatelessWidget {
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [Colors.transparent, Colors.black.withValues(alpha: 0.8)],
+                    colors: [
+                      Colors.transparent,
+                      Colors.black.withValues(alpha: 0.8),
+                    ],
                     stops: const [0.5, 1.0],
                   ),
                 ),
@@ -216,7 +252,11 @@ class _ImageCard extends StatelessWidget {
               child: Text(
                 imageName,
                 overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.poppins(fontSize: 10, fontWeight: FontWeight.w600, color: Colors.white),
+                style: GoogleFonts.poppins(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
               ),
             ),
           ],

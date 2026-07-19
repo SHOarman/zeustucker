@@ -164,14 +164,19 @@ class Adminhome extends StatelessWidget {
                   );
                 }
 
+                // Show only the last 3 added clients
+                final homeClients = controller.clientList.length > 3
+                    ? controller.clientList.sublist(controller.clientList.length - 3)
+                    : controller.clientList;
+
                 return ListView.separated(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   padding: EdgeInsets.zero,
-                  itemCount: controller.clientList.length,
+                  itemCount: homeClients.length,
                   separatorBuilder: (context, index) => const SizedBox(height: 5),
                   itemBuilder: (context, index) {
-                    final client = controller.clientList[index];
+                    final client = homeClients[index];
                     final String name = client['name'] ?? client['email'] ?? 'Client';
                     final String imageUrl = (client['profile_image'] != null && client['profile_image'].toString().isNotEmpty && client['profile_image'] != 'string')
                         ? client['profile_image']

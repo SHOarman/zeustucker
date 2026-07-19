@@ -380,18 +380,20 @@ class OnlodingScreen2 extends StatelessWidget {
               const SizedBox(height: 32),
 
               // ── Continue button ──────────────────────────────────────────
-              Custombutton(
-                iconname: 'Continue',
-                ontap: () {
-                  authController.tempOccupation = authController.occupationController.text.trim();
-                  authController.tempFitnessGoal = authController.rxSelectedGoal.value ?? '';
-                  authController.tempBio = authController.bioController.text.trim();
-                  authController.tempGender = authController.rxSelectedGender.value ?? '';
-                  authController.tempHeight = authController.heightController.text.trim();
-                  authController.tempWeight = int.tryParse(authController.weightController.text.trim());
-                  authController.tempTargetWeight = int.tryParse(authController.targetWeightController.text.trim());
-                  Get.toNamed(AppRoutes.onloading3);
-                },
+              Center(
+                child: Custombutton(
+                  iconname: 'Continue',
+                  ontap: () {
+                    authController.tempOccupation = authController.occupationController.text.trim();
+                    authController.tempFitnessGoal = authController.rxSelectedGoal.value ?? '';
+                    authController.tempBio = authController.bioController.text.trim();
+                    authController.tempGender = authController.rxSelectedGender.value ?? '';
+                    authController.tempHeight = authController.heightController.text.trim();
+                    authController.tempWeight = int.tryParse(authController.weightController.text.trim());
+                    authController.tempTargetWeight = int.tryParse(authController.targetWeightController.text.trim());
+                    Get.toNamed(AppRoutes.onloading3);
+                  },
+                ),
               ),
 
               const SizedBox(height: 16),

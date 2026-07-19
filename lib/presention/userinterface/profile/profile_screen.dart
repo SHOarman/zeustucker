@@ -463,8 +463,8 @@ class ProfileScreen extends StatelessWidget {
                         } else if (coachVal is String) {
                           coachName = coachVal;
                         } else {
-                          coachName = req['coach_name'] ?? req['coach_email'] ?? req['coach_username'] ?? req['name'] ?? req['email'] ?? 'Coach Connection Request';
-                          coachImg = req['coach_image'] ?? req['image'] ?? req['profile_image'] ?? req['coach_profile_image'];
+                          coachName = req['coach_name'] ?? req['coach_email'] ?? req['coach_username'] ?? 'Coach Connection Request';
+                          coachImg = req['coach_profile_image'] ?? req['coach_image'] ?? req['image'];
                         }
                         
                         ImageProvider coachImageProvider;

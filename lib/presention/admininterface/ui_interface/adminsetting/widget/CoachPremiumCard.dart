@@ -29,7 +29,7 @@ class CoachPremiumCard extends StatelessWidget {
 
         return Center(
           child: Container(
-            width: 350,
+            // width: 350,
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               color: Colors.white,
@@ -61,53 +61,69 @@ class CoachPremiumCard extends StatelessWidget {
                       ),
                     ),
 
-                    // Profile Picture
+                    // Profile Picture & Verification Icon combined
                     Center(
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF1CB08C),
-                          shape: BoxShape.circle,
-                        ),
-                        child: ClipOval(
-                          child: profileImg != null && profileImg.isNotEmpty && profileImg != 'string'
-                              ? (profileImg.startsWith('http')
-                                  ? Image.network(
-                                      profileImg,
-                                      width: 100,
-                                      height: 100,
-                                      fit: BoxFit.cover,
-                                    )
-                                  : Image.memory(
-                                      base64Decode(profileImg),
-                                      width: 100,
-                                      height: 100,
-                                      fit: BoxFit.cover,
-                                    ))
-                              : Image.asset(
-                                  'assets/image/Panel 2.png',
-                                  width: 100,
-                                  height: 100,
-                                  fit: BoxFit.cover,
+                      child: SizedBox(
+                        width: 108,
+                        height: 108,
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            // Profile Picture
+                            Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: const BoxDecoration(
+                                color: Color(0xFF1CB08C),
+                                shape: BoxShape.circle,
+                              ),
+                              child: ClipOval(
+                                child: profileImg != null && profileImg.isNotEmpty && profileImg != 'string'
+                                    ? (profileImg.startsWith('http')
+                                        ? Image.network(
+                                            profileImg,
+                                            width: 100,
+                                            height: 100,
+                                            fit: BoxFit.cover,
+                                          )
+                                        : Image.memory(
+                                            base64Decode(profileImg),
+                                            width: 100,
+                                            height: 100,
+                                            fit: BoxFit.cover,
+                                          ))
+                                    : Image.asset(
+                                        'assets/image/Panel 2.png',
+                                        width: 100,
+                                        height: 100,
+                                        fit: BoxFit.cover,
+                                      ),
+                              ),
+                            ),
+                            // Verification Icon
+                            Positioned(
+                              bottom: 0,
+                              right: 0,
+                              child: Container(
+                                padding: const EdgeInsets.all(3),
+                                decoration: const BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
                                 ),
-                        ),
-                      ),
-                    ),
-
-                    // Verification Icon
-                    Positioned(
-                      bottom: 0,
-                      right: 100,
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF1CB08C),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Image.asset(
-                          'assets/icon/Icon (10).png',
-                          width: 20,
-                          height: 20,
+                                child: Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFF1CB08C),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Image.asset(
+                                    'assets/icon/Icon (10).png',
+                                    width: 14,
+                                    height: 14,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),

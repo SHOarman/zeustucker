@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../api_services/api_services.dart';
+import 'clientcontoller.dart';
 
 class Adminsendrequestcontroller extends GetxController {
   final emailController = TextEditingController();
@@ -81,50 +82,77 @@ class Adminsendrequestcontroller extends GetxController {
         'Authorization': 'Bearer $token',
       };
 
-      // 1. Fetch Accepted Clients
+      // 1. Fetch coach client profiles (to map profile images)
       final clientsUrl = Uri.parse(ApiServices.coachClients);
       final clientsResponse = await http.get(clientsUrl, headers: headers);
-      List<Map<String, dynamic>> acceptedList = [];
+      final Map<String, String> profileImages = {};
       if (clientsResponse.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(clientsResponse.body);
-        acceptedList = data.map((item) {
-          final map = Map<String, dynamic>.from(item);
-          map['ui_status'] = 'ACCEPTED';
-          return map;
-        }).toList();
+        final List<dynamic> clientsData = jsonDecode(clientsResponse.body);
+        for (var client in clientsData) {
+          final clientId = client['id']?.toString();
+          final profileImg = client['profile_image']?.toString();
+          if (clientId != null && profileImg != null && profileImg.isNotEmpty && profileImg != 'string') {
+            profileImages[clientId] = profileImg;
+          }
+        }
       }
 
-      // 2. Fetch Pending Requests
-      final requestsUrl = Uri.parse(ApiServices.coachClientRequests);
-      final requestsResponse = await http.get(requestsUrl, headers: headers);
-      List<Map<String, dynamic>> pendingList = [];
-      if (requestsResponse.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(requestsResponse.body);
-        pendingList = data.map((item) {
+      // 2. Fetch coach nutrition plans (to check if client has routine/nutrition plan)
+      final nutritionUrl = Uri.parse(ApiServices.coachNutritionPlans);
+      final nutritionResponse = await http.get(nutritionUrl, headers: headers);
+      final Set<String> clientsWithPlans = {};
+      if (nutritionResponse.statusCode == 200) {
+        final List<dynamic> plans = jsonDecode(nutritionResponse.body);
+        for (var plan in plans) {
+          final cId = plan['client_id']?.toString();
+          if (cId != null) {
+            clientsWithPlans.add(cId);
+          }
+        }
+      }
+
+      // 3. Fetch coach sent client requests
+      final url = Uri.parse(ApiServices.coachClientRequestsSent);
+      final response = await http.get(url, headers: headers);
+      
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        final list = data.map((item) {
           final map = Map<String, dynamic>.from(item);
           map['ui_status'] = map['status'] ?? 'PENDING';
+
+          // Map profile image if client is accepted
+          final clientId = map['client_id']?.toString();
+          if (clientId != null && profileImages.containsKey(clientId)) {
+            map['profile_image'] = profileImages[clientId];
+          }
+
+          // Map has_routine status
+          if (clientId != null && clientsWithPlans.contains(clientId)) {
+            map['has_routine'] = true;
+          } else {
+            map['has_routine'] = false;
+          }
+
           return map;
         }).toList();
+
+        // Sort by created_at descending
+        list.sort((a, b) {
+          final aTimeStr = a['created_at'];
+          final bTimeStr = b['created_at'];
+          if (aTimeStr == null || bTimeStr == null) return 0;
+          try {
+            return DateTime.parse(bTimeStr).compareTo(DateTime.parse(aTimeStr));
+          } catch (_) {
+            return 0;
+          }
+        });
+
+        invitationList.value = list;
       }
-
-      // Combine both lists
-      final combined = [...pendingList, ...acceptedList];
-      
-      // Sort by created_at descending
-      combined.sort((a, b) {
-        final aTimeStr = a['created_at'];
-        final bTimeStr = b['created_at'];
-        if (aTimeStr == null || bTimeStr == null) return 0;
-        try {
-          return DateTime.parse(bTimeStr).compareTo(DateTime.parse(aTimeStr));
-        } catch (_) {
-          return 0;
-        }
-      });
-
-      invitationList.value = combined;
     } catch (e) {
-      debugPrint("Error fetching coach clients or requests: $e");
+      debugPrint("Error fetching coach sent client requests: $e");
     } finally {
       isListLoading.value = false;
     }
@@ -242,5 +270,43 @@ class Adminsendrequestcontroller extends GetxController {
 
   String getEmail(Map<String, dynamic> item) {
     return item['client_email'] ?? item['email'] ?? item['client_id'] ?? 'Pending Client';
+  }
+
+  Future<void> deleteClient(String clientId) async {
+    isListLoading.value = true;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      if (token == null) return;
+
+      final url = Uri.parse(ApiServices.deleteCoachClient(clientId));
+      debugPrint(">>> DELETING COACH CLIENT: DELETE $url");
+      final response = await http.delete(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      debugPrint("<<< DELETE RESPONSE STATUS: ${response.statusCode}");
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        _showSnackbar('Success', 'Client removed successfully.', isSuccess: true);
+        fetchInvitations(); 
+        try {
+          if (Get.isRegistered<ClientController>()) {
+            Get.find<ClientController>().fetchClients();
+          }
+        } catch (_) {}
+      } else {
+        _showSnackbar('Error', 'Failed to remove client: ${response.statusCode}', isSuccess: false);
+      }
+    } catch (e) {
+      debugPrint("Error deleting client: $e");
+      _showSnackbar('Error', 'An error occurred: $e', isSuccess: false);
+    } finally {
+      isListLoading.value = false;
+    }
   }
 }

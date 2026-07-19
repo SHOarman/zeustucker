@@ -266,15 +266,17 @@ class Onlodaing3 extends GetView<LoginController> {
               // ── Continue button ────────────────────────────────────────
               Obx(() {
                 final authController = Get.put(Authcontroller());
-                return Custombutton(
-                  iconname: 'Continue',
-                  isLoading: authController.isLoading.value,
-                  ontap: () {
-                    authController.completeOnboarding(
-                      profileImagePath: controller.profileImagePath.value,
-                      useForRegeneration: controller.useForRegeneration.value,
-                    );
-                  },
+                return Center(
+                  child: Custombutton(
+                    iconname: 'Continue',
+                    isLoading: authController.isLoading.value,
+                    ontap: () {
+                      authController.completeOnboarding(
+                        profileImagePath: controller.profileImagePath.value,
+                        useForRegeneration: controller.useForRegeneration.value,
+                      );
+                    },
+                  ),
                 );
               }),
 

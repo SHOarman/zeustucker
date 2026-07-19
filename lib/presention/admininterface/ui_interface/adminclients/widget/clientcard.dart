@@ -22,7 +22,7 @@ class ClientCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 335,
+      // width: 335,
       margin: const EdgeInsets.symmetric(vertical: 4),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(

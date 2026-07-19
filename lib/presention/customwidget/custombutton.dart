@@ -18,7 +18,7 @@ class Custombutton extends StatelessWidget {
         ontap();
       },
       child: Container(
-        width: 338,
+        // width: 338,
         height: 45,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(8),

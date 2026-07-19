@@ -309,46 +309,48 @@ class Createyouraccound extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 16),
-              Obx(() => Custombutton(
-                    iconname: 'Create account', 
-                    isLoading: authController.isLoading.value,
-                    ontap: () {
-                      if (!controller.agreeToTerms.value) {
-                         Get.snackbar('Error', 'Please accept the Terms and Conditions', backgroundColor: Colors.red, colorText: Colors.white);
-                         return;
-                      }
+              Obx(() => Center(
+                child: Custombutton(
+                      iconname: 'Create account',
+                      isLoading: authController.isLoading.value,
+                      ontap: () {
+                        if (!controller.agreeToTerms.value) {
+                           Get.snackbar('Error', 'Please accept the Terms and Conditions', backgroundColor: Colors.red, colorText: Colors.white);
+                           return;
+                        }
 
-                      if (controller.passwordController.text != controller.confirmPasswordController.text) {
-                         Get.snackbar('Error', 'Passwords do not match', backgroundColor: Colors.red, colorText: Colors.white);
-                         return;
-                      }
-                      
-                      String dob;
-                      if (controller.selectedYear.value.isEmpty ||
-                          controller.selectedMonth.value.isEmpty ||
-                          controller.selectedDay.value.isEmpty) {
-                        dob = "1990-01-01";
-                      } else {
-                        int monthIndex =
-                            controller.months.indexOf(
-                              controller.selectedMonth.value,
-                            ) +
-                            1;
-                        String monthStr = monthIndex.toString().padLeft(2, '0');
-                        dob =
-                            "${controller.selectedYear.value}-$monthStr-${controller.selectedDay.value.padLeft(2, '0')}";
-                      }
+                        if (controller.passwordController.text != controller.confirmPasswordController.text) {
+                           Get.snackbar('Error', 'Passwords do not match', backgroundColor: Colors.red, colorText: Colors.white);
+                           return;
+                        }
 
-                      authController.register(
-                        username: controller.usernameController.text.trim(),
-                        email: controller.emailController.text.trim(),
-                        password: controller.passwordController.text,
-                        confirmPassword: controller.confirmPasswordController.text,
-                        dateOfBirth: dob,
-                        role: authController.selectedRole.value,
-                      );
-                    },
-                  ),
+                        String dob;
+                        if (controller.selectedYear.value.isEmpty ||
+                            controller.selectedMonth.value.isEmpty ||
+                            controller.selectedDay.value.isEmpty) {
+                          dob = "1990-01-01";
+                        } else {
+                          int monthIndex =
+                              controller.months.indexOf(
+                                controller.selectedMonth.value,
+                              ) +
+                              1;
+                          String monthStr = monthIndex.toString().padLeft(2, '0');
+                          dob =
+                              "${controller.selectedYear.value}-$monthStr-${controller.selectedDay.value.padLeft(2, '0')}";
+                        }
+
+                        authController.register(
+                          username: controller.usernameController.text.trim(),
+                          email: controller.emailController.text.trim(),
+                          password: controller.passwordController.text,
+                          confirmPassword: controller.confirmPasswordController.text,
+                          dateOfBirth: dob,
+                          role: authController.selectedRole.value,
+                        );
+                      },
+                    ),
+              ),
               ),
               const SizedBox(height: 20),
 

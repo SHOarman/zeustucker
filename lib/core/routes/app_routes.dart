@@ -78,6 +78,7 @@ static const regenerateall="/regenerateall";
 
 //=====================adminsetting===================================================
 static const accoundperferences="/accoundperferences";
+static const updatepassword = "/updatepassword";
 static const clientmanagementlimits="/clientmanagementlimits";
 static const subscriptionbilling="/subscriptionbilling";
 static const notificationsettings="/notificationsettings";

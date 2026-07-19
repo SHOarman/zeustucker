@@ -80,15 +80,141 @@ class Magaeclients extends StatelessWidget {
                       isActive: isActive,
                       hasRoutine: hasRoutine,
                       onEditRoutine: () {
+                        final String clientUuid = item['client_id'] ?? '';
                         Get.toNamed(AppRoutes.editroutine, arguments: {
-                          'id': item['client_id'] ?? item['client_email'] ?? item['email'] ?? item['id'] ?? '',
+                          'id': clientUuid.isNotEmpty ? clientUuid : (item['client_email'] ?? item['email'] ?? ''),
                           'name': name,
                           'imageUrl': imgUrl,
                           'isCreate': !hasRoutine,
                         });
                       },
                       onDelete: () {
-                        // Delete logic if needed
+                        final String clientUuid = (item['client_id'] ?? item['id'] ?? '').toString();
+                        if (clientUuid.isNotEmpty && clientUuid != 'string' && clientUuid != 'null') {
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return Dialog(
+                                backgroundColor: Colors.transparent,
+                                insetPadding: const EdgeInsets.symmetric(horizontal: 40),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(24),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withValues(alpha: 0.1),
+                                        blurRadius: 20,
+                                        offset: const Offset(0, 8),
+                                      ),
+                                    ],
+                                  ),
+                                  padding: const EdgeInsets.all(24),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      // Warning Icon Circle
+                                      Container(
+                                        width: 56,
+                                        height: 56,
+                                        decoration: const BoxDecoration(
+                                          color: Color(0xFFFEE2E2),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(
+                                          Icons.delete_outline_rounded,
+                                          color: Color(0xFFEF4444),
+                                          size: 28,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 20),
+                                      // Title
+                                      const Text(
+                                        "Remove Client",
+                                        style: TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF1F2937),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 10),
+                                      // Content Text
+                                      const Text(
+                                        "Are you sure you want to remove this client? This action will permanently delete their connection and routine.",
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Color(0xFF4B5563),
+                                          height: 1.4,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 24),
+                                      // Buttons Row
+                                      Row(
+                                        children: [
+                                          // Cancel Button
+                                          Expanded(
+                                            child: SizedBox(
+                                              height: 48,
+                                              child: TextButton(
+                                                onPressed: () => Navigator.pop(context),
+                                                style: TextButton.styleFrom(
+                                                  foregroundColor: const Color(0xFF6B7280),
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius: BorderRadius.circular(12),
+                                                    side: const BorderSide(color: Color(0xFFE5E7EB)),
+                                                  ),
+                                                ),
+                                                child: const Text(
+                                                  "Cancel",
+                                                  style: TextStyle(
+                                                    fontSize: 15,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 12),
+                                          // Delete Button
+                                          Expanded(
+                                            child: SizedBox(
+                                              height: 48,
+                                              child: ElevatedButton(
+                                                onPressed: () {
+                                                  Navigator.pop(context);
+                                                  controller.deleteClient(clientUuid);
+                                                },
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: const Color(0xFFEF4444),
+                                                  foregroundColor: Colors.white,
+                                                  elevation: 0,
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius: BorderRadius.circular(12),
+                                                  ),
+                                                ),
+                                                child: const Text(
+                                                  "Remove",
+                                                  style: TextStyle(
+                                                    fontSize: 15,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          );
+                        } else {
+                          Get.snackbar("Error", "Cannot remove client without ID.",
+                              backgroundColor: Colors.red, colorText: Colors.white);
+                        }
                       },
                     );
                   }).toList(),

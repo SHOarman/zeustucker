@@ -214,8 +214,8 @@ class HomeScreen extends StatelessWidget {
                   ],
                 );
               }),
+
               const SizedBox(height: 40),
-              // Book Card
               Container(
                 width: double.infinity,
                 height: 530,

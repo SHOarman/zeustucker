@@ -86,7 +86,9 @@ class Accoundperferences extends StatelessWidget {
               CustomSettingTile(
                 imagePath: 'assets/icon/Container (13).png',
                 title: 'Update Password',
-                onTap: () {},
+                onTap: () {
+                  Get.toNamed(AppRoutes.updatepassword);
+                },
               ),
               const SizedBox(height: 20),
 

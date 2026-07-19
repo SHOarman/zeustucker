@@ -16,13 +16,17 @@ static const String forgot_password ="$baseUrl/password/forgot";
   static const String getProfile = "$baseUrl/profile";
   static const String updateSelfProfile = "$baseUrl/profile/self/settings";
   static const String updateCoachProfile = "$baseUrl/profile/coach/settings";
+  static const String updateCoachPassword = "$baseUrl/profile/coach/password";
   static const String logout = "$baseUrl/profile/logout";
   static const String deleteAccount = "$baseUrl/profile/account";
   static const String coachClients = "$baseUrl/coach/clients";
   static String deleteCoachClient(String clientId) => "$baseUrl/coach/clients/$clientId";
   static String getCoachClientProfile(String clientId) => "$baseUrl/coach/clients/$clientId/profile";
   static const String coachClientRequests = "$baseUrl/coach/client-requests";
+  static const String coachClientRequestsSent = "$baseUrl/coach/client-requests/sent";
   static String acceptClientRequest(String requestId) => "$baseUrl/coach/client-requests/$requestId/accept";
+  static const String dashboard = "$baseUrl/dashboard";
+  static const String coachNutritionPlans = "$baseUrl/coach/nutrition-plans";
 
   //==================================rutting===================================================
   static const String todayRoutine = "$baseUrl/routines/today";

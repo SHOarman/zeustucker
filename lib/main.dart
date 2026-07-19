@@ -62,7 +62,7 @@ class MyApp extends StatelessWidget {
       //   );
       // },
 
-      title: 'Aura',
+      title: 'Zeustucker',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: Brightness.dark,

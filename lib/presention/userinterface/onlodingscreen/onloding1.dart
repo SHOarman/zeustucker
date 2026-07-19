@@ -82,9 +82,11 @@ class Onloding1 extends StatelessWidget {
               ),
 
               SizedBox(height: 300),
-              Custombutton(iconname: "Get Started", ontap: () {
-                Get.toNamed(AppRoutes.onloading2);
-              }),
+              Center(
+                child: Custombutton(iconname: "Get Started", ontap: () {
+                  Get.toNamed(AppRoutes.onloading2);
+                }),
+              ),
               SizedBox(height: 10),
 
               Column(

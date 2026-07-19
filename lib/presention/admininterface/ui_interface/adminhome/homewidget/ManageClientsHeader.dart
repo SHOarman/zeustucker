@@ -1,4 +1,3 @@
-// ignore_for_file: file_names
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../../core/services/controller/adminpenelcontroller/clientcontoller.dart';
@@ -27,7 +26,6 @@ class ManageClientsHeader extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Back Button, Title and Filter Icon
           Row(
             children: [
               GestureDetector(
@@ -43,7 +41,7 @@ class ManageClientsHeader extends StatelessWidget {
               ),
               const SizedBox(width: 12),
 
-              // Title
+
               const Expanded(
                 child: Text(
                   'Manage Clients',

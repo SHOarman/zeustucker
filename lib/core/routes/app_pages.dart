@@ -7,6 +7,7 @@ import 'package:zeustucker/presention/admininterface/ui_interface/adminhome/addn
 import 'package:zeustucker/presention/admininterface/ui_interface/adminhome/editruting.dart';
 import 'package:zeustucker/presention/admininterface/ui_interface/adminhome/magaeclients.dart';
 import 'package:zeustucker/presention/admininterface/ui_interface/adminsetting/accoundperferences.dart';
+import 'package:zeustucker/presention/admininterface/ui_interface/adminsetting/updatepassword.dart';
 import 'package:zeustucker/presention/admininterface/ui_interface/adminstory/adminstory.dart';
 import 'package:zeustucker/presention/admininterface/ui_interface/adminsetting/adminsetting.dart';
 import 'package:zeustucker/presention/admininterface/ui_interface/adminhome/adminhome.dart';
@@ -186,6 +187,11 @@ class AppPages {
     GetPage(
       name: AppRoutes.accoundperferences,
       page: () => const Accoundperferences(),
+      transition: Transition.noTransition,
+    ),
+    GetPage(
+      name: AppRoutes.updatepassword,
+      page: () => const UpdatePassword(),
       transition: Transition.noTransition,
     ),
     GetPage(
