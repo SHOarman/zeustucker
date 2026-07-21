@@ -6,6 +6,7 @@ class NutritionPlanCard extends StatelessWidget {
   final TextEditingController proteinController;
   final TextEditingController carbsController;
   final TextEditingController fatsController;
+  final TextEditingController fiberController;
 
   const NutritionPlanCard({
     super.key,
@@ -13,6 +14,7 @@ class NutritionPlanCard extends StatelessWidget {
     required this.proteinController,
     required this.carbsController,
     required this.fatsController,
+    required this.fiberController,
   });
 
   @override
@@ -50,6 +52,15 @@ class NutritionPlanCard extends StatelessWidget {
               Expanded(child: _buildInput('FATS (G)', fatsController)),
             ],
           ),
+          const SizedBox(height: 24),
+          // Row 3: Fiber
+          Row(
+            children: [
+              Expanded(child: _buildInput('FIBER (G)', fiberController)),
+              const SizedBox(width: 20),
+              const Expanded(child: SizedBox.shrink()),
+            ],
+          ),
         ],
       ),
     );
@@ -79,7 +90,7 @@ class NutritionPlanCard extends StatelessWidget {
           alignment: Alignment.centerLeft,
           child: TextField(
             controller: controller,
-            keyboardType: TextInputType.number,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w700,

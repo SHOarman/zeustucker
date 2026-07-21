@@ -81,24 +81,25 @@ class ClientCard extends StatelessWidget {
             ),
           ),
 
-          GestureDetector(
-            onTap: onEditRoutine,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: const Color(0xFF00B171),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                hasRoutine ? "EDIT ROUTINE" : "CREATE ROUTINE",
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
+          if (isActive)
+            GestureDetector(
+              onTap: onEditRoutine,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF00B171),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  hasRoutine ? "EDIT ROUTINE" : "CREATE ROUTINE",
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
-          ),
 
           const SizedBox(width: 8),
 

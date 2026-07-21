@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:zeustucker/core/routes/app_routes.dart';
 import 'package:zeustucker/presention/admininterface/ui_interface/adminhome/homewidget/daily_goals_section.dart';
 import 'package:zeustucker/presention/admininterface/ui_interface/adminhome/homewidget/EditRoutineHeader.dart';
 import 'package:zeustucker/presention/admininterface/ui_interface/adminhome/homewidget/nutrition_plan_card.dart';
@@ -92,6 +91,7 @@ class Editruting extends StatelessWidget {
                     proteinController: controller.proteinController,
                     carbsController: controller.carbsController,
                     fatsController: controller.fatsController,
+                    fiberController: controller.fiberController,
                   ),
                   const SizedBox(height: 20),
                   Row(
@@ -115,17 +115,18 @@ class Editruting extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
 
-                  DailyGoalsSection(
-                    drinkWater: controller.drinkWater,
-                    steps10k: controller.steps10k,
-                    noSugar: controller.noSugar,
-                    sleep8Hours: controller.sleep8Hours,
-                    toggleGoal: controller.toggleGoal,
-                    clientName: controller.clientName.value,
-                    onSave: () {
-                      controller.submitRoutine();
-                    },
-                  ),
+                  Obx(() {
+                    final goalsList = controller.dailyGoals.toList();
+                    return DailyGoalsSection(
+                      onAddPressed: controller.addDailyGoal,
+                      goalInputController: controller.dailyGoalInputController,
+                      goals: goalsList,
+                      onRemovePressed: controller.removeDailyGoal,
+                      onSave: () {
+                        controller.submitRoutine();
+                      },
+                    );
+                  }),
 
                   const SizedBox(height: 40),
                 ],

@@ -97,7 +97,6 @@ class Adminsendrequestcontroller extends GetxController {
         }
       }
 
-      // 2. Fetch coach nutrition plans (to check if client has routine/nutrition plan)
       final nutritionUrl = Uri.parse(ApiServices.coachNutritionPlans);
       final nutritionResponse = await http.get(nutritionUrl, headers: headers);
       final Set<String> clientsWithPlans = {};

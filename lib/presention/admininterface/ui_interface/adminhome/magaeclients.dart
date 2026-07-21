@@ -28,16 +28,27 @@ class Magaeclients extends StatelessWidget {
 
               const SizedBox(height: 20),
 
-              Obx(() => Text(
-                "ALL CLIENTS (${controller.invitationList.length})",
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xff9CA3AF)),
-              )),
+              Obx(() {
+                final acceptedList = controller.invitationList.where((item) {
+                  final status = (item['ui_status'] ?? item['status'])?.toString().toUpperCase();
+                  return status == 'ACCEPTED';
+                }).toList();
+                return Text(
+                  "ALL CLIENTS (${acceptedList.length})",
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xff9CA3AF)),
+                );
+              }),
 
               const SizedBox(height: 10),
 
-              //=====================================active&pendingcard================================================
+              //=====================================active card list================================================
               Obx(() {
-                if (controller.isListLoading.value && controller.invitationList.isEmpty) {
+                final acceptedList = controller.invitationList.where((item) {
+                  final status = (item['ui_status'] ?? item['status'])?.toString().toUpperCase();
+                  return status == 'ACCEPTED';
+                }).toList();
+
+                if (controller.isListLoading.value && acceptedList.isEmpty) {
                   return const Center(
                     child: Padding(
                       padding: EdgeInsets.all(16.0),
@@ -46,7 +57,7 @@ class Magaeclients extends StatelessWidget {
                   );
                 }
 
-                if (controller.invitationList.isEmpty) {
+                if (acceptedList.isEmpty) {
                   return const Center(
                     child: Padding(
                       padding: EdgeInsets.all(16.0),
@@ -59,7 +70,7 @@ class Magaeclients extends StatelessWidget {
                 }
 
                 return Column(
-                  children: controller.invitationList.map((item) {
+                  children: acceptedList.map((item) {
                     String name = 'Client';
                     final fName = item['first_name'] ?? item['firstName'];
                     final lName = item['last_name'] ?? item['lastName'];
@@ -68,7 +79,7 @@ class Magaeclients extends StatelessWidget {
                     } else {
                       name = item['name'] ?? item['client_name'] ?? item['username'] ?? item['client_email'] ?? item['email'] ?? 'Client';
                     }
-                    final bool isActive = item['ui_status'] == 'ACCEPTED';
+                    final bool isActive = (item['ui_status'] ?? item['status'])?.toString().toUpperCase() == 'ACCEPTED';
                     final bool hasRoutine = item['has_routine'] == true || item['routine'] != null || item['routine_id'] != null || (item['routines'] != null && (item['routines'] as List).isNotEmpty);
                     
                     final String rawImg = (item['profile_image'] ?? item['client_image'] ?? item['image'] ?? '').toString().trim();
@@ -80,9 +91,10 @@ class Magaeclients extends StatelessWidget {
                       isActive: isActive,
                       hasRoutine: hasRoutine,
                       onEditRoutine: () {
-                        final String clientUuid = item['client_id'] ?? '';
+                        final String clientUuid = (item['client_id'] ?? item['client_uuid'] ?? item['user_id'] ?? item['id'] ?? '').toString().trim();
+                        debugPrint("Navigating to editroutine for client: $name, clientUuid: $clientUuid");
                         Get.toNamed(AppRoutes.editroutine, arguments: {
-                          'id': clientUuid.isNotEmpty ? clientUuid : (item['client_email'] ?? item['email'] ?? ''),
+                          'id': clientUuid,
                           'name': name,
                           'imageUrl': imgUrl,
                           'isCreate': !hasRoutine,

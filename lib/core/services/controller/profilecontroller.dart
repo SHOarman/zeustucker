@@ -584,6 +584,13 @@ class EditProfileController extends GetxController {
       final token = prefs.getString('auth_token');
       if (token == null) return;
 
+      final role = (profileData['role'] ?? prefs.getString('role') ?? '').toString().toUpperCase();
+      if (role == 'COACH') {
+        // GET /coach/client-requests is reserved for SELF (client) users to view pending requests sent by coaches.
+        coachRequests.clear();
+        return;
+      }
+
       final response = await http.get(
         Uri.parse(ApiServices.coachClientRequests),
         headers: {
@@ -599,6 +606,8 @@ class EditProfileController extends GetxController {
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
         coachRequests.value = List<Map<String, dynamic>>.from(data);
+      } else {
+        coachRequests.clear();
       }
     } catch (e) {
       debugPrint("Error fetching coach requests: $e");
