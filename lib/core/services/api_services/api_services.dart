@@ -51,11 +51,18 @@ static const String forgot_password ="$baseUrl/password/forgot";
 
   //==================================workout-plans=============================================
   static const String workoutPlans = "$baseUrl/workout-plans";
+  static const String assignedWorkoutPlan = "$baseUrl/workout-plans/assigned";
 
   static String workoutPlanDetail(String planId) => "$baseUrl/workout-plans/$planId";
   static String assignWorkoutPlan(String planId) => "$baseUrl/workout-plans/$planId/assign";
+  static String patchAssignedWorkoutItem(String itemId) => "$baseUrl/workout-plans/assigned/$itemId";
 
   //==================================nutrition-plans=============================================
   static const String nutritionPlans = "$baseUrl/coach/nutrition-plans";
   static String nutritionPlanDetail(String planId) => "$baseUrl/coach/nutrition-plans/$planId";
+
+  //==================================weekly-summary=============================================
+  static const String weeklySummaryWorkouts = "$baseUrl/weekly-summary/workouts";
+  static const String weeklySummaryMeals = "$baseUrl/weekly-summary/meals";
+  static const String weeklySummaryGoals = "$baseUrl/weekly-summary/goals";
 }

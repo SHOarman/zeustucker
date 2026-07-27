@@ -1,13 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
+import 'package:zeustucker/core/services/controller/schedule_controller.dart';
 import '../../customwidget/WorkoutDayCard.dart';
 
 class Meals extends StatelessWidget {
   const Meals({super.key});
 
+  String _getWeekdayLabel(String dateStr) {
+    try {
+      final dt = DateTime.parse(dateStr);
+      const weekdays = ["Mon", "Tues", "Wed", "Thur", "Fri", "Sat", "Sun"];
+      return weekdays[dt.weekday - 1];
+    } catch (_) {
+      return "";
+    }
+  }
+
+  String _getDayNumber(String dateStr) {
+    try {
+      final dt = DateTime.parse(dateStr);
+      return dt.day.toString();
+    } catch (_) {
+      return "";
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final ScheduleController ctrl = Get.find<ScheduleController>();
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -56,7 +77,7 @@ class Meals extends StatelessWidget {
               ),
               const SizedBox(height: 12),
 
-              Container(
+              Obx(() => Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -80,11 +101,16 @@ class Meals extends StatelessWidget {
                             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Color(0xff323232))),
                       ],
                     ),
-                    const Text("Workout: 5 / 7",
-                        style: TextStyle(color: Color(0xff323232), fontWeight: FontWeight.w500,)),
+                    Text(
+                      "Meals: ${ctrl.mealsCompleted.value} / ${ctrl.mealsAssigned.value}",
+                      style: const TextStyle(
+                        color: Color(0xff323232),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ],
                 ),
-              ),
+              )),
               const SizedBox(height: 20),
 
               // "This Week" Tag
@@ -101,50 +127,49 @@ class Meals extends StatelessWidget {
               ),
               const SizedBox(height: 16),
 
-              //====================================workout day cards====================================//
+              //====================================meals day cards====================================//
+              Obx(() {
+                if (ctrl.weeklyMeals.isEmpty) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(20.0),
+                      child: Text(
+                        "No meals logged this week",
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    ),
+                  );
+                }
 
-              Column(
-                children: [
-                  WorkoutDayCard(
-                    day: "Mon", date: "22",
-                    iconPath: "assets/icon/Container (1).png",
-                    title: "Strength", subtitle: "45 min Medium",
-                  ),
-                  WorkoutDayCard(
-                    day: "Tues", date: "23",
-                    iconPath: "assets/icon/Container (2).png",
-                    title: "Custom", subtitle: "1 hour",
-                  ),
-                  WorkoutDayCard(
-                    day: "Wed", date: "24",
-                    iconPath: "assets/icon/Container (3).png",
-                    title: "Cardio", subtitle: "30 min",
-                  ),
-                  WorkoutDayCard(
-                    day: "Thur", date: "25",
-                    iconPath: "assets/icon/Container (1).png",
-                    title: "Strength", subtitle: "30 min Medium",
-                  ),
-                  WorkoutDayCard(
-                    day: "Fri", date: "26",
-                    iconPath: "assets/icon/Container (4).png",
-                    title: "No workout",
-                    isNoWorkout: true,
-                  ),
-                  WorkoutDayCard(
-                    day: "Sat", date: "27",
-                    iconPath: "assets/icon/Container (4).png",
-                    title: "No workout",
-                    isNoWorkout: true,
-                  ),
-                  WorkoutDayCard(
-                    day: "Sun", date: "28",
-                    iconPath: "assets/icon/Container (4).png",
-                    title: "No workout",
-                    isNoWorkout: true,
-                  ),
-                ],
-              ),
+                return Column(
+                  children: ctrl.weeklyMeals.map((day) {
+                    final hasLogged = day.consumed.kcal > 0 ||
+                        day.consumed.protein > 0 ||
+                        day.consumed.carbs > 0 ||
+                        day.consumed.fat > 0;
+
+                    final isNoMeal = !hasLogged;
+                    String title = "No meals logged";
+                    String? subtitle;
+                    String iconPath = "assets/icon/Container (4).png";
+
+                    if (!isNoMeal) {
+                      title = "Logged: ${day.consumed.kcal.round()} kcal";
+                      subtitle = "P: ${day.consumed.protein.round()}g, C: ${day.consumed.carbs.round()}g, F: ${day.consumed.fat.round()}g";
+                      iconPath = "assets/icon/Container (3).png"; // meals icon
+                    }
+
+                    return WorkoutDayCard(
+                      day: _getWeekdayLabel(day.date),
+                      date: _getDayNumber(day.date),
+                      iconPath: iconPath,
+                      title: title,
+                      subtitle: subtitle,
+                      isNoWorkout: isNoMeal,
+                    );
+                  }).toList(),
+                );
+              }),
               const SizedBox(height: 32),
             ],
           ),

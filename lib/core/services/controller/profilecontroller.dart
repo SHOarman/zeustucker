@@ -180,6 +180,10 @@ class EditProfileController extends GetxController {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = jsonDecode(response.body);
+        final profileId = data['id'] ?? data['user_id'] ?? data['user']?['id'] ?? data['uid'];
+        if (profileId != null) {
+          await prefs.setString('user_id', profileId.toString());
+        }
         print("\n================ SELF PROFILE DATA FROM SERVER ================");
         print("Gender: ${data['gender']}");
         print("Occupation: ${data['occupation'] ?? data['profession']}");

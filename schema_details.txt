@@ -1,0 +1,608 @@
+=== Schema: RoutineRead ===
+{
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "title": "Id"
+    },
+    "user_id": {
+      "type": "string",
+      "format": "uuid",
+      "title": "User Id"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "title": "Date"
+    },
+    "workout": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Workout"
+    },
+    "meals": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Meals"
+    },
+    "meals_kcal": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Meals Kcal"
+    },
+    "goal_kcal": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Goal Kcal"
+    },
+    "goal_protein": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Goal Protein"
+    },
+    "goal_carbs": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Goal Carbs"
+    },
+    "goal_fats": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Goal Fats"
+    },
+    "goal_fiber": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Goal Fiber"
+    },
+    "intake_protein": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Intake Protein"
+    },
+    "intake_carbs": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Intake Carbs"
+    },
+    "intake_fats": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Intake Fats"
+    },
+    "intake_fiber": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Intake Fiber"
+    },
+    "water_intake": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Water Intake"
+    },
+    "sleep": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Sleep"
+    },
+    "notes": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Notes"
+    },
+    "completion_status": {
+      "type": "boolean",
+      "title": "Completion Status"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Created At"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Updated At"
+    },
+    "nutrition_plan": {
+      "anyOf": [
+        {
+          "$ref": "#/components/schemas/NutritionPlanRead"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "consumed_kcal": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Consumed Kcal",
+      "readOnly": true
+    },
+    "remaining_kcal": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Remaining Kcal",
+      "readOnly": true
+    },
+    "remaining_protein": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Remaining Protein",
+      "readOnly": true
+    },
+    "remaining_carbs": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Remaining Carbs",
+      "readOnly": true
+    },
+    "remaining_fats": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Remaining Fats",
+      "readOnly": true
+    },
+    "remaining_fiber": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Remaining Fiber",
+      "readOnly": true
+    }
+  },
+  "type": "object",
+  "required": [
+    "id",
+    "user_id",
+    "date",
+    "workout",
+    "meals",
+    "meals_kcal",
+    "goal_kcal",
+    "goal_protein",
+    "goal_carbs",
+    "goal_fats",
+    "goal_fiber",
+    "intake_protein",
+    "intake_carbs",
+    "intake_fats",
+    "intake_fiber",
+    "water_intake",
+    "sleep",
+    "notes",
+    "completion_status",
+    "created_at",
+    "updated_at",
+    "consumed_kcal",
+    "remaining_kcal",
+    "remaining_protein",
+    "remaining_carbs",
+    "remaining_fats",
+    "remaining_fiber"
+  ],
+  "title": "RoutineRead"
+}
+
+=== Schema: RoutinePatch ===
+{
+  "properties": {
+    "date": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Date"
+    },
+    "workout": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Workout"
+    },
+    "meals": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Meals"
+    },
+    "water_intake": {
+      "anyOf": [
+        {
+          "type": "number",
+          "minimum": 0.0
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Water Intake"
+    },
+    "sleep": {
+      "anyOf": [
+        {
+          "type": "number",
+          "minimum": 0.0
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Sleep"
+    },
+    "notes": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Notes"
+    },
+    "completion_status": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Completion Status"
+    }
+  },
+  "additionalProperties": false,
+  "type": "object",
+  "title": "RoutinePatch"
+}
+
+=== Schema: RoutinePut ===
+{
+  "properties": {
+    "date": {
+      "type": "string",
+      "format": "date",
+      "title": "Date"
+    },
+    "workout": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Workout"
+    },
+    "meals": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Meals"
+    },
+    "water_intake": {
+      "anyOf": [
+        {
+          "type": "number",
+          "minimum": 0.0
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Water Intake"
+    },
+    "sleep": {
+      "anyOf": [
+        {
+          "type": "number",
+          "minimum": 0.0
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Sleep"
+    },
+    "notes": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Notes"
+    },
+    "completion_status": {
+      "type": "boolean",
+      "title": "Completion Status"
+    }
+  },
+  "additionalProperties": false,
+  "type": "object",
+  "required": [
+    "date",
+    "completion_status"
+  ],
+  "title": "RoutinePut"
+}
+
+=== Schema: WeeklyGoalItemRead ===
+{
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "title": "Id"
+    },
+    "position": {
+      "type": "integer",
+      "title": "Position"
+    },
+    "instruction": {
+      "type": "string",
+      "title": "Instruction"
+    },
+    "completed": {
+      "type": "boolean",
+      "title": "Completed"
+    },
+    "completed_at": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Completed At"
+    }
+  },
+  "type": "object",
+  "required": [
+    "id",
+    "position",
+    "instruction",
+    "completed",
+    "completed_at"
+  ],
+  "title": "WeeklyGoalItemRead"
+}
+
+=== Schema: WeeklyGoalDayRead ===
+{
+  "properties": {
+    "date": {
+      "type": "string",
+      "format": "date",
+      "title": "Date"
+    },
+    "day": {
+      "type": "string",
+      "title": "Day"
+    },
+    "is_future": {
+      "type": "boolean",
+      "title": "Is Future"
+    },
+    "applicable": {
+      "type": "boolean",
+      "title": "Applicable"
+    },
+    "plan": {
+      "anyOf": [
+        {
+          "$ref": "#/components/schemas/WeeklyPlanRefRead"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "daily_goal_score": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Daily Goal Score"
+    },
+    "completed_count": {
+      "type": "integer",
+      "title": "Completed Count"
+    },
+    "assigned_count": {
+      "type": "integer",
+      "title": "Assigned Count"
+    },
+    "all_completed": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "All Completed"
+    },
+    "items": {
+      "items": {
+        "$ref": "#/components/schemas/WeeklyGoalItemRead"
+      },
+      "type": "array",
+      "title": "Items"
+    }
+  },
+  "type": "object",
+  "required": [
+    "date",
+    "day",
+    "is_future",
+    "applicable",
+    "plan",
+    "daily_goal_score",
+    "completed_count",
+    "assigned_count",
+    "all_completed"
+  ],
+  "title": "WeeklyGoalDayRead"
+}
+

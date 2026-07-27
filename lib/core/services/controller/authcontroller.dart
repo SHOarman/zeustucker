@@ -348,6 +348,11 @@ class Authcontroller extends GetxController {
               if (profileData['date_of_birth'] != null) {
                 await prefs.setString('dob', profileData['date_of_birth'].toString());
               }
+              final profileId = profileData['id'] ?? profileData['user_id'] ?? profileData['user']?['id'] ?? profileData['uid'];
+              if (profileId != null) {
+                await prefs.setString('user_id', profileId.toString());
+                debugPrint("Saved user_id from profile response during login: $profileId");
+              }
 
               bool isFieldPopulated(dynamic val) {
                 if (val == null) return false;

@@ -331,8 +331,8 @@ class HomeScreen extends StatelessWidget {
               Row(
                 children: [
                   Image.asset("assets/icon/workout.png"),
-                  SizedBox(width: 6),
-                  Text(
+                  const SizedBox(width: 6),
+                  const Text(
                     "Todays Workout",
                     style: TextStyle(
                       color: Color(0xff111827),
@@ -343,12 +343,85 @@ class HomeScreen extends StatelessWidget {
                 ],
               ),
 
-              SizedBox(height: 12),
-              CustomDottedCard(
-                bodyText: "No workout has been set for today yet.",
-                centerWidget: Image.asset("assets/image/deactiveworkout.png"),
-                onTap: () {},
-              ),
+              const SizedBox(height: 12),
+              Obx(() {
+                if (controller.isWorkoutLoading.value) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 20),
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF1CBBA7)),
+                      ),
+                    ),
+                  );
+                }
+
+                if (controller.workoutItems.isEmpty) {
+                  return CustomDottedCard(
+                    bodyText: "No workout has been set for today yet.",
+                    centerWidget: Image.asset("assets/image/deactiveworkout.png"),
+                    onTap: () {
+                      controller.fetchAssignedWorkoutPlan();
+                    },
+                  );
+                }
+
+                return ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding: EdgeInsets.zero,
+                  itemCount: controller.workoutItems.length,
+                  itemBuilder: (context, index) {
+                    final item = controller.workoutItems[index];
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(15),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.04),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        borderRadius: BorderRadius.circular(15),
+                        clipBehavior: Clip.antiAlias,
+                        child: ListTile(
+                          onTap: () {
+                            controller.toggleWorkoutItemCompletion(item.id, !item.completed);
+                          },
+                          leading: Icon(
+                            item.completed
+                                ? Icons.check_circle
+                                : Icons.radio_button_unchecked,
+                            color: item.completed
+                                ? const Color(0xFF1CBBA7)
+                                : Colors.grey[400],
+                            size: 26,
+                          ),
+                          title: Text(
+                            item.instruction,
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: item.completed
+                                  ? Colors.grey[400]
+                                  : const Color(0xff111827),
+                              decoration: item.completed
+                                  ? TextDecoration.lineThrough
+                                  : TextDecoration.none,
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                );
+              }),
 
               const SizedBox(height: 30),
 

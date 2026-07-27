@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:zeustucker/core/routes/app_routes.dart';
 import 'package:zeustucker/presention/customwidget/custom_bottom_nav.dart';
+import 'package:zeustucker/core/services/controller/schedule_controller.dart';
 
 class ScheduleScreen extends StatelessWidget {
   const ScheduleScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final ctrl = Get.put(ScheduleController());
+
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAFB),
       bottomNavigationBar: const CustomBottomNav(selectIndex: 3),
@@ -48,61 +51,88 @@ class ScheduleScreen extends StatelessWidget {
                 ],
               ),
               Padding(
-                padding: EdgeInsets.symmetric(vertical: 8),
-                child: Divider(color: Color(0xFF000000)),
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: const Divider(color: Color(0xFF000000)),
               ),
-              const Text(
-                '4 Days Week',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF323232),
-                ),
-              ),
-              const SizedBox(height: 20),
+              Obx(() {
+                if (ctrl.isLoading.value) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 40),
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF00A781)),
+                      ),
+                    ),
+                  );
+                }
 
-              // Bar chart
-              _buildBarChart(),
+                // Show week status count
+                final compliantDays = ctrl.weeklySummary.value?.dailyPoints
+                    .where((x) => x.combinedScore > 0 && !x.isFuture)
+                    .length ?? 0;
 
-              const SizedBox(height: 30),
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '$compliantDays Days Week',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF323232),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
 
-              // Metric Cards
-              Row(
-                children: [
-                  _buildMetricCard(
-                    title: 'Workout',
-                    value: '4/5',
-                    progress: 0.8,
-                    color: const Color(0xFF38B8E6),
-                    imagePath: 'assets/image/Group (2).png',
-                      ontap: (){
+                    // Bar chart
+                    _buildBarChart(ctrl),
 
-                      Get.toNamed(AppRoutes.workout);
-                      }
-                  ),
-                  _buildMetricCard(
-                    title: 'Meals',
-                    value: '5/7',
-                    progress: 0.71,
-                    color: const Color(0xFFFACC15),
-                    imagePath: 'assets/image/Group (3).png', ontap: (){
+                    const SizedBox(height: 30),
 
-                    Get.toNamed(AppRoutes.meal);
-                  },
-                  ),
-                  _buildMetricCard(
-                    title: 'Tasks',
-                    value: '7/8',
-                    progress: 0.87,
-                    color: const Color(0xFF34D399),
-                    imagePath: 'assets/image/To do list.png',
-                      ontap: (){
-
-                        Get.toNamed(AppRoutes.task);
-                      }
-                  ),
-                ],
-              ),
+                    // Metric Cards
+                    Row(
+                      children: [
+                        _buildMetricCard(
+                          title: 'Workout',
+                          value: '${ctrl.workoutCompleted.value}/${ctrl.workoutAssigned.value}',
+                          progress: ctrl.workoutAssigned.value > 0
+                              ? (ctrl.workoutCompleted.value / ctrl.workoutAssigned.value).clamp(0.0, 1.0)
+                              : 0.0,
+                          color: const Color(0xFF38B8E6),
+                          imagePath: 'assets/image/Group (2).png',
+                          ontap: () {
+                            Get.toNamed(AppRoutes.workout);
+                          },
+                        ),
+                        _buildMetricCard(
+                          title: 'Meals',
+                          value: '${ctrl.mealsCompleted.value}/${ctrl.mealsAssigned.value}',
+                          progress: ctrl.mealsAssigned.value > 0
+                              ? (ctrl.mealsCompleted.value / ctrl.mealsAssigned.value).clamp(0.0, 1.0)
+                              : 0.0,
+                          color: const Color(0xFFFACC15),
+                          imagePath: 'assets/image/Group (3).png',
+                          ontap: () {
+                            Get.toNamed(AppRoutes.meal);
+                          },
+                        ),
+                        _buildMetricCard(
+                          title: 'Tasks',
+                          value: '${ctrl.tasksCompleted.value}/${ctrl.tasksAssigned.value}',
+                          progress: ctrl.tasksAssigned.value > 0
+                              ? (ctrl.tasksCompleted.value / ctrl.tasksAssigned.value).clamp(0.0, 1.0)
+                              : 0.0,
+                          color: const Color(0xFF34D399),
+                          imagePath: 'assets/image/To do list.png',
+                          ontap: () {
+                            Get.toNamed(AppRoutes.task);
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
+                );
+              }),
 
               const SizedBox(height: 40),
 
@@ -206,12 +236,11 @@ class ScheduleScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBarChart() {
-    final heights = [280.0, 80.0, 300.0, 140.0, 110.0, 140.0, 280.0];
+  Widget _buildBarChart(ScheduleController ctrl) {
     final labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
     return SizedBox(
-      height: 400,
+      height: 300,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -219,9 +248,11 @@ class ScheduleScreen extends StatelessWidget {
           return Column(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
+              _buildScoreText(ctrl, index),
+              const SizedBox(height: 4),
               Container(
                 width: 32,
-                height: heights[index],
+                height: ctrl.barHeights[index],
                 decoration: BoxDecoration(
                   color: const Color(0xFF00A781),
                   borderRadius: BorderRadius.circular(6),
@@ -239,6 +270,31 @@ class ScheduleScreen extends StatelessWidget {
             ],
           );
         }),
+      ),
+    );
+  }
+
+  Widget _buildScoreText(ScheduleController ctrl, int index) {
+    final points = ctrl.weeklySummary.value?.dailyPoints ?? [];
+    double score = 0;
+    for (var p in points) {
+      try {
+        final dt = DateTime.parse(p.date);
+        if (dt.weekday == index + 1) {
+          score = p.combinedScore;
+          break;
+        }
+      } catch (_) {}
+    }
+
+    if (score == 0) return const SizedBox(height: 14);
+
+    return Text(
+      score.toStringAsFixed(0),
+      style: const TextStyle(
+        fontSize: 10,
+        fontWeight: FontWeight.bold,
+        color: Color(0xFF00A781),
       ),
     );
   }

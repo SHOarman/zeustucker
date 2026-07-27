@@ -1,13 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
+import 'package:zeustucker/core/services/controller/schedule_controller.dart';
 import '../../customwidget/WorkoutDayCard.dart';
 
 class Workout extends StatelessWidget {
   const Workout({super.key});
 
+  String _getWeekdayLabel(String dateStr) {
+    try {
+      final dt = DateTime.parse(dateStr);
+      const weekdays = ["Mon", "Tues", "Wed", "Thur", "Fri", "Sat", "Sun"];
+      return weekdays[dt.weekday - 1];
+    } catch (_) {
+      return "";
+    }
+  }
+
+  String _getDayNumber(String dateStr) {
+    try {
+      final dt = DateTime.parse(dateStr);
+      return dt.day.toString();
+    } catch (_) {
+      return "";
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final ScheduleController ctrl = Get.find<ScheduleController>();
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -56,7 +77,7 @@ class Workout extends StatelessWidget {
               ),
               const SizedBox(height: 12),
 
-              Container(
+              Obx(() => Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -80,11 +101,16 @@ class Workout extends StatelessWidget {
                             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Color(0xff323232))),
                       ],
                     ),
-                    const Text("Workout: 4 / 5",
-                        style: TextStyle(color: Color(0xff323232), fontWeight: FontWeight.w500,)),
+                    Text(
+                      "Workout: ${ctrl.workoutCompleted.value} / ${ctrl.workoutAssigned.value}",
+                      style: const TextStyle(
+                        color: Color(0xff323232),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ],
                 ),
-              ),
+              )),
               const SizedBox(height: 20),
 
               // "This Week" Tag
@@ -102,49 +128,55 @@ class Workout extends StatelessWidget {
               const SizedBox(height: 16),
 
               //====================================workout day cards====================================//
+              Obx(() {
+                if (ctrl.weeklyWorkouts.isEmpty) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(20.0),
+                      child: Text(
+                        "No workout plan assigned",
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    ),
+                  );
+                }
 
-              Column(
-                children: [
-                  WorkoutDayCard(
-                    day: "Mon", date: "22",
-                    iconPath: "assets/icon/Container (1).png",
-                    title: "Strength", subtitle: "45 min Medium",
-                  ),
-                  WorkoutDayCard(
-                    day: "Tues", date: "23",
-                    iconPath: "assets/icon/Container (2).png",
-                    title: "Custom", subtitle: "1 hour",
-                  ),
-                  WorkoutDayCard(
-                    day: "Wed", date: "24",
-                    iconPath: "assets/icon/Container (3).png",
-                    title: "Cardio", subtitle: "30 min",
-                  ),
-                  WorkoutDayCard(
-                    day: "Thur", date: "25",
-                    iconPath: "assets/icon/Container (1).png",
-                    title: "Strength", subtitle: "30 min Medium",
-                  ),
-                  WorkoutDayCard(
-                    day: "Fri", date: "26",
-                    iconPath: "assets/icon/Container (4).png",
-                    title: "No workout",
-                    isNoWorkout: true,
-                  ),
-                  WorkoutDayCard(
-                    day: "Sat", date: "27",
-                    iconPath: "assets/icon/Container (4).png",
-                    title: "No workout",
-                    isNoWorkout: true,
-                  ),
-                  WorkoutDayCard(
-                    day: "Sun", date: "28",
-                    iconPath: "assets/icon/Container (4).png",
-                    title: "No workout",
-                    isNoWorkout: true,
-                  ),
-                ],
-              ),
+                return Column(
+                  children: ctrl.weeklyWorkouts.map((day) {
+                    final isNoWorkout = day.items.isEmpty || day.assignedCount == 0;
+                    String title = "No workout";
+                    String? subtitle;
+                    String iconPath = "assets/icon/Container (4).png";
+
+                    if (!isNoWorkout) {
+                      final item = day.items.first;
+                      final instruction = item.instruction;
+                      final parts = instruction.split(' ');
+                      title = parts.isNotEmpty ? parts.first : "Workout";
+                      subtitle = parts.length > 1 ? parts.sublist(1).join(' ') : null;
+
+                      if (instruction.toLowerCase().contains("strength")) {
+                        iconPath = "assets/icon/Container (1).png";
+                      } else if (instruction.toLowerCase().contains("custom")) {
+                        iconPath = "assets/icon/Container (2).png";
+                      } else if (instruction.toLowerCase().contains("cardio")) {
+                        iconPath = "assets/icon/Container (3).png";
+                      } else {
+                        iconPath = "assets/icon/Container (1).png"; // default fallback icon
+                      }
+                    }
+
+                    return WorkoutDayCard(
+                      day: _getWeekdayLabel(day.date),
+                      date: _getDayNumber(day.date),
+                      iconPath: iconPath,
+                      title: title,
+                      subtitle: subtitle,
+                      isNoWorkout: isNoWorkout,
+                    );
+                  }).toList(),
+                );
+              }),
               const SizedBox(height: 32),
             ],
           ),

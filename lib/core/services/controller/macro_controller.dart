@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -15,7 +15,51 @@ class MacroFood {
 class LoggedMeal {
   final String name;
   final int kcal;
-  LoggedMeal({required this.name, required this.kcal});
+  final String? id;
+  final String? mealType;
+  final double? amount;
+  final String? amountUnit;
+  final double? protein;
+  final double? carbs;
+  final double? fat;
+  final double? fiber;
+  final String? loggedAt;
+
+  LoggedMeal({
+    required this.name,
+    required this.kcal,
+    this.id,
+    this.mealType,
+    this.amount,
+    this.amountUnit,
+    this.protein,
+    this.carbs,
+    this.fat,
+    this.fiber,
+    this.loggedAt,
+  });
+
+  factory LoggedMeal.fromJson(Map<String, dynamic> json) {
+    final double? parsedAmount = json['amount'] != null ? double.tryParse(json['amount'].toString()) : null;
+    final double? parsedProtein = json['protein'] != null ? double.tryParse(json['protein'].toString()) : null;
+    final double? parsedCarbs = json['carbs'] != null ? double.tryParse(json['carbs'].toString()) : null;
+    final double? parsedFat = json['fat'] != null ? double.tryParse(json['fat'].toString()) : null;
+    final double? parsedFiber = json['fiber'] != null ? double.tryParse(json['fiber'].toString()) : null;
+
+    return LoggedMeal(
+      name: json['food_name'] ?? json['name'] ?? '',
+      kcal: (json['kcal'] ?? json['calories'] ?? 0) as int,
+      id: json['id'],
+      mealType: json['meal_type'] ?? json['macro_type'],
+      amount: parsedAmount,
+      amountUnit: json['amount_unit'],
+      protein: parsedProtein,
+      carbs: parsedCarbs,
+      fat: parsedFat,
+      fiber: parsedFiber,
+      loggedAt: json['logged_at'] ?? json['last_logged_at'],
+    );
+  }
 }
 
 class MacroController extends GetxController {
@@ -37,11 +81,27 @@ class MacroController extends GetxController {
   final RxDouble miscGoal = RxDouble(0.0);
 
   final RxBool isLoading = false.obs;
+  final RxString routineId = ''.obs;
+
+  // ── LoggedMealsSection State ───────────────────────
+  final RxString selectedMealType = 'BREAKFAST'.obs;
+  late final TextEditingController foodNameCtrl = TextEditingController();
+  late final TextEditingController kcalCtrl = TextEditingController();
 
   @override
   void onInit() {
     super.onInit();
-    fetchMacroTargets();
+    _initData();
+  }
+
+  Future<void> _initData() async {
+    await fetchMacroTargets();
+    await fetchTodayRoutine();
+    await fetchLoggedMeals();
+    fetchRecentFoods('protein');
+    fetchRecentFoods('carbs');
+    fetchRecentFoods('fats');
+    fetchRecentFoods('misc');
   }
 
   int _parseInt(dynamic val, [int fallback = 0]) {
@@ -71,10 +131,31 @@ class MacroController extends GetxController {
         'Authorization': 'Bearer $token',
       };
 
-      // 1. Try GET /coach/nutrition-plans
+      // Fetch user_id dynamically if it's not cached yet
+      String userId = prefs.getString('user_id') ?? '';
+      if (userId.isEmpty) {
+        try {
+          final profileUrl = Uri.parse(ApiServices.getProfile);
+          final profileResponse = await http.get(profileUrl, headers: headers);
+          if (profileResponse.statusCode == 200 || profileResponse.statusCode == 201) {
+            final profileData = jsonDecode(profileResponse.body);
+            final profileId = profileData['id'] ?? profileData['user_id'] ?? profileData['user']?['id'] ?? profileData['uid'];
+            if (profileId != null) {
+              userId = profileId.toString();
+              await prefs.setString('user_id', userId);
+              debugPrint("Fetched and saved user_id in fetchMacroTargets: $userId");
+            }
+          }
+        } catch (e) {
+          debugPrint("Error fetching profile to retrieve user_id in fetchMacroTargets: $e");
+        }
+      }
+
       try {
         final nutritionUrl = Uri.parse(ApiServices.coachNutritionPlans);
-        debugPrint(">>> FETCHING MACRO TARGETS FROM NUTRITION PLANS: $nutritionUrl");
+        debugPrint(
+          ">>> FETCHING MACRO TARGETS FROM NUTRITION PLANS: $nutritionUrl",
+        );
         final response = await http.get(nutritionUrl, headers: headers);
         debugPrint("<<< MACRO NUTRITION PLANS STATUS: ${response.statusCode}");
 
@@ -93,10 +174,15 @@ class MacroController extends GetxController {
 
             dynamic plan;
             if (userId.isNotEmpty) {
-              final userPlans = sortedList.where((p) =>
-                p['client_id']?.toString().toLowerCase() == userId.toLowerCase() ||
-                p['user_id']?.toString().toLowerCase() == userId.toLowerCase()
-              ).toList();
+              final userPlans = sortedList
+                  .where(
+                    (p) =>
+                        p['client_id']?.toString().toLowerCase() ==
+                            userId.toLowerCase() ||
+                        p['user_id']?.toString().toLowerCase() ==
+                            userId.toLowerCase(),
+                  )
+                  .toList();
               if (userPlans.isNotEmpty) {
                 plan = userPlans.last;
               }
@@ -105,7 +191,10 @@ class MacroController extends GetxController {
             plan ??= sortedList.last;
             debugPrint("Loaded macro targets from latest plan: $plan");
 
-            caloriesGoal.value = _parseInt(plan['daily_calories'] ?? plan['calories'], 0);
+            caloriesGoal.value = _parseInt(
+              plan['daily_calories'] ?? plan['calories'],
+              0,
+            );
             proteinGoal.value = _parseDouble(plan['protein'], 0.0);
             carbsGoal.value = _parseDouble(plan['carbs'], 0.0);
             fatsGoal.value = _parseDouble(plan['fat'] ?? plan['fats'], 0.0);
@@ -120,18 +209,36 @@ class MacroController extends GetxController {
       try {
         final dashboardUrl = Uri.parse(ApiServices.dashboard);
         debugPrint(">>> FETCHING MACRO TARGETS FROM DASHBOARD: $dashboardUrl");
-        final dashboardResponse = await http.get(dashboardUrl, headers: headers);
+        final dashboardResponse = await http.get(
+          dashboardUrl,
+          headers: headers,
+        );
         if (dashboardResponse.statusCode == 200) {
           final data = jsonDecode(dashboardResponse.body);
           final clientDashboard = data['client_dashboard'];
           if (clientDashboard != null) {
             final todayRoutine = clientDashboard['today_routine'];
             if (todayRoutine != null) {
-              caloriesGoal.value = _parseInt(todayRoutine['goal_kcal'] ?? todayRoutine['calories'], 0);
-              proteinGoal.value = _parseDouble(todayRoutine['goal_protein'] ?? todayRoutine['protein'], 0.0);
-              carbsGoal.value = _parseDouble(todayRoutine['goal_carbs'] ?? todayRoutine['carbs'], 0.0);
-              fatsGoal.value = _parseDouble(todayRoutine['goal_fats'] ?? todayRoutine['fat'], 0.0);
-              miscGoal.value = _parseDouble(todayRoutine['goal_fiber'] ?? todayRoutine['fiber'], 0.0);
+              caloriesGoal.value = _parseInt(
+                todayRoutine['goal_kcal'] ?? todayRoutine['calories'],
+                0,
+              );
+              proteinGoal.value = _parseDouble(
+                todayRoutine['goal_protein'] ?? todayRoutine['protein'],
+                0.0,
+              );
+              carbsGoal.value = _parseDouble(
+                todayRoutine['goal_carbs'] ?? todayRoutine['carbs'],
+                0.0,
+              );
+              fatsGoal.value = _parseDouble(
+                todayRoutine['goal_fats'] ?? todayRoutine['fat'],
+                0.0,
+              );
+              miscGoal.value = _parseDouble(
+                todayRoutine['goal_fiber'] ?? todayRoutine['fiber'],
+                0.0,
+              );
             }
           }
         }
@@ -143,63 +250,549 @@ class MacroController extends GetxController {
     }
   }
 
+  Future<void> fetchTodayRoutine() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      if (token == null) return;
+
+      final url = Uri.parse(ApiServices.todayRoutine);
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      debugPrint("Get Today Routine Status: ${response.statusCode}");
+      debugPrint("Get Today Routine Body: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        routineId.value = data['id'] ?? '';
+        dailyNotes.value = data['notes'] ?? '';
+        completionStatus.value = data['completion_status'] ?? false;
+      }
+    } catch (e) {
+      debugPrint("Error fetching today routine: $e");
+    }
+  }
+
+  Future<void> fetchLoggedMeals() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      if (token == null) return;
+
+      if (routineId.value.isEmpty) {
+        debugPrint("Skipping fetchLoggedMeals: routineId is empty");
+        return;
+      }
+      final url = Uri.parse(ApiServices.routineMacroLogs(routineId.value));
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      debugPrint("Get Today Macro Logs Status: ${response.statusCode}");
+      debugPrint("Get Today Macro Logs Body: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final List<dynamic> list = jsonDecode(response.body);
+        loggedMeals.value = list.map((x) => LoggedMeal.fromJson(x)).toList();
+
+        double totalCalories = 0;
+        double totalProtein = 0.0;
+        double totalCarbs = 0.0;
+        double totalFats = 0.0;
+        double totalFiber = 0.0;
+
+        for (var meal in loggedMeals) {
+          totalCalories += meal.kcal;
+          totalProtein += meal.protein ?? 0.0;
+          totalCarbs += meal.carbs ?? 0.0;
+          totalFats += meal.fat ?? 0.0;
+          totalFiber += meal.fiber ?? 0.0;
+        }
+
+        caloriesConsumed.value = totalCalories.round();
+        protein.value = totalProtein;
+        carbs.value = totalCarbs;
+        fats.value = totalFats;
+        misc.value = totalFiber;
+      }
+    } catch (e) {
+      debugPrint("Error fetching logged meals: $e");
+    }
+  }
+
+  Future<void> saveRoutine() async {
+    isLoading.value = true;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      if (token == null) {
+        Get.snackbar("Error", "Auth token not found",
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.redAccent,
+            colorText: Colors.white);
+        return;
+      }
+
+      final dateStr = DateTime.now().toIso8601String().split('T')[0];
+
+      final headers = {
+        'Content-Type': 'application/json',
+        'accept': 'application/json',
+        'Authorization': 'Bearer $token',
+      };
+
+      final body = {
+        "date": dateStr,
+        "goal_kcal": caloriesGoal.value,
+        "goal_protein": proteinGoal.value,
+        "goal_carbs": carbsGoal.value,
+        "goal_fats": fatsGoal.value,
+        "goal_fiber": miscGoal.value,
+        "water_goal": 0.0,
+        "workout": "[]",
+        "notes": dailyNotes.value,
+      };
+
+      http.Response response;
+      if (routineId.value.isNotEmpty) {
+        final url = Uri.parse("${ApiServices.routines}/${routineId.value}");
+        debugPrint(">>> CLIENT UPDATING ROUTINE: PUT $url");
+        final updateBody = {
+          "date": dateStr,
+          "workout": "[]",
+          "notes": dailyNotes.value,
+          "completion_status": completionStatus.value,
+        };
+        response = await http.put(
+          url,
+          headers: headers,
+          body: jsonEncode(updateBody),
+        );
+      } else {
+        final url = Uri.parse(ApiServices.routines);
+        debugPrint(">>> CLIENT CREATING ROUTINE: POST $url");
+        response = await http.post(
+          url,
+          headers: headers,
+          body: jsonEncode(body),
+        );
+      }
+
+      debugPrint("Save Routine Status: ${response.statusCode}");
+      debugPrint("Save Routine Body: ${response.body}");
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        routineId.value = data['id'] ?? '';
+        Get.snackbar(
+          'Success',
+          'Routine saved successfully!',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: const Color(0xFF00A781),
+          colorText: Colors.white,
+        );
+      } else {
+        Get.snackbar(
+          'Error',
+          'Failed to save routine: ${response.statusCode}',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.redAccent,
+          colorText: Colors.white,
+        );
+      }
+    } catch (e) {
+      debugPrint("Error saving routine: $e");
+      Get.snackbar(
+        'Error',
+        'Something went wrong: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.redAccent,
+        colorText: Colors.white,
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   final RxList<LoggedMeal> loggedMeals = <LoggedMeal>[].obs;
 
   final RxString dailyNotes = ''.obs;
+  final RxBool completionStatus = false.obs;
 
-  final List<MacroFood> recentProteinFoods = [
-    MacroFood(
-      name: 'Chicken Breast',
-      subtitle: '300g • 1 serving',
-      emoji: '🍗',
-    ),
-    MacroFood(name: 'Whey Protein', subtitle: '1 scoop', emoji: '💪'),
-    MacroFood(name: 'Greek Yogurt', subtitle: '200g', emoji: '🥛'),
-  ];
+  final RxList<LoggedMeal> recentProteinFoods = <LoggedMeal>[].obs;
+  final RxList<LoggedMeal> recentCarbFoods = <LoggedMeal>[].obs;
+  final RxList<LoggedMeal> recentFatFoods = <LoggedMeal>[].obs;
+  final RxList<LoggedMeal> recentFiberFoods = <LoggedMeal>[].obs;
 
-  final List<MacroFood> recentCarbFoods = [
-    MacroFood(name: 'Brown Rice', subtitle: '1 cup • 1 serving', emoji: '🍚'),
-    MacroFood(name: 'Banana', subtitle: '1 medium', emoji: '🍌'),
-    MacroFood(name: 'Sweet Potato', subtitle: '150g', emoji: '🍠'),
-    MacroFood(name: 'Oatmeal', subtitle: '100g • 1 serving', emoji: '🥣'),
-  ];
+  Future<void> fetchRecentFoods(String category) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      if (token == null) return;
 
-  final List<MacroFood> recentFatFoods = [
-    MacroFood(name: 'Avocado', subtitle: '1/2 whole', emoji: '🥑'),
-    MacroFood(name: 'Extra Virgin Olive Oil', subtitle: '1 tbsp', emoji: '🫒'),
-    MacroFood(name: 'Raw Almonds', subtitle: '30g', emoji: '🌰'),
-  ];
+      String macroType = 'PROTEIN';
+      final lowerCat = category.toLowerCase();
+      if (lowerCat == 'carbs') {
+        macroType = 'CARBS';
+      } else if (lowerCat == 'fats' || lowerCat == 'fat') {
+        macroType = 'FATS';
+      } else if (lowerCat == 'misc' || lowerCat == 'fiber') {
+        macroType = 'FIBER';
+      }
 
-  final List<MacroFood> recentFiberFoods = [
-    MacroFood(name: 'Broccoli', subtitle: '150g • 1 cup', emoji: '🥦'),
-    MacroFood(name: 'Chia Seeds', subtitle: '2 tbsp', emoji: '🌱'),
-    MacroFood(name: 'Raspberries', subtitle: '1 cup', emoji: '🫐'),
-    MacroFood(name: 'Lentils', subtitle: '1/2 cup • 100g', emoji: '🟤'),
-  ];
+      final url = Uri.parse('${ApiServices.macroRecent}?macro_type=$macroType&limit=8');
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
 
-  void addProtein(double grams) {
+      debugPrint("Get Recent Foods ($macroType) Status: ${response.statusCode}");
+      if (response.statusCode == 200) {
+        final List<dynamic> list = jsonDecode(response.body);
+        final fetched = list.map((item) => LoggedMeal.fromJson(item)).toList();
+        if (fetched.isNotEmpty) {
+          if (macroType == 'PROTEIN') {
+            recentProteinFoods.assignAll(fetched);
+          } else if (macroType == 'CARBS') {
+            recentCarbFoods.assignAll(fetched);
+          } else if (macroType == 'FATS') {
+            recentFatFoods.assignAll(fetched);
+          } else if (macroType == 'FIBER') {
+            recentFiberFoods.assignAll(fetched);
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint("Error fetching recent foods: $e");
+    }
+  }
+
+
+  Future<void> postMacroLog({
+    required String mealType,
+    required String foodName,
+    required double amount,
+    required String amountUnit,
+    required int kcal,
+    required double proteinVal,
+    required double carbsVal,
+    required double fatVal,
+    required double fiberVal,
+  }) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      if (token == null) return;
+
+      final url = Uri.parse(ApiServices.todayMacroLogs);
+      final headers = {
+        'Content-Type': 'application/json',
+        'accept': 'application/json',
+        'Authorization': 'Bearer $token',
+      };
+
+      final body = {
+        "meal_type": mealType,
+        "food_name": foodName,
+        "amount": amount,
+        "amount_unit": amountUnit,
+        "kcal": kcal,
+        "protein": proteinVal,
+        "carbs": carbsVal,
+        "fat": fatVal,
+        "fiber": fiberVal,
+        "logged_at": DateTime.now().toUtc().toIso8601String(),
+      };
+
+      debugPrint(">>> CREATING MACRO LOG: POST $url");
+      debugPrint("Body: ${jsonEncode(body)}");
+
+      final response = await http.post(
+        url,
+        headers: headers,
+        body: jsonEncode(body),
+      );
+
+      debugPrint("Create Macro Log Status: ${response.statusCode}");
+      debugPrint("Create Macro Log Body: ${response.body}");
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print("Successfully created macro log: ${response.body}");
+        final data = jsonDecode(response.body);
+        if (data['routine'] != null && data['routine']['id'] != null) {
+          routineId.value = data['routine']['id'].toString();
+        }
+        fetchLoggedMeals(); // Refresh logged meals list
+        fetchRecentFoods(mealType); // Refresh recent foods list
+      } else {
+        print("Failed to create macro log: ${response.statusCode} - ${response.body}");
+      }
+    } catch (e) {
+      print("Error creating macro log: $e");
+    }
+  }
+
+  void addCustomMealLog({
+    required String mealType,
+    required String foodName,
+    required double amount,
+    required String amountUnit,
+    required int kcal,
+    required double proteinVal,
+    required double carbsVal,
+    required double fatVal,
+    required double fiberVal,
+  }) {
+    protein.value += proteinVal;
+    carbs.value += carbsVal;
+    fats.value += fatVal;
+    misc.value += fiberVal;
+    caloriesConsumed.value += kcal;
+
+    postMacroLog(
+      mealType: mealType,
+      foodName: foodName,
+      amount: amount,
+      amountUnit: amountUnit,
+      kcal: kcal,
+      proteinVal: proteinVal,
+      carbsVal: carbsVal,
+      fatVal: fatVal,
+      fiberVal: fiberVal,
+    );
+  }
+
+  Future<void> patchMacroLog({
+    required String logId,
+    required String mealType,
+    required String foodName,
+    required double amount,
+    required String amountUnit,
+    required int kcal,
+    required double proteinVal,
+    required double carbsVal,
+    required double fatVal,
+    required double fiberVal,
+  }) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      if (token == null) return;
+
+      final url = Uri.parse("${ApiServices.baseUrl}/routines/today/macro-logs/$logId");
+      final headers = {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token",
+      };
+
+      final body = {
+        "meal_type": mealType,
+        "food_name": foodName,
+        "amount": amount,
+        "amount_unit": amountUnit,
+        "kcal": kcal,
+        "protein": proteinVal,
+        "carbs": carbsVal,
+        "fat": fatVal,
+        "fiber": fiberVal,
+        "logged_at": DateTime.now().toUtc().toIso8601String(),
+      };
+
+      debugPrint(">>> UPDATING MACRO LOG: PATCH $url");
+      debugPrint("Body: ${jsonEncode(body)}");
+
+      final response = await http.patch(
+        url,
+        headers: headers,
+        body: jsonEncode(body),
+      );
+
+      debugPrint("Update Macro Log Status: ${response.statusCode}");
+      debugPrint("Update Macro Log Body: ${response.body}");
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print("Successfully updated macro log: ${response.body}");
+        fetchLoggedMeals(); // Refresh logged meals list
+      } else {
+        print("Failed to update macro log: ${response.statusCode} - ${response.body}");
+      }
+    } catch (e) {
+      print("Error updating macro log: $e");
+    }
+  }
+
+  void addProtein(double grams, {String? foodName, String? logId}) {
+    if (logId != null) {
+      final existing = loggedMeals.firstWhereOrNull((m) => m.id == logId);
+      if (existing != null) {
+        final newProtein = grams;
+        final newKcal = (newProtein * 4 + (existing.carbs ?? 0.0) * 4 + (existing.fat ?? 0.0) * 9 + (existing.fiber ?? 0.0) * 2).round();
+        patchMacroLog(
+          logId: logId,
+          mealType: existing.mealType ?? "BREAKFAST",
+          foodName: existing.name,
+          amount: grams,
+          amountUnit: existing.amountUnit ?? "g",
+          kcal: newKcal,
+          proteinVal: newProtein,
+          carbsVal: existing.carbs ?? 0.0,
+          fatVal: existing.fat ?? 0.0,
+          fiberVal: existing.fiber ?? 0.0,
+        );
+        return;
+      }
+    }
+
     protein.value += grams;
     caloriesConsumed.value += (grams * 4).round();
+    postMacroLog(
+      mealType: "BREAKFAST",
+      foodName: foodName ?? "Protein",
+      amount: grams,
+      amountUnit: "g",
+      kcal: (grams * 4).round(),
+      proteinVal: grams,
+      carbsVal: 0.0,
+      fatVal: 0.0,
+      fiberVal: 0.0,
+    );
   }
 
-  void addCarbs(double grams) {
+  void addCarbs(double grams, {String? foodName, String? logId}) {
+    if (logId != null) {
+      final existing = loggedMeals.firstWhereOrNull((m) => m.id == logId);
+      if (existing != null) {
+        final newCarbs = grams;
+        final newKcal = ((existing.protein ?? 0.0) * 4 + newCarbs * 4 + (existing.fat ?? 0.0) * 9 + (existing.fiber ?? 0.0) * 2).round();
+        patchMacroLog(
+          logId: logId,
+          mealType: existing.mealType ?? "BREAKFAST",
+          foodName: existing.name,
+          amount: grams,
+          amountUnit: existing.amountUnit ?? "g",
+          kcal: newKcal,
+          proteinVal: existing.protein ?? 0.0,
+          carbsVal: newCarbs,
+          fatVal: existing.fat ?? 0.0,
+          fiberVal: existing.fiber ?? 0.0,
+        );
+        return;
+      }
+    }
+
     carbs.value += grams;
     caloriesConsumed.value += (grams * 4).round();
+    postMacroLog(
+      mealType: "BREAKFAST",
+      foodName: foodName ?? "Carbs",
+      amount: grams,
+      amountUnit: "g",
+      kcal: (grams * 4).round(),
+      proteinVal: 0.0,
+      carbsVal: grams,
+      fatVal: 0.0,
+      fiberVal: 0.0,
+    );
   }
 
-  void addFats(double grams) {
+  void addFats(double grams, {String? foodName, String? logId}) {
+    if (logId != null) {
+      final existing = loggedMeals.firstWhereOrNull((m) => m.id == logId);
+      if (existing != null) {
+        final newFat = grams;
+        final newKcal = ((existing.protein ?? 0.0) * 4 + (existing.carbs ?? 0.0) * 4 + newFat * 9 + (existing.fiber ?? 0.0) * 2).round();
+        patchMacroLog(
+          logId: logId,
+          mealType: existing.mealType ?? "BREAKFAST",
+          foodName: existing.name,
+          amount: grams,
+          amountUnit: existing.amountUnit ?? "g",
+          kcal: newKcal,
+          proteinVal: existing.protein ?? 0.0,
+          carbsVal: existing.carbs ?? 0.0,
+          fatVal: newFat,
+          fiberVal: existing.fiber ?? 0.0,
+        );
+        return;
+      }
+    }
+
     fats.value += grams;
     caloriesConsumed.value += (grams * 9).round();
+    postMacroLog(
+      mealType: "BREAKFAST",
+      foodName: foodName ?? "Fats",
+      amount: grams,
+      amountUnit: "g",
+      kcal: (grams * 9).round(),
+      proteinVal: 0.0,
+      carbsVal: 0.0,
+      fatVal: grams,
+      fiberVal: 0.0,
+    );
   }
 
-  void addMisc(double grams) {
+  void addMisc(double grams, {String? foodName, String? logId}) {
+    if (logId != null) {
+      final existing = loggedMeals.firstWhereOrNull((m) => m.id == logId);
+      if (existing != null) {
+        final newFiber = grams;
+        final newKcal = ((existing.protein ?? 0.0) * 4 + (existing.carbs ?? 0.0) * 4 + (existing.fat ?? 0.0) * 9 + newFiber * 2).round();
+        patchMacroLog(
+          logId: logId,
+          mealType: existing.mealType ?? "BREAKFAST",
+          foodName: existing.name,
+          amount: grams,
+          amountUnit: existing.amountUnit ?? "g",
+          kcal: newKcal,
+          proteinVal: existing.protein ?? 0.0,
+          carbsVal: existing.carbs ?? 0.0,
+          fatVal: existing.fat ?? 0.0,
+          fiberVal: newFiber,
+        );
+        return;
+      }
+    }
+
     misc.value += grams;
     caloriesConsumed.value += (grams * 2).round();
+    postMacroLog(
+      mealType: "BREAKFAST",
+      foodName: foodName ?? "Fiber",
+      amount: grams,
+      amountUnit: "g",
+      kcal: (grams * 2).round(),
+      proteinVal: 0.0,
+      carbsVal: 0.0,
+      fatVal: 0.0,
+      fiberVal: grams,
+    );
   }
 
-  // ── Multiplier text ─────────────────────────────────
   String get calMultiplier {
-    final ratio = caloriesGoal.value > 0 ? caloriesConsumed.value / caloriesGoal.value : 0.0;
-    return '${caloriesConsumed.value} × ${(ratio * 100).toStringAsFixed(0)}';
+    return '${caloriesConsumed.value}';
+  }
+
+  @override
+  void onClose() {
+    foodNameCtrl.dispose();
+    kcalCtrl.dispose();
+    super.onClose();
   }
 }
