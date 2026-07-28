@@ -1,7 +1,7 @@
-// ignore_for_file: file_names
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:zeustucker/core/routes/app_routes.dart';
+import '../../../../../core/services/controller/adminpenelcontroller/clientcontoller.dart';
 
 class CoachPortalCard extends StatelessWidget {
   const CoachPortalCard({super.key});
@@ -67,13 +67,16 @@ class CoachPortalCard extends StatelessWidget {
           const SizedBox(height: 30),
 
           // Stats Row
-          Row(
-            children: [
-              _buildStatItem('7', 'ACTIVE CLIENTS'),
-              const SizedBox(width: 40),
-              _buildStatItem('3', 'PENDING REVIEWS'),
-            ],
-          ),
+          Obx(() {
+            final controller = Get.find<ClientController>();
+            return Row(
+              children: [
+                _buildStatItem(controller.clientList.length.toString(), 'ACTIVE CLIENTS'),
+                const SizedBox(width: 40),
+                _buildStatItem(controller.pendingRequestsCount.value.toString(), 'PENDING CLIENTS'),
+              ],
+            );
+          }),
           const SizedBox(height: 30),
 
           // Manage Clients Button

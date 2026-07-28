@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
 
 class ClientProfileHeader extends StatelessWidget {
   final String name;
@@ -54,7 +55,17 @@ class ClientProfileHeader extends StatelessWidget {
             ),
             child: CircleAvatar(
               radius: 55,
-              backgroundImage: imageUrl.startsWith('http') ? NetworkImage(imageUrl) as ImageProvider : AssetImage(imageUrl),
+              backgroundImage: () {
+                if (imageUrl.startsWith('http')) {
+                  return NetworkImage(imageUrl) as ImageProvider;
+                }
+                if (imageUrl.length > 100) {
+                  try {
+                    return MemoryImage(base64Decode(imageUrl));
+                  } catch (_) {}
+                }
+                return AssetImage(imageUrl);
+              }(),
             ),
           ),
           const SizedBox(height: 16),

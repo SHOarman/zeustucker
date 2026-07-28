@@ -94,9 +94,9 @@ class ScheduleScreen extends StatelessWidget {
                       children: [
                         _buildMetricCard(
                           title: 'Workout',
-                          value: '${ctrl.workoutCompleted.value}/${ctrl.workoutAssigned.value}',
-                          progress: ctrl.workoutAssigned.value > 0
-                              ? (ctrl.workoutCompleted.value / ctrl.workoutAssigned.value).clamp(0.0, 1.0)
+                          value: '${ctrl.todayWorkoutCompleted.value}/${ctrl.todayWorkoutAssigned.value}',
+                          progress: ctrl.todayWorkoutAssigned.value > 0
+                              ? (ctrl.todayWorkoutCompleted.value / ctrl.todayWorkoutAssigned.value).clamp(0.0, 1.0)
                               : 0.0,
                           color: const Color(0xFF38B8E6),
                           imagePath: 'assets/image/Group (2).png',
@@ -118,9 +118,9 @@ class ScheduleScreen extends StatelessWidget {
                         ),
                         _buildMetricCard(
                           title: 'Tasks',
-                          value: '${ctrl.tasksCompleted.value}/${ctrl.tasksAssigned.value}',
-                          progress: ctrl.tasksAssigned.value > 0
-                              ? (ctrl.tasksCompleted.value / ctrl.tasksAssigned.value).clamp(0.0, 1.0)
+                          value: '${ctrl.todayTasksCompleted.value}/${ctrl.todayTasksAssigned.value}',
+                          progress: ctrl.todayTasksAssigned.value > 0
+                              ? (ctrl.todayTasksCompleted.value / ctrl.todayTasksAssigned.value).clamp(0.0, 1.0)
                               : 0.0,
                           color: const Color(0xFF34D399),
                           imagePath: 'assets/image/To do list.png',
@@ -289,8 +289,15 @@ class ScheduleScreen extends StatelessWidget {
 
     if (score == 0) return const SizedBox(height: 14);
 
+    String scoreText = score.toStringAsFixed(2);
+    if (scoreText.endsWith('.00')) {
+      scoreText = score.toStringAsFixed(0);
+    } else if (scoreText.endsWith('0')) {
+      scoreText = score.toStringAsFixed(1);
+    }
+
     return Text(
-      score.toStringAsFixed(0),
+      scoreText,
       style: const TextStyle(
         fontSize: 10,
         fontWeight: FontWeight.bold,

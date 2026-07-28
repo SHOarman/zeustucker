@@ -29,6 +29,42 @@ class Adminhome extends StatelessWidget {
             children: [
               const SizedBox(height: 70),
 
+              Obx(() {
+                if (controller.generatingStorybookClientName.value.isEmpty) return const SizedBox.shrink();
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 20),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE0F2F1),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFF00A37B), width: 1),
+                  ),
+                  child: Row(
+                    children: [
+                      const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.5,
+                          valueColor: AlwaysStoppedAnimation(Color(0xFF00A37B)),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Text(
+                          "Generating storybook for ${controller.generatingStorybookClientName.value} in the background...",
+                          style: const TextStyle(
+                            color: Color(0xFF004D40),
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }),
+
               //=============================Coach Portal Card====================================================
               CoachPortalCard(),
 
@@ -187,7 +223,7 @@ class Adminhome extends StatelessWidget {
                       name: name,
                       status: client['fitness_goal'] ?? "Active Client",
                       onViewStory: () {
-                        Future.microtask(() => Get.toNamed(AppRoutes.viewstory, arguments: client));
+                        controller.fetchAndOpenClientStorybook(client);
                       },
                     );
                   },

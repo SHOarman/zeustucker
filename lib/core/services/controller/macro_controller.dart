@@ -272,7 +272,14 @@ class MacroController extends GetxController {
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
         routineId.value = data['id'] ?? '';
-        dailyNotes.value = data['notes'] ?? '';
+        final String rawNotes = data['notes'] ?? '';
+        if (rawNotes.contains('|||')) {
+          dailyNotes.value = rawNotes.split('|||')[1];
+        } else if (rawNotes.startsWith('[')) {
+          dailyNotes.value = '';
+        } else {
+          dailyNotes.value = rawNotes;
+        }
         completionStatus.value = data['completion_status'] ?? false;
       }
     } catch (e) {
@@ -345,7 +352,30 @@ class MacroController extends GetxController {
         return;
       }
 
-      final dateStr = DateTime.now().toIso8601String().split('T')[0];
+      final dateStr = DateTime.now().toLocal().toIso8601String().split('T')[0];
+
+      // Fetch today's routine first to get the current checklist JSON
+      String checklistJson = '[]';
+      final todayUrl = Uri.parse(ApiServices.todayRoutine);
+      final todayRes = await http.get(
+        todayUrl,
+        headers: {
+          'Content-Type': 'application/json',
+          'accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      if (todayRes.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(todayRes.body);
+        final String rawNotes = data['notes'] ?? '';
+        if (rawNotes.contains('|||')) {
+          checklistJson = rawNotes.split('|||')[0];
+        } else if (rawNotes.startsWith('[')) {
+          checklistJson = rawNotes;
+        }
+      }
+
+      final combinedNotes = checklistJson + '|||' + dailyNotes.value;
 
       final headers = {
         'Content-Type': 'application/json',
@@ -362,7 +392,7 @@ class MacroController extends GetxController {
         "goal_fiber": miscGoal.value,
         "water_goal": 0.0,
         "workout": "[]",
-        "notes": dailyNotes.value,
+        "notes": combinedNotes,
       };
 
       http.Response response;
@@ -372,7 +402,7 @@ class MacroController extends GetxController {
         final updateBody = {
           "date": dateStr,
           "workout": "[]",
-          "notes": dailyNotes.value,
+          "notes": combinedNotes,
           "completion_status": completionStatus.value,
         };
         response = await http.put(

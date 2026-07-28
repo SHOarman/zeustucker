@@ -109,7 +109,12 @@ class Createroutine extends GetxController {
     try {
       final decoded = goalsData is String ? jsonDecode(goalsData) : goalsData;
       if (decoded is List) {
-        final parsed = decoded.map((e) => e?.toString().trim() ?? '').where((e) => e.isNotEmpty).toList();
+        final parsed = decoded.map((e) {
+          if (e is Map) {
+            return e['instruction']?.toString().trim() ?? e['text']?.toString().trim() ?? '';
+          }
+          return e?.toString().trim() ?? '';
+        }).where((e) => e.isNotEmpty).toList();
         if (parsed.isNotEmpty) {
           dailyGoals.value = parsed;
           return;

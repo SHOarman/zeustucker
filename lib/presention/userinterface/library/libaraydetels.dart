@@ -1,13 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:zeustucker/core/services/controller/homecontroller.dart';
+import 'package:zeustucker/core/services/controller/adminpenelcontroller/clientcontoller.dart';
 
 class Libaraydetels extends StatelessWidget {
   const Libaraydetels({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    final Map<String, dynamic>? args = Get.arguments as Map<String, dynamic>?;
 
+    final String storybookId = args?['storybook_id'] ?? '';
+    debugPrint("Reviewing storybook ID: $storybookId");
+    final int pageNumber = args?['page_number'] ?? 3;
+    final String storyText = args?['story'] ?? '';
+    final String imageUrl = args?['image_url'] ?? '';
+    final bool isNetwork = imageUrl.isNotEmpty;
+
+    String authToken = "";
+    if (Get.isRegistered<HomeController>()) {
+      authToken = Get.find<HomeController>().authToken;
+    } else if (Get.isRegistered<ClientController>()) {
+      authToken = Get.find<ClientController>().authToken;
+    }
+
+    final String displayChapter = isNetwork ? "PAGE $pageNumber" : "CHAPTER 3";
+    final String displayTitle = isNetwork ? "Page Review" : "Finding Your Rhythm";
+    final String quoteText = isNetwork
+        ? storyText
+        : "This week felt different. You didn't just show up; you dominated the morning sessions. Like a character in a graphic novel, you've unlocked a new tier of consistency that's starting to define your story.";
+
+    return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -44,8 +67,15 @@ class Libaraydetels extends StatelessWidget {
                     margin: const EdgeInsets.only(bottom: 30),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(16),
-                      image: const DecorationImage(
-                        image: AssetImage('assets/image/bakround.png'),
+                      image: DecorationImage(
+                        image: isNetwork
+                            ? NetworkImage(
+                                imageUrl,
+                                headers: authToken.isNotEmpty
+                                    ? {'Authorization': 'Bearer $authToken'}
+                                    : null,
+                              ) as ImageProvider
+                            : const AssetImage('assets/image/bakround.png') as ImageProvider,
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -74,9 +104,9 @@ class Libaraydetels extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'CHAPTER 3',
-                            style: TextStyle(
+                          Text(
+                            displayChapter.toUpperCase(),
+                            style: const TextStyle(
                               color: Color(0xFF00BFA5),
                               fontWeight: FontWeight.bold,
                               fontSize: 10,
@@ -84,9 +114,9 @@ class Libaraydetels extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 4),
-                          const Text(
-                            'Finding Your Rhythm',
-                            style: TextStyle(
+                          Text(
+                            displayTitle,
+                            style: const TextStyle(
                               color: Colors.black87,
                               fontSize: 22,
                               fontWeight: FontWeight.w800,
@@ -138,7 +168,7 @@ class Libaraydetels extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.only(top: 8, left: 16),
                     child: Text(
-                      '"This week felt different. You didn\'t just show up; you dominated the morning sessions. Like a character in a graphic novel, you\'ve unlocked a new tier of consistency that\'s starting to define your story."',
+                      '"$quoteText"',
                       style: TextStyle(
                         color: Colors.grey.shade800,
                         fontSize: 15,

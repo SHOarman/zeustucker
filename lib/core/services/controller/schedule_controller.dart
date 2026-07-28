@@ -83,12 +83,14 @@ class WorkoutItem {
   final int position;
   final String instruction;
   final bool completed;
+  final String? completedAt;
 
   WorkoutItem({
     required this.id,
     required this.position,
     required this.instruction,
     required this.completed,
+    this.completedAt,
   });
 
   factory WorkoutItem.fromJson(Map<String, dynamic> json) {
@@ -97,6 +99,7 @@ class WorkoutItem {
       position: (json['position'] ?? 0) is num ? (json['position'] as num).toInt() : 0,
       instruction: json['instruction'] ?? '',
       completed: json['completed'] == true || json['completed'] == 1 || json['completed'].toString() == 'true',
+      completedAt: json['completed_at'],
     );
   }
 }
@@ -144,10 +147,10 @@ class WorkoutDay {
       isFuture: json['is_future'] ?? false,
       applicable: json['applicable'] ?? false,
       workoutScore: json['workout_score'] ?? 0,
-      completedCount: json['completed_count'] ?? 0,
-      assignedCount: json['assigned_count'] ?? 0,
+      completedCount: completed,
+      assignedCount: assigned,
       allCompleted: json['all_completed'] ?? false,
-      items: list.map((x) => WorkoutItem.fromJson(x)).toList(),
+      items: items,
     );
   }
 }
@@ -201,16 +204,28 @@ class GoalDay {
 
   factory GoalDay.fromJson(Map<String, dynamic> json) {
     final list = json['items'] as List? ?? [];
+    final items = list.map((x) => GoalItem.fromJson(x)).toList();
+
+    int assigned = json['assigned_count'] ?? 0;
+    if (assigned == 0) {
+      assigned = items.length;
+    }
+
+    int completed = json['completed_count'] ?? 0;
+    if (completed == 0) {
+      completed = items.where((x) => x.completed).length;
+    }
+
     return GoalDay(
       date: json['date'] ?? '',
       day: json['day'] ?? '',
       isFuture: json['is_future'] ?? false,
       applicable: json['applicable'] ?? false,
       dailyGoalScore: json['daily_goal_score'] ?? 0,
-      completedCount: json['completed_count'] ?? 0,
-      assignedCount: json['assigned_count'] ?? 0,
+      completedCount: completed,
+      assignedCount: assigned,
       allCompleted: json['all_completed'] ?? false,
-      items: list.map((x) => GoalItem.fromJson(x)).toList(),
+      items: items,
     );
   }
 }
@@ -316,10 +331,8 @@ class ScheduleController extends GetxController {
   final RxList<MealDay> weeklyMeals = <MealDay>[].obs;
   final RxList<GoalDay> weeklyGoals = <GoalDay>[].obs;
 
-  // Observables for the bar heights
   final RxList<double> barHeights = <double>[10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0].obs;
   
-  // Observables for metric cards
   final RxInt workoutCompleted = 0.obs;
   final RxInt workoutAssigned = 0.obs;
   
@@ -328,6 +341,12 @@ class ScheduleController extends GetxController {
   
   final RxInt tasksCompleted = 0.obs;
   final RxInt tasksAssigned = 0.obs;
+
+  final RxInt todayWorkoutCompleted = 0.obs;
+  final RxInt todayWorkoutAssigned = 0.obs;
+
+  final RxInt todayTasksCompleted = 0.obs;
+  final RxInt todayTasksAssigned = 0.obs;
 
   @override
   void onInit() {
@@ -369,8 +388,8 @@ class ScheduleController extends GetxController {
         for (var point in summary.dailyPoints) {
           try {
             final dt = DateTime.parse(point.date);
-            final weekday = dt.weekday; // 1 = Mon, 7 = Sun
-            final index = weekday - 1; // 0 = Mon, 6 = Sun
+            final weekday = dt.weekday;
+            final index = weekday - 1;
             if (index >= 0 && index < 7) {
               final score = point.combinedScore;
               final h = (score / 100.0) * 250.0;
@@ -407,15 +426,76 @@ class ScheduleController extends GetxController {
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
         final List<dynamic> daysList = data['days'] ?? [];
-        final fetched = daysList.map((x) => WorkoutDay.fromJson(x)).toList();
+        List<WorkoutDay> fetched = daysList.map((x) => WorkoutDay.fromJson(x)).toList();
         
-        // Sort chronologically
-        fetched.sort((a, b) => a.date.compareTo(b.date));
+        final List<WorkoutItem> completedItems = [];
+        for (var day in fetched) {
+          for (var item in day.items) {
+            if (item.completed && item.completedAt != null) {
+              completedItems.add(item);
+            }
+          }
+        }
+
+
+        fetched = fetched.map((day) {
+          final dayDateStr = day.date.split('T')[0];
+          
+
+          final List<WorkoutItem> keptItems = day.items.where((item) {
+            if (!item.completed || item.completedAt == null) return true;
+            final compDateStr = item.completedAt!.split('T')[0];
+            return compDateStr == dayDateStr;
+          }).toList();
+
+          final List<WorkoutItem> newlyCompletedOnThisDay = completedItems.where((item) {
+            final compDateStr = item.completedAt!.split('T')[0];
+            final origDayHasIt = day.items.any((x) => x.id == item.id);
+            return compDateStr == dayDateStr && !origDayHasIt;
+          }).toList();
+
+          final mergedItems = [...keptItems, ...newlyCompletedOnThisDay];
+          final compCount = mergedItems.where((x) => x.completed).length;
+          final allComp = mergedItems.isNotEmpty && mergedItems.every((x) => x.completed);
+
+          return WorkoutDay(
+            date: day.date,
+            day: day.day,
+            isFuture: day.isFuture,
+            applicable: day.applicable,
+            workoutScore: day.workoutScore,
+            completedCount: compCount,
+            assignedCount: mergedItems.length,
+            allCompleted: allComp,
+            items: mergedItems,
+          );
+        }).toList();
+
+        // Sort with today first, then past days, then future days
+        _sortDays(fetched, (x) => x.date);
         weeklyWorkouts.assignAll(fetched);
 
         // Update totals
         workoutCompleted.value = fetched.map((x) => x.completedCount).fold(0, (a, b) => a + b);
         workoutAssigned.value = fetched.map((x) => x.assignedCount).fold(0, (a, b) => a + b);
+
+        // Update today's totals
+        final today = DateTime.now().toLocal();
+        final todayDay = fetched.firstWhereOrNull((d) {
+          try {
+            final date = DateTime.parse(d.date).toLocal();
+            return date.year == today.year && date.month == today.month && date.day == today.day;
+          } catch (_) {
+            return false;
+          }
+        });
+        if (todayDay != null) {
+          todayWorkoutCompleted.value = todayDay.completedCount;
+          todayWorkoutAssigned.value = todayDay.assignedCount;
+        } else {
+          todayWorkoutCompleted.value = 0;
+          todayWorkoutAssigned.value = 0;
+        }
       }
     } catch (e) {
       debugPrint("Error fetching weekly workouts: $e");
@@ -444,8 +524,8 @@ class ScheduleController extends GetxController {
         final List<dynamic> daysList = data['days'] ?? [];
         final fetched = daysList.map((x) => MealDay.fromJson(x)).toList();
         
-        // Sort chronologically
-        fetched.sort((a, b) => a.date.compareTo(b.date));
+        // Sort with today first, then past days, then future days
+        _sortDays(fetched, (x) => x.date);
         weeklyMeals.assignAll(fetched);
 
         // Meal completion status is how many days have targets & met them or logged > 0 kcal
@@ -463,6 +543,47 @@ class ScheduleController extends GetxController {
       final token = prefs.getString('auth_token');
       if (token == null) return;
 
+      // 1. Fetch all routines to get saved notes checklist completion states
+      final routinesUrl = Uri.parse(ApiServices.routines);
+      final routinesResponse = await http.get(
+        routinesUrl,
+        headers: {
+          'Content-Type': 'application/json',
+          'accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      final Map<String, Map<String, bool>> routineGoalsMap = {};
+      if (routinesResponse.statusCode == 200) {
+        final List<dynamic> routinesList = jsonDecode(routinesResponse.body);
+        for (var r in routinesList) {
+          if (r is Map) {
+            final date = r['date']?.toString().split('T')[0];
+            final notesStr = r['notes']?.toString() ?? '';
+            if (date != null && notesStr.isNotEmpty && notesStr.startsWith('[')) {
+              try {
+                final List<dynamic> decodedNotes = jsonDecode(notesStr);
+                final Map<String, bool> completedMap = {};
+                for (var item in decodedNotes) {
+                  if (item is Map) {
+                    final instr = (item['instruction'] ?? item['text'])?.toString().trim();
+                    final completedVal = item['completed'] == true;
+                    if (instr != null && instr.isNotEmpty) {
+                      completedMap[instr] = completedVal;
+                    }
+                  }
+                }
+                if (completedMap.isNotEmpty) {
+                  routineGoalsMap[date] = completedMap;
+                }
+              } catch (_) {}
+            }
+          }
+        }
+      }
+
+      // 2. Fetch weekly summary goals
       final url = Uri.parse(ApiServices.weeklySummaryGoals);
       final response = await http.get(
         url,
@@ -477,18 +598,102 @@ class ScheduleController extends GetxController {
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
         final List<dynamic> daysList = data['days'] ?? [];
-        final fetched = daysList.map((x) => GoalDay.fromJson(x)).toList();
+        List<GoalDay> fetched = daysList.map((x) => GoalDay.fromJson(x)).toList();
         
-        // Sort chronologically
-        fetched.sort((a, b) => a.date.compareTo(b.date));
+        // Merge routine goals checked states
+        fetched = fetched.map((day) {
+          final dateKey = day.date.split('T')[0];
+          if (routineGoalsMap.containsKey(dateKey)) {
+            final completedMap = routineGoalsMap[dateKey]!;
+            final updatedItems = day.items.map((goal) {
+              final matchInstr = goal.instruction.trim();
+              if (completedMap.containsKey(matchInstr)) {
+                return GoalItem(
+                  id: goal.id,
+                  position: goal.position,
+                  instruction: goal.instruction,
+                  completed: completedMap[matchInstr]!,
+                );
+              }
+              return goal;
+            }).toList();
+            
+            final compCount = updatedItems.where((x) => x.completed).length;
+            final allComp = updatedItems.isNotEmpty && updatedItems.every((x) => x.completed);
+            
+            return GoalDay(
+              date: day.date,
+              day: day.day,
+              isFuture: day.isFuture,
+              applicable: day.applicable,
+              dailyGoalScore: day.dailyGoalScore,
+              completedCount: compCount,
+              assignedCount: day.assignedCount,
+              allCompleted: allComp,
+              items: updatedItems,
+            );
+          }
+          return day;
+        }).toList();
+
+        // Sort with today first, then past days, then future days
+        _sortDays(fetched, (x) => x.date);
         weeklyGoals.assignAll(fetched);
 
         // Update totals
         tasksCompleted.value = fetched.map((x) => x.completedCount).fold(0, (a, b) => a + b);
         tasksAssigned.value = fetched.map((x) => x.assignedCount).fold(0, (a, b) => a + b);
+
+        // Update today's totals
+        final today = DateTime.now().toLocal();
+        final todayDay = fetched.firstWhereOrNull((d) {
+          try {
+            final date = DateTime.parse(d.date).toLocal();
+            return date.year == today.year && date.month == today.month && date.day == today.day;
+          } catch (_) {
+            return false;
+          }
+        });
+        if (todayDay != null) {
+          todayTasksCompleted.value = todayDay.completedCount;
+          todayTasksAssigned.value = todayDay.assignedCount;
+        } else {
+          todayTasksCompleted.value = 0;
+          todayTasksAssigned.value = 0;
+        }
       }
     } catch (e) {
       debugPrint("Error fetching weekly goals: $e");
     }
+  }
+
+  void _sortDays<T>(List<T> list, String Function(T) getDate) {
+    final today = DateTime.now().toLocal();
+    final todayDate = DateTime(today.year, today.month, today.day);
+
+    list.sort((a, b) {
+      try {
+        final dA = DateTime.parse(getDate(a)).toLocal();
+        final dB = DateTime.parse(getDate(b)).toLocal();
+        final dtA = DateTime(dA.year, dA.month, dA.day);
+        final dtB = DateTime(dB.year, dB.month, dB.day);
+
+        final diffA = dtA.difference(todayDate).inDays;
+        final diffB = dtB.difference(todayDate).inDays;
+
+        // If one is today/past and other is future
+        if (diffA <= 0 && diffB > 0) return -1;
+        if (diffB <= 0 && diffA > 0) return 1;
+
+        // If both are today/past: sort descending (newest/today first)
+        if (diffA <= 0 && diffB <= 0) {
+          return diffB.compareTo(diffA);
+        }
+        // If both are future: sort ascending (nearest future first)
+        return diffA.compareTo(diffB);
+      } catch (_) {
+        return 0;
+      }
+    });
   }
 }

@@ -16,6 +16,10 @@ class HomeScreen extends StatelessWidget {
   final HomeController controller = Get.put(HomeController());
 
   void _showStoryDialog(BuildContext context) {
+    if (controller.clientPages.isEmpty) {
+      controller.fetchClientStorybook();
+    }
+
     showDialog(
       context: context,
       builder: (context) {
@@ -44,93 +48,148 @@ class HomeScreen extends StatelessWidget {
                     onPressed: () => Navigator.pop(context),
                   ),
                 ),
-                Column(
-                  children: [
-                    const SizedBox(height: 60),
-                    Expanded(
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          PageView.builder(
-                            controller: controller.pageController,
-                            itemCount: controller.storyPages.length,
-                            onPageChanged: controller.updateIndex,
-                            itemBuilder: (context, index) {
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 40,
-                                ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(15),
-                                  child: Image.asset(
-                                    controller.storyPages[index],
-                                    fit: BoxFit.contain,
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                          // Back Arrow
-                          Obx(
-                            () => controller.currentIndex.value > 0
-                                ? Positioned(
-                                    left: 5,
-                                    child: IconButton(
-                                      icon: const Icon(
-                                        Icons.arrow_back_ios_new,
-                                      ),
-                                      onPressed: controller.previousPage,
-                                    ),
-                                  )
-                                : const SizedBox.shrink(),
-                          ),
-                          // Forward Arrow
-                          Obx(
-                            () =>
-                                controller.currentIndex.value <
-                                    controller.storyPages.length - 1
-                                ? Positioned(
-                                    right: 5,
-                                    child: IconButton(
-                                      icon: const Icon(Icons.arrow_forward_ios),
-                                      onPressed: controller.nextPage,
-                                    ),
-                                  )
-                                : const SizedBox.shrink(),
-                          ),
-                        ],
+                Obx(() {
+                  if (controller.isStoryLoading.value) {
+                    return const Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation(Color(0xFF00A37B)),
                       ),
-                    ),
-                    // Reactive Dots
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 25),
-                      child: Obx(
-                        () => Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: List.generate(
-                            controller.storyPages.length,
-                            (index) {
-                              return AnimatedContainer(
+                    );
+                  }
+
+                  if (controller.clientPages.isEmpty) {
+                    return const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(20.0),
+                        child: Text(
+                          "No story pages generated for you yet. Please request your coach to generate a storybook.",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 16, color: Colors.grey),
+                        ),
+                      ),
+                    );
+                  }
+
+                  return Column(
+                    children: [
+                      const SizedBox(height: 60),
+                      Expanded(
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            PageView.builder(
+                              controller: controller.pageController,
+                              itemCount: controller.clientPages.length,
+                              onPageChanged: controller.updateIndex,
+                              itemBuilder: (context, index) {
+                                final page = controller.clientPages[index];
+                                final String rawImg = page['image_url'] ?? '';
+                                final String storyText = page['story'] ?? '';
+                                final String normalizedUrl = controller.normalizeImageUrl(rawImg);
+
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 40,
+                                  ),
+                                  child: SingleChildScrollView(
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        ClipRRect(
+                                          borderRadius: BorderRadius.circular(15),
+                                          child: Image.network(
+                                            normalizedUrl,
+                                            height: 320,
+                                            width: double.infinity,
+                                            fit: BoxFit.cover,
+                                            headers: controller.authToken.isNotEmpty
+                                                ? {'Authorization': 'Bearer ${controller.authToken}'}
+                                                : null,
+                                            errorBuilder: (context, error, stackTrace) => Container(
+                                              height: 320,
+                                              width: double.infinity,
+                                              color: Colors.grey.shade200,
+                                              child: const Icon(
+                                                Icons.image,
+                                                size: 50,
+                                                color: Colors.grey,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 20),
+                                        Text(
+                                          storyText,
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 14,
+                                            color: Colors.black87,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                            // Back Arrow
+                            Obx(
+                              () => controller.currentIndex.value > 0
+                                  ? Positioned(
+                                      left: 5,
+                                      child: IconButton(
+                                        icon: const Icon(
+                                          Icons.arrow_back_ios_new,
+                                        ),
+                                        onPressed: controller.previousPage,
+                                      ),
+                                    )
+                                  : const SizedBox.shrink(),
+                            ),
+                            // Forward Arrow
+                            Obx(
+                              () => controller.currentIndex.value <
+                                      controller.clientPages.length - 1
+                                  ? Positioned(
+                                      right: 5,
+                                      child: IconButton(
+                                        icon: const Icon(Icons.arrow_forward_ios),
+                                        onPressed: controller.nextPage,
+                                      ),
+                                    )
+                                  : const SizedBox.shrink(),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Reactive Dots
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 25),
+                        child: Obx(
+                          () => Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: List.generate(
+                              controller.clientPages.length,
+                              (index) => AnimatedContainer(
                                 duration: const Duration(milliseconds: 300),
-                                margin: const EdgeInsets.symmetric(
-                                  horizontal: 5,
-                                ),
-                                height: 10,
-                                width: 10,
+                                margin: const EdgeInsets.symmetric(horizontal: 4),
+                                height: 8,
+                                width: controller.currentIndex.value == index ? 20 : 8,
                                 decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
                                   color: controller.currentIndex.value == index
-                                      ? Colors.grey[800]
-                                      : Colors.grey[300],
+                                      ? const Color(0xFF00A37B)
+                                      : Colors.grey.shade300,
+                                  borderRadius: BorderRadius.circular(4),
                                 ),
-                              );
-                            },
+                              ),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
+                    ],
+                  );
+                }),
               ],
             ),
           ),
@@ -393,6 +452,107 @@ class HomeScreen extends StatelessWidget {
                         child: ListTile(
                           onTap: () {
                             controller.toggleWorkoutItemCompletion(item.id, !item.completed);
+                          },
+                          leading: Icon(
+                            item.completed
+                                ? Icons.check_circle
+                                : Icons.radio_button_unchecked,
+                            color: item.completed
+                                ? const Color(0xFF1CBBA7)
+                                : Colors.grey[400],
+                            size: 26,
+                          ),
+                          title: Text(
+                            item.instruction,
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: item.completed
+                                  ? Colors.grey[400]
+                                  : const Color(0xff111827),
+                              decoration: item.completed
+                                  ? TextDecoration.lineThrough
+                                  : TextDecoration.none,
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                );
+              }),
+
+              const SizedBox(height: 30),
+
+              Row(
+                children: [
+                  Image.asset(
+                    "assets/image/Container (10).png",
+                    height: 20,
+                    width: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  const Text(
+                    "Daily Goals",
+                    style: TextStyle(
+                      color: Color(0xff111827),
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 12),
+              Obx(() {
+                if (controller.isGoalsLoading.value) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 20),
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF1CBBA7)),
+                      ),
+                    ),
+                  );
+                }
+
+                if (controller.todayGoals.isEmpty) {
+                  return CustomDottedCard(
+                    bodyText: "No daily goals have been set for today yet.",
+                    centerWidget: Image.asset("assets/image/To do list.png"),
+                    onTap: () {
+                      controller.fetchTodayGoals();
+                    },
+                  );
+                }
+
+                return ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding: EdgeInsets.zero,
+                  itemCount: controller.todayGoals.length,
+                  itemBuilder: (context, index) {
+                    final item = controller.todayGoals[index];
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(15),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.04),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        borderRadius: BorderRadius.circular(15),
+                        clipBehavior: Clip.antiAlias,
+                        child: ListTile(
+                          onTap: () {
+                            controller.toggleGoalItemCompletion(item.id, !item.completed);
                           },
                           leading: Icon(
                             item.completed

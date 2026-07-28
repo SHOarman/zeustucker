@@ -155,7 +155,6 @@ class Meals extends StatelessWidget {
 
                     if (!isNoMeal) {
                       title = "Logged: ${day.consumed.kcal.round()} kcal";
-                      subtitle = "P: ${day.consumed.protein.round()}g, C: ${day.consumed.carbs.round()}g, F: ${day.consumed.fat.round()}g";
                       iconPath = "assets/icon/Container (3).png"; // meals icon
                     }
 

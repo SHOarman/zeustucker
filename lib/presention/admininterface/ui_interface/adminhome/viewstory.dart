@@ -1,50 +1,84 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:zeustucker/core/services/api_services/api_services.dart';
+import 'package:zeustucker/core/services/controller/homecontroller.dart';
+import 'package:zeustucker/core/services/controller/adminpenelcontroller/clientcontoller.dart';
 
 class Viewstory extends StatelessWidget {
   const Viewstory({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final Map<String, dynamic>? args = Get.arguments as Map<String, dynamic>?;
+    final Map<String, dynamic>? client = args?['client'];
+    final Map<String, dynamic>? storybook = args?['storybook'];
+    final List<dynamic> pages = storybook?['pages'] ?? [];
+
+    final clientName = client?['name'] ?? 'Client';
+    final storyDate = storybook?['date'] ?? 'Current Week';
+
+    String authToken = "";
+    if (Get.isRegistered<HomeController>()) {
+      authToken = Get.find<HomeController>().authToken;
+    } else if (Get.isRegistered<ClientController>()) {
+      authToken = Get.find<ClientController>().authToken;
+    }
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           children: [
-            _buildHeader(),
+            _buildHeader(clientName, storyDate),
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 20),
-                    _buildSubHeader(),
-                    const SizedBox(height: 16),
-                    _buildStoryPanel(
-                      imageUrl: 'assets/image/Morning Gym Routine.png',
-                      time: '06:30 AM',
-                      description:
-                          'Sarah starts her day with a high-intensity session at the local gym, focusing on strength training to build her foundation.',
-                      showBadge: true,
+              child: pages.isEmpty
+                  ? const Center(
+                      child: Text(
+                        "No story pages generated yet.",
+                        style: TextStyle(fontSize: 16, color: Colors.grey),
+                      ),
+                    )
+                  : SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 20),
+                          _buildSubHeader(storyDate),
+                          const SizedBox(height: 16),
+                          ...pages.map((page) {
+                            final String storyText = page['story'] ?? '';
+                            final String rawImageUrl = page['image_url'] ?? '';
+                            final String imageUrl = ApiServices.normalizeImageUrl(rawImageUrl);
+                            
+                            // Split the storyText to extract time if present (e.g. "06:30 AM — ...")
+                            String time = "";
+                            String description = storyText;
+                            if (storyText.contains(' — ')) {
+                                final parts = storyText.split(' — ');
+                                time = parts[0];
+                                description = parts.sublist(1).join(' — ');
+                            } else if (storyText.contains(' - ')) {
+                                final parts = storyText.split(' - ');
+                                time = parts[0];
+                                description = parts.sublist(1).join(' - ');
+                            }
+
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 20.0),
+                              child: _buildStoryPanel(
+                                imageUrl: imageUrl,
+                                time: time,
+                                description: description,
+                                fullStory: storyText,
+                                authToken: authToken,
+                              ),
+                            );
+                          }).toList(),
+                          const SizedBox(height: 30),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 20),
-                    _buildStoryPanel(
-                      imageUrl: 'assets/image/Morning Gym Routine.png',
-                      time: '08:15 AM',
-                      description:
-                          'Refueling is key. She prepares a balanced protein bowl with fresh greens and quinoa to sustain her energy levels for the work day ahead.',
-                    ),
-                    const SizedBox(height: 20),
-                    _buildStoryPanel(
-                      imageUrl: 'assets/image/Work Focus.png',
-                      time: '10:30 AM',
-                      description: 'Sarah stays hydrated and focused.',
-                    ),
-                    const SizedBox(height: 30),
-                  ],
-                ),
-              ),
             ),
             _buildBottomButtons(context),
           ],
@@ -53,7 +87,7 @@ class Viewstory extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(String clientName, String dateStr) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
       child: Row(
@@ -86,18 +120,18 @@ class Viewstory extends StatelessWidget {
           ),
           Column(
             children: [
-              const Text(
-                'Sarah Jenkins',
-                style: TextStyle(
+              Text(
+                clientName,
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w800,
                   color: Colors.black87,
                 ),
               ),
               const SizedBox(height: 4),
-              const Text(
-                'CHAPTER 4 - PEAK PERFORMANCE',
-                style: TextStyle(
+              Text(
+                'DATE: $dateStr',
+                style: const TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w800,
                   color: Color(0xFF00BFA5),
@@ -112,26 +146,19 @@ class Viewstory extends StatelessWidget {
     );
   }
 
-  Widget _buildSubHeader() {
+  Widget _buildSubHeader(String dateStr) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const Text(
-          'TUESDAY, MAY 14TH',
-          style: TextStyle(
+        Text(
+          dateStr.toUpperCase(),
+          style: const TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.bold,
             color: Colors.grey,
             letterSpacing: 0.5,
           ),
         ),
-        // Row(
-        //   children: [
-        //     Icon(Icons.widgets, color: Colors.blue.shade400, size: 18),
-        //     const SizedBox(width: 10),
-        //     Icon(Icons.add_box, color: Colors.blue.shade400, size: 18),
-        //   ],
-        // ),
       ],
     );
   }
@@ -140,7 +167,8 @@ class Viewstory extends StatelessWidget {
     required String imageUrl,
     required String time,
     required String description,
-    bool showBadge = false,
+    required String fullStory,
+    required String authToken,
   }) {
     return Container(
       width: double.infinity,
@@ -161,48 +189,41 @@ class Viewstory extends StatelessWidget {
                   bottomLeft: Radius.circular(6),
                   bottomRight: Radius.circular(6),
                 ),
-                child: Image.asset(
-                  imageUrl,
-                  width: double.infinity,
-                  height: 400,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Container(
-                    height: 300,
-                    color: Colors.grey.shade200,
-                    child: const Icon(
-                      Icons.image,
-                      size: 50,
-                      color: Colors.grey,
-                    ),
-                  ),
-                ),
+                child: imageUrl.startsWith('http')
+                    ? Image.network(
+                        imageUrl,
+                        width: double.infinity,
+                        height: 400,
+                        fit: BoxFit.cover,
+                        headers: authToken.isNotEmpty
+                            ? {'Authorization': 'Bearer $authToken'}
+                            : null,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          height: 300,
+                          color: Colors.grey.shade200,
+                          child: const Icon(
+                            Icons.image,
+                            size: 50,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      )
+                    : Image.asset(
+                        imageUrl.isEmpty ? 'assets/image/Morning Gym Routine.png' : imageUrl,
+                        width: double.infinity,
+                        height: 400,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          height: 300,
+                          color: Colors.grey.shade200,
+                          child: const Icon(
+                            Icons.image,
+                            size: 50,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ),
               ),
-              if (showBadge)
-                Positioned(
-                  top: 0,
-                  right: 0,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
-                    ),
-                    // decoration: const BoxDecoration(
-                    //   color: Colors.blue,
-                    //   borderRadius: BorderRadius.only(
-                    //     bottomLeft: Radius.circular(10),
-                    //     topRight: Radius.circular(14),
-                    //   ),
-                    // ),
-                    // child: const Text(
-                    //   '6 × 6',
-                    //   style: TextStyle(
-                    //     color: Colors.white,
-                    //     fontWeight: FontWeight.bold,
-                    //     fontSize: 14,
-                    //   ),
-                    // ),
-                  ),
-                ),
               Positioned(
                 bottom: 12,
                 right: 12,

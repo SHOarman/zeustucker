@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:zeustucker/core/routes/app_routes.dart';
+import 'package:zeustucker/core/services/controller/homecontroller.dart';
 
 import '../../customwidget/custom_bottom_nav.dart';
 
@@ -10,9 +11,10 @@ class LibraryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final HomeController homeController = Get.find<HomeController>();
+
     return Scaffold(
       bottomNavigationBar: const CustomBottomNav(selectIndex: 1),
-
       backgroundColor: const Color(0xFFF9FAFB),
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
@@ -42,29 +44,53 @@ class LibraryScreen extends StatelessWidget {
 
               const SizedBox(height: 30),
 
-              _buildChapterSection(
-                chapter: "Chapter 3",
-                routine: "MORNING ROUTINE V2",
-                status: "FINALISED",
-                statusColor: const Color(0xFF166534),
-                statusBg: const Color(0xFFDCFCE7),
-                chapterData: [
-                  {
-                    "image": "assets/image/card1 (1).png",
-                    "name": "The Awakening",
-                    "onTap": () {
-                      Get.toNamed(AppRoutes.librarydetails);
-                    },
-                  },
-                  {
-                    "image": "assets/image/card1 (2).png",
-                    "name": "Flow State",
-                    "onTap": () {
-                      Get.toNamed(AppRoutes.librarydetails);
-                    },
-                  },
-                ],
-              ),
+              Obx(() {
+                if (homeController.isStoryLoading.value) {
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 20),
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation(Color(0xFF00A37B)),
+                      ),
+                    ),
+                  );
+                }
+                if (homeController.clientPages.isEmpty) {
+                  return const SizedBox.shrink();
+                }
+
+                return _buildChapterSection(
+                  chapter: "Chapter 3",
+                  routine: "MORNING ROUTINE V2",
+                  status: "FINALISED",
+                  statusColor: const Color(0xFF166534),
+                  statusBg: const Color(0xFFDCFCE7),
+                  chapterData: homeController.clientPages.map((page) {
+                    final int pageNum = page['page_number'] ?? 1;
+                    final String rawImg = page['image_url'] ?? '';
+                    final String normalizedUrl = homeController.normalizeImageUrl(rawImg);
+                    final String storyText = page['story'] ?? '';
+
+                    return {
+                      "image": normalizedUrl,
+                      "name": "Page $pageNum",
+                      "onTap": () {
+                        Get.toNamed(
+                          AppRoutes.librarydetails,
+                          arguments: {
+                            "storybook_id": page['storybook_id'],
+                            "page_number": pageNum,
+                            "story": storyText,
+                            "image_url": normalizedUrl,
+                          },
+                        );
+                      },
+                      "isNetwork": true,
+                      "authToken": homeController.authToken,
+                    };
+                  }).toList(),
+                );
+              }),
 
               const SizedBox(height: 45),
               _buildChapterSection(
@@ -80,6 +106,8 @@ class LibraryScreen extends StatelessWidget {
                     "onTap": () {
                       Get.toNamed(AppRoutes.librarydetails);
                     },
+                    "isNetwork": false,
+                    "authToken": "",
                   },
                   {
                     "image": "assets/image/chapter21.png",
@@ -87,6 +115,8 @@ class LibraryScreen extends StatelessWidget {
                     "onTap": () {
                       Get.toNamed(AppRoutes.librarydetails);
                     },
+                    "isNetwork": false,
+                    "authToken": "",
                   },
                 ],
               ),
@@ -188,6 +218,8 @@ class LibraryScreen extends StatelessWidget {
                     imagePath: data['image']!,
                     imageName: data['name']!,
                     onTap: data['onTap'],
+                    isNetwork: data['isNetwork'] ?? false,
+                    authToken: data['authToken'] ?? "",
                   ),
                 )
                 .toList(),
@@ -202,11 +234,15 @@ class _ImageCard extends StatelessWidget {
   final String imagePath;
   final String imageName;
   final VoidCallback onTap;
+  final bool isNetwork;
+  final String authToken;
 
   const _ImageCard({
     required this.imagePath,
     required this.imageName,
     required this.onTap,
+    this.isNetwork = false,
+    this.authToken = "",
   });
 
   @override
@@ -223,7 +259,14 @@ class _ImageCard extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(32),
                 image: DecorationImage(
-                  image: AssetImage(imagePath),
+                  image: isNetwork
+                      ? NetworkImage(
+                          imagePath,
+                          headers: authToken.isNotEmpty
+                              ? {'Authorization': 'Bearer $authToken'}
+                              : null,
+                        ) as ImageProvider
+                      : AssetImage(imagePath) as ImageProvider,
                   fit: BoxFit.cover,
                 ),
               ),
@@ -253,7 +296,7 @@ class _ImageCard extends StatelessWidget {
                 imageName,
                 overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.poppins(
-                  fontSize: 10,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,
                 ),
