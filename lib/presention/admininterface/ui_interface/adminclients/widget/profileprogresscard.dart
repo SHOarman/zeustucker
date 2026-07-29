@@ -53,20 +53,13 @@ class ClientProfileHeader extends StatelessWidget {
               color: Color(0xFFE0F2F1),
               shape: BoxShape.circle,
             ),
-            child: CircleAvatar(
-              radius: 55,
-              backgroundImage: () {
-                if (imageUrl.startsWith('http')) {
-                  return NetworkImage(imageUrl) as ImageProvider;
-                }
-                if (imageUrl.length > 100) {
-                  try {
-                    return MemoryImage(base64Decode(imageUrl));
-                  } catch (_) {}
-                }
-                return AssetImage(imageUrl);
-              }(),
+          child: SizedBox(
+            width: 110,
+            height: 110,
+            child: ClipOval(
+              child: _buildProgressAvatar(imageUrl),
             ),
+          ),
           ),
           const SizedBox(height: 16),
           Text(
@@ -136,5 +129,55 @@ class ClientProfileHeader extends StatelessWidget {
         child: Icon(icon, size: 18, color: Colors.black87),
       ),
     );
+  }
+
+  Widget _buildProgressAvatar(String url) {
+    const defaultAsset = 'assets/image/David Park.png';
+
+    if (url.isEmpty || url == 'string' || url == 'null') {
+      return Image.asset(defaultAsset, width: 110, height: 110, fit: BoxFit.cover);
+    }
+
+    if (url.startsWith('http')) {
+      return Image.network(
+        url,
+        width: 110,
+        height: 110,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          final altUrl = url.contains(':8000') ? url.replaceAll(':8000', ':8004') : url.replaceAll(':8004', ':8000');
+          return Image.network(
+            altUrl,
+            width: 110,
+            height: 110,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) => Image.asset(defaultAsset, width: 110, height: 110, fit: BoxFit.cover),
+          );
+        },
+      );
+    }
+
+    if (url.startsWith('assets/')) {
+      return Image.asset(
+        url,
+        width: 110,
+        height: 110,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => Image.asset(defaultAsset, width: 110, height: 110, fit: BoxFit.cover),
+      );
+    }
+
+    try {
+      final bytes = base64Decode(url);
+      return Image.memory(
+        bytes,
+        width: 110,
+        height: 110,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => Image.asset(defaultAsset, width: 110, height: 110, fit: BoxFit.cover),
+      );
+    } catch (_) {
+      return Image.asset(defaultAsset, width: 110, height: 110, fit: BoxFit.cover);
+    }
   }
 }

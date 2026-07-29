@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
+import 'package:zeustucker/core/services/api_services/api_services.dart';
 
 class ClientCard extends StatelessWidget {
   final String name;
@@ -40,19 +41,12 @@ class ClientCard extends StatelessWidget {
       child: Row(
         children: [
           // Client Image
-          CircleAvatar(
-            radius: 25,
-            backgroundImage: () {
-              if (imageUrl.startsWith('http')) {
-                return NetworkImage(imageUrl) as ImageProvider;
-              }
-              if (imageUrl.length > 100) {
-                try {
-                  return MemoryImage(base64Decode(imageUrl));
-                } catch (_) {}
-              }
-              return AssetImage(imageUrl);
-            }(),
+          SizedBox(
+            width: 50,
+            height: 50,
+            child: ClipOval(
+              child: _buildAvatarImage(imageUrl),
+            ),
           ),
           const SizedBox(width: 8),
 
@@ -122,5 +116,94 @@ class ClientCard extends StatelessWidget {
         ],
       ),
     );
+  }
+  Widget _buildAvatarImage(String url) {
+    const String defaultAsset = 'assets/image/David Park.png';
+
+    if (url.isEmpty || url == 'string' || url == 'null') {
+      return Image.asset(defaultAsset, width: 50, height: 50, fit: BoxFit.cover);
+    }
+
+    if (url.startsWith('http')) {
+      return Image.network(
+        url,
+        width: 50,
+        height: 50,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          final String altUrl = url.contains(':8000')
+              ? url.replaceAll(':8000', ':8004')
+              : url.replaceAll(':8004', ':8000');
+          return Image.network(
+            altUrl,
+            width: 50,
+            height: 50,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) => Image.asset(
+              defaultAsset,
+              width: 50,
+              height: 50,
+              fit: BoxFit.cover,
+            ),
+          );
+        },
+      );
+    }
+
+    if (url.startsWith('/')) {
+      final String primaryUrl = "${ApiServices.baseUrl}$url";
+      final String altUrl = "${ApiServices.baseUrl.replaceAll(':8000', ':8004')}$url";
+      return Image.network(
+        primaryUrl,
+        width: 50,
+        height: 50,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => Image.network(
+          altUrl,
+          width: 50,
+          height: 50,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) => Image.asset(
+            defaultAsset,
+            width: 50,
+            height: 50,
+            fit: BoxFit.cover,
+          ),
+        ),
+      );
+    }
+
+    if (url.startsWith('assets/')) {
+      return Image.asset(
+        url,
+        width: 50,
+        height: 50,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => Image.asset(
+          defaultAsset,
+          width: 50,
+          height: 50,
+          fit: BoxFit.cover,
+        ),
+      );
+    }
+
+    try {
+      final bytes = base64Decode(url);
+      return Image.memory(
+        bytes,
+        width: 50,
+        height: 50,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => Image.asset(
+          defaultAsset,
+          width: 50,
+          height: 50,
+          fit: BoxFit.cover,
+        ),
+      );
+    } catch (_) {
+      return Image.asset(defaultAsset, width: 50, height: 50, fit: BoxFit.cover);
+    }
   }
 }

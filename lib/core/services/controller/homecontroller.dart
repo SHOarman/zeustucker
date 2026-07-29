@@ -1,3 +1,5 @@
+
+
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -5,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../api_services/api_services.dart';
 import 'schedule_controller.dart' show GoalItem, GoalDay;
+import 'storybook_controller.dart';
 import 'macro_controller.dart';
 
 class WorkoutItem {
@@ -164,115 +167,23 @@ class HomeController extends GetxController {
     }
   }
 
-  var clientPages = <Map<String, dynamic>>[].obs;
-  var isStoryLoading = false.obs;
-  String authToken = "";
+  StorybookController get storybookCtrl => Get.isRegistered<StorybookController>() 
+      ? Get.find<StorybookController>() 
+      : Get.put(StorybookController());
 
-  Map<String, dynamic> parseJwt(String token) {
-    final parts = token.split('.');
-    if (parts.length != 3) {
-      throw Exception('invalid token');
-    }
-    final payload = parts[1];
-    var normalized = base64Url.normalize(payload);
-    final resp = utf8.decode(base64Url.decode(normalized));
-    return jsonDecode(resp);
+  RxList<Map<String, dynamic>> get clientPages => storybookCtrl.clientPages;
+  RxBool get isStoryLoading => storybookCtrl.isStoryLoading;
+  RxString get currentPdfUrl => storybookCtrl.currentPdfUrl;
+  String get authToken => storybookCtrl.authToken;
+
+  String normalizeImageUrl(String url) => storybookCtrl.normalizeImageUrl(url);
+
+  Future<bool> fetchClientStorybook({String? storybookIdParam}) {
+    return storybookCtrl.fetchClientStorybook(storybookIdParam: storybookIdParam);
   }
 
-  String normalizeImageUrl(String url) {
-    if (url.startsWith('http')) {
-      return url.replaceAll(':8000', ':8004');
-    }
-    String path = url;
-    if (path.startsWith('/api/v1')) {
-      path = path.replaceFirst('/api/v1', '');
-    }
-    if (!path.startsWith('/')) {
-      path = '/$path';
-    }
-    return "http://10.10.28.89:8004$path";
-  }
-
-  Future<bool> fetchClientStorybook() async {
-    isStoryLoading.value = true;
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('auth_token');
-      if (token == null) {
-        debugPrint("Auth token is null, cannot fetch storybook");
-        return false;
-      }
-      authToken = token;
-
-      String userId = prefs.getString('user_id') ?? '';
-      if (userId.isEmpty) {
-        final payload = parseJwt(token);
-        userId = payload['sub'] ?? '';
-      }
-      debugPrint(">>> fetchClientStorybook using user_id: $userId");
-
-      // 1. Fetch client dashboard on port 8000
-      final dashboardUrl = Uri.parse("${ApiServices.baseUrl}/dashboard?client_id=$userId");
-      final dashboardResponse = await http.get(
-        dashboardUrl,
-        headers: {
-          'accept': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-      );
-
-      debugPrint("Get client dashboard status: ${dashboardResponse.statusCode}");
-      if (dashboardResponse.statusCode == 200) {
-        final Map<String, dynamic> dashData = jsonDecode(dashboardResponse.body);
-        final clientDash = dashData['client_dashboard'];
-        if (clientDash == null) {
-          debugPrint("Client dashboard data is null");
-          clientPages.clear();
-          return false;
-        }
-
-        final todayStorybook = clientDash['today_storybook'];
-        if (todayStorybook == null) {
-          debugPrint("No today_storybook in dashboard");
-          clientPages.clear();
-          return false;
-        }
-
-        final String storybookId = todayStorybook['id'] ?? '';
-        final String status = (todayStorybook['status'] ?? '').toString().toUpperCase();
-
-        if (storybookId.isEmpty || status != 'COMPLETED') {
-          debugPrint("Storybook is not ready or ID is empty (ID: $storybookId, Status: $status)");
-          clientPages.clear();
-          return false;
-        }
-
-        // 2. Fetch full details (pages) on port 8004
-        final detailUrl = Uri.parse(ApiServices.storybookDetail(storybookId));
-        final detailResponse = await http.get(
-          detailUrl,
-          headers: {
-            'accept': 'application/json',
-            'Authorization': 'Bearer $token',
-          },
-        );
-
-        debugPrint("Get client storybook detail status: ${detailResponse.statusCode}");
-        if (detailResponse.statusCode == 200) {
-          final Map<String, dynamic> data = jsonDecode(detailResponse.body);
-          final List<dynamic> pages = data['pages'] ?? [];
-          clientPages.value = pages.map((e) => Map<String, dynamic>.from(e)).toList();
-          debugPrint("Successfully loaded ${clientPages.length} pages");
-          return true;
-        }
-      }
-      return false;
-    } catch (e) {
-      debugPrint("Error fetching client storybook: $e");
-      return false;
-    } finally {
-      isStoryLoading.value = false;
-    }
+  Future<String?> fetchStorybookPdfUrl(String storybookId) {
+    return storybookCtrl.fetchStorybookPdfUrl(storybookId);
   }
 
   void updateIndex(int index) {
@@ -296,7 +207,7 @@ class HomeController extends GetxController {
       );
     }
   }
- //====================working================workout
+  //====================working================workout
 
   void toggleWorkout() {
     hasWorkout.value = !hasWorkout.value;
@@ -347,12 +258,22 @@ class HomeController extends GetxController {
       List<GoalItem> tempGoals = [];
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> data = jsonDecode(response.body);
-        final List<dynamic> daysList = data['days'] ?? [];
-        final fetched = daysList.map((x) => GoalDay.fromJson(x)).toList();
-        
+        final dynamic parsedJson = jsonDecode(response.body);
+        List<dynamic> daysList = [];
+        if (parsedJson is Map) {
+          daysList = parsedJson['days'] ?? parsedJson['items'] ?? parsedJson['goals'] ?? [];
+        } else if (parsedJson is List) {
+          daysList = parsedJson;
+        }
+
+        final fetched = daysList.map((x) {
+          if (x is Map<String, dynamic>) return GoalDay.fromJson(x);
+          if (x is Map) return GoalDay.fromJson(Map<String, dynamic>.from(x));
+          return null;
+        }).whereType<GoalDay>().toList();
+
         final today = DateTime.now().toLocal();
-        final todayDay = fetched.firstWhereOrNull((d) {
+        var todayDay = fetched.firstWhereOrNull((d) {
           try {
             final date = DateTime.parse(d.date).toLocal();
             return date.year == today.year && date.month == today.month && date.day == today.day;
@@ -360,12 +281,16 @@ class HomeController extends GetxController {
             return false;
           }
         });
+
+        // Fallback: Use first non-empty GoalDay if exact date match is not found
+        todayDay ??= fetched.firstWhereOrNull((d) => d.items.isNotEmpty) ?? (fetched.isNotEmpty ? fetched.first : null);
+
         if (todayDay != null) {
           tempGoals = List<GoalItem>.from(todayDay.items);
         }
       }
 
-      // 2. Fetch today's routine to check if we have completed goals saved in 'notes'
+      // 2. Fetch today's routine to check completed states or direct goals
       final routineUrl = Uri.parse(ApiServices.todayRoutine);
       final routineResponse = await http.get(
         routineUrl,
@@ -379,6 +304,19 @@ class HomeController extends GetxController {
       debugPrint("Today Routine Status in fetchTodayGoals: ${routineResponse.statusCode}");
       if (routineResponse.statusCode == 200) {
         final Map<String, dynamic> routineData = jsonDecode(routineResponse.body);
+
+        // If tempGoals is empty, check if routineData contains goals list directly
+        if (tempGoals.isEmpty) {
+          final List<dynamic> routineGoals = routineData['goals'] ?? routineData['daily_goals'] ?? [];
+          if (routineGoals.isNotEmpty) {
+            tempGoals = routineGoals.map((x) {
+              if (x is Map<String, dynamic>) return GoalItem.fromJson(x);
+              if (x is Map) return GoalItem.fromJson(Map<String, dynamic>.from(x));
+              return null;
+            }).whereType<GoalItem>().toList();
+          }
+        }
+
         final String rawNotes = routineData['notes'] ?? '';
         final String notesStr = rawNotes.contains('|||') ? rawNotes.split('|||')[0] : rawNotes;
         if (notesStr.isNotEmpty && notesStr.startsWith('[')) {
@@ -414,6 +352,16 @@ class HomeController extends GetxController {
             debugPrint("Error parsing routine notes as JSON: $e");
           }
         }
+      }
+
+      // Fallback: If tempGoals is still empty, map from workoutItems
+      if (tempGoals.isEmpty && workoutItems.isNotEmpty) {
+        tempGoals = workoutItems.map((w) => GoalItem(
+          id: w.id,
+          position: w.position,
+          instruction: w.instruction,
+          completed: w.completed,
+        )).toList();
       }
 
       todayGoals.assignAll(tempGoals);

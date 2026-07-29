@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:zeustucker/core/routes/app_routes.dart';
@@ -11,7 +12,9 @@ class LibraryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final HomeController homeController = Get.find<HomeController>();
+    final HomeController homeController = Get.isRegistered<HomeController>()
+        ? Get.find<HomeController>()
+        : Get.put(HomeController());
 
     return Scaffold(
       bottomNavigationBar: const CustomBottomNav(selectIndex: 1),
@@ -42,7 +45,60 @@ class LibraryScreen extends StatelessWidget {
                 ),
               ),
 
-              const SizedBox(height: 30),
+              const SizedBox(height: 20),
+
+              // PDF Download Banner for User
+              Obx(() {
+                final pdfUrl = homeController.currentPdfUrl.value;
+                if (pdfUrl.isEmpty) return const SizedBox.shrink();
+                return Container(
+                  margin: const EdgeInsets.only(right: 16, bottom: 20),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFDCFCE7),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFF166534).withOpacity(0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.picture_as_pdf, color: Color(0xFF166534)),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          "Full Storybook PDF Available",
+                          style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF166534),
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF166534),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        onPressed: () {
+                          Clipboard.setData(ClipboardData(text: pdfUrl));
+                          Get.snackbar(
+                            "PDF Download Link",
+                            pdfUrl,
+                            snackPosition: SnackPosition.BOTTOM,
+                            backgroundColor: const Color(0xFF1CBBA7),
+                            colorText: Colors.white,
+                            duration: const Duration(seconds: 4),
+                          );
+                        },
+                        child: const Text("Download PDF", style: TextStyle(fontSize: 12)),
+                      ),
+                    ],
+                  ),
+                );
+              }),
 
               Obx(() {
                 if (homeController.isStoryLoading.value) {

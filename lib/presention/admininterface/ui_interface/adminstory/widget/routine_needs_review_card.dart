@@ -30,13 +30,36 @@ class RoutineNeedsReviewCard extends StatelessWidget {
         color: Colors.transparent,
         child: Row(
           children: [
-            CircleAvatar(
-
-              radius: 28,
-              backgroundColor: const Color(0xFFF3F4F6),
-              backgroundImage: imageUrl.startsWith('assets')
-                  ? AssetImage(imageUrl) as ImageProvider
-                  : imageUrl.startsWith('http') ? NetworkImage(imageUrl) as ImageProvider : AssetImage(imageUrl) as ImageProvider,
+            SizedBox(
+              width: 56,
+              height: 56,
+              child: ClipOval(
+                child: imageUrl.startsWith('http')
+                    ? Image.network(
+                        imageUrl,
+                        width: 56,
+                        height: 56,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Image.asset(
+                          'assets/image/David Park.png',
+                          width: 56,
+                          height: 56,
+                          fit: BoxFit.cover,
+                        ),
+                      )
+                    : Image.asset(
+                        imageUrl,
+                        width: 56,
+                        height: 56,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Image.asset(
+                          'assets/image/David Park.png',
+                          width: 56,
+                          height: 56,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(

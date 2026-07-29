@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:zeustucker/presention/customwidget/custom_bottom_nav.dart';
@@ -7,6 +8,8 @@ import 'package:zeustucker/presention/userinterface/home/widget/routine_note_inp
 import 'package:zeustucker/presention/userinterface/home/widget/marcotargets.dart';
 import 'package:zeustucker/presention/userinterface/home/widget/workout_section.dart';
 
+import 'package:zeustucker/core/services/api_services/api_services.dart';
+import 'package:zeustucker/core/services/controller/macro_controller.dart';
 import '../../../core/services/controller/homecontroller.dart';
 import '../../../core/services/controller/profilecontroller.dart';
 
@@ -14,11 +17,12 @@ class HomeScreen extends StatelessWidget {
   HomeScreen({super.key});
 
   final HomeController controller = Get.put(HomeController());
+  final MacroController macroController = Get.isRegistered<MacroController>()
+      ? Get.find<MacroController>()
+      : Get.put(MacroController());
 
   void _showStoryDialog(BuildContext context) {
-    if (controller.clientPages.isEmpty) {
-      controller.fetchClientStorybook();
-    }
+    controller.fetchClientStorybook();
 
     showDialog(
       context: context,
@@ -89,45 +93,30 @@ class HomeScreen extends StatelessWidget {
 
                                 return Padding(
                                   padding: const EdgeInsets.symmetric(
-                                    horizontal: 40,
+                                    horizontal: 20,
                                   ),
-                                  child: SingleChildScrollView(
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        ClipRRect(
-                                          borderRadius: BorderRadius.circular(15),
-                                          child: Image.network(
-                                            normalizedUrl,
-                                            height: 320,
-                                            width: double.infinity,
-                                            fit: BoxFit.cover,
-                                            headers: controller.authToken.isNotEmpty
-                                                ? {'Authorization': 'Bearer ${controller.authToken}'}
-                                                : null,
-                                            errorBuilder: (context, error, stackTrace) => Container(
-                                              height: 320,
-                                              width: double.infinity,
-                                              color: Colors.grey.shade200,
-                                              child: const Icon(
-                                                Icons.image,
-                                                size: 50,
-                                                color: Colors.grey,
-                                              ),
-                                            ),
+                                  child: Center(
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(20),
+                                      child: Image.network(
+                                        normalizedUrl,
+                                        height: 460,
+                                        width: double.infinity,
+                                        fit: BoxFit.cover,
+                                        headers: controller.authToken.isNotEmpty
+                                            ? {'Authorization': 'Bearer ${controller.authToken}'}
+                                            : null,
+                                        errorBuilder: (context, error, stackTrace) => Container(
+                                          height: 460,
+                                          width: double.infinity,
+                                          color: Colors.grey.shade200,
+                                          child: const Icon(
+                                            Icons.image,
+                                            size: 50,
+                                            color: Colors.grey,
                                           ),
                                         ),
-                                        const SizedBox(height: 20),
-                                        Text(
-                                          storyText,
-                                          style: GoogleFonts.poppins(
-                                            fontSize: 14,
-                                            color: Colors.black87,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                          textAlign: TextAlign.center,
-                                        ),
-                                      ],
+                                      ),
                                     ),
                                   ),
                                 );
@@ -165,7 +154,7 @@ class HomeScreen extends StatelessWidget {
                       ),
                       // Reactive Dots
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 25),
+                        padding: const EdgeInsets.symmetric(vertical: 15),
                         child: Obx(
                           () => Row(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -187,6 +176,40 @@ class HomeScreen extends StatelessWidget {
                           ),
                         ),
                       ),
+                      // PDF Download / View Button
+                      Obx(() {
+                        final pdfUrl = controller.currentPdfUrl.value;
+                        if (pdfUrl.isEmpty) return const SizedBox.shrink();
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 20),
+                          child: ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF00A37B),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                            ),
+                            icon: const Icon(Icons.picture_as_pdf, color: Colors.white),
+                            label: const Text(
+                              "Download Storybook (PDF)",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            onPressed: () {
+                              Clipboard.setData(ClipboardData(text: pdfUrl));
+                              Get.snackbar(
+                                "PDF Download Link",
+                                pdfUrl,
+                                snackPosition: SnackPosition.BOTTOM,
+                                backgroundColor: const Color(0xFF1CBBA7),
+                                colorText: Colors.white,
+                                duration: const Duration(seconds: 4),
+                              );
+                            },
+                          ),
+                        );
+                      }),
                     ],
                   );
                 }),
@@ -215,21 +238,6 @@ class HomeScreen extends StatelessWidget {
                 final profileController = Get.put(EditProfileController());
                 final String name = profileController.profileData['name'] ?? profileController.profileData['full_name'] ?? 'User';
                 final String? profileImage = profileController.profileData['profile_image'];
-
-                ImageProvider imageProvider;
-                if (profileImage != null && profileImage.isNotEmpty && profileImage != 'string') {
-                  if (profileImage.startsWith('http://') || profileImage.startsWith('https://')) {
-                    imageProvider = NetworkImage(profileImage);
-                  } else {
-                    try {
-                      imageProvider = MemoryImage(base64Decode(profileImage));
-                    } catch (e) {
-                      imageProvider = const AssetImage("assets/image/Ellipse 1.png");
-                    }
-                  }
-                } else {
-                  imageProvider = const AssetImage("assets/image/Ellipse 1.png");
-                }
 
                 return Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -261,12 +269,11 @@ class HomeScreen extends StatelessWidget {
                     const SizedBox(width: 12),
                     GestureDetector(
                       onTap: () => debugPrint("Profile"),
-                      child: ClipOval(
-                        child: Image(
-                          image: imageProvider,
-                          height: 60,
-                          width: 60,
-                          fit: BoxFit.cover,
+                      child: SizedBox(
+                        width: 60,
+                        height: 60,
+                        child: ClipOval(
+                          child: _buildSafeHeaderImage(profileImage, "assets/image/Ellipse 1.png"),
                         ),
                       ),
                     ),
@@ -334,56 +341,81 @@ class HomeScreen extends StatelessWidget {
               ),
               const SizedBox(height: 20),
               // Macro Slider
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                physics: const BouncingScrollPhysics(),
-                child: Row(
+              Obx(() {
+                final int cal = macroController.caloriesGoal.value > 0
+                    ? macroController.caloriesGoal.value
+                    : macroController.caloriesConsumed.value;
+                final int prot = macroController.proteinGoal.value > 0
+                    ? macroController.proteinGoal.value.toInt()
+                    : macroController.protein.value.toInt();
+                final int carb = macroController.carbsGoal.value > 0
+                    ? macroController.carbsGoal.value.toInt()
+                    : macroController.carbs.value.toInt();
+                final int fat = macroController.fatsGoal.value > 0
+                    ? macroController.fatsGoal.value.toInt()
+                    : macroController.fats.value.toInt();
+
+                final bool hasTarget = macroController.caloriesGoal.value > 0 ||
+                    macroController.proteinGoal.value > 0 ||
+                    macroController.carbsGoal.value > 0 ||
+                    macroController.fatsGoal.value > 0;
+
+                return Column(
                   children: [
-                    MacroTargetCard(
-                      label: "Calories",
-                      value: "0",
-                      unit: "kcal",
-                      iconPath: "assets/image/Icon.png",
-                      valueColor: const Color(0xFFE05C5C),
-                      onTap: () {},
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      physics: const BouncingScrollPhysics(),
+                      child: Row(
+                        children: [
+                          MacroTargetCard(
+                            label: "Calories",
+                            value: "$cal",
+                            unit: "kcal",
+                            iconPath: "assets/image/Icon.png",
+                            valueColor: const Color(0xFFE05C5C),
+                            onTap: () {},
+                          ),
+                          const SizedBox(width: 12),
+                          MacroTargetCard(
+                            label: "Protein",
+                            value: "$prot",
+                            unit: "g",
+                            iconPath: "assets/image/Margin344.png",
+                            valueColor: const Color(0xFF1CBBA7),
+                            onTap: () {},
+                          ),
+                          const SizedBox(width: 12),
+                          MacroTargetCard(
+                            label: "Carbs",
+                            value: "$carb",
+                            unit: "g",
+                            iconPath: "assets/image/Margin.png",
+                            valueColor: const Color(0xFFEF9E16),
+                            onTap: () {},
+                          ),
+                          const SizedBox(width: 12),
+                          MacroTargetCard(
+                            label: "Fats",
+                            value: "$fat",
+                            unit: "g",
+                            iconPath: "assets/image/Margin34.png",
+                            valueColor: const Color(0xFFE93CA4),
+                            onTap: () {},
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(width: 12),
-                    MacroTargetCard(
-                      label: "Protein",
-                      value: "0",
-                      unit: "g",
-                      iconPath: "assets/image/Margin344.png",
-                      valueColor: const Color(0xFF1CBBA7),
-                      onTap: () {},
-                    ),
-                    const SizedBox(width: 12),
-                    MacroTargetCard(
-                      label: "Carbs",
-                      value: "0",
-                      unit: "g",
-                      iconPath: "assets/image/Margin.png",
-                      valueColor: const Color(0xFFEF9E16),
-                      onTap: () {},
-                    ),
-                    const SizedBox(width: 12),
-                    MacroTargetCard(
-                      label: "Fats",
-                      value: "0",
-                      unit: "g",
-                      iconPath: "assets/image/Margin34.png",
-                      valueColor: const Color(0xFFE93CA4),
+                    const SizedBox(height: 30),
+                    CustomDottedCard(
+                      bodyText: hasTarget
+                          ? "Daily Target: $cal kcal (Protein: ${prot}g | Carbs: ${carb}g | Fats: ${fat}g)"
+                          : "No macro targets set for today.",
+                      centerWidget: Image.asset("assets/image/cicel.png"),
                       onTap: () {},
                     ),
                   ],
-                ),
-              ),
-              const SizedBox(height: 30),
-
-              CustomDottedCard(
-                bodyText: "No macro targets set for today.",
-                centerWidget: Image.asset("assets/image/cicel.png"),
-                onTap: () {},
-              ),
+                );
+              }),
 
               const SizedBox(height: 30),
 
@@ -617,5 +649,83 @@ class HomeScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget _buildSafeHeaderImage(String? profileImage, String defaultAsset) {
+    if (profileImage == null || profileImage.isEmpty || profileImage == 'string' || profileImage == 'null') {
+      return Image.asset(defaultAsset, height: 60, width: 60, fit: BoxFit.cover);
+    }
+
+    if (profileImage.startsWith('http://') || profileImage.startsWith('https://')) {
+      return Image.network(
+        profileImage,
+        height: 60,
+        width: 60,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          final altUrl = profileImage.contains(':8000')
+              ? profileImage.replaceAll(':8000', ':8004')
+              : profileImage.replaceAll(':8004', ':8000');
+          return Image.network(
+            altUrl,
+            height: 60,
+            width: 60,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) => Image.asset(
+              defaultAsset,
+              height: 60,
+              width: 60,
+              fit: BoxFit.cover,
+            ),
+          );
+        },
+      );
+    }
+
+    if (profileImage.startsWith('/')) {
+      final primaryUrl = "${ApiServices.baseUrl}$profileImage";
+      final altUrl = "${ApiServices.baseUrl.replaceAll(':8000', ':8004')}$profileImage";
+      return Image.network(
+        primaryUrl,
+        height: 60,
+        width: 60,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => Image.network(
+          altUrl,
+          height: 60,
+          width: 60,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) => Image.asset(
+            defaultAsset,
+            height: 60,
+            width: 60,
+            fit: BoxFit.cover,
+          ),
+        ),
+      );
+    }
+
+    if (profileImage.startsWith('assets/')) {
+      return Image.asset(
+        profileImage,
+        height: 60,
+        width: 60,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => Image.asset(defaultAsset, height: 60, width: 60, fit: BoxFit.cover),
+      );
+    }
+
+    try {
+      final bytes = base64Decode(profileImage);
+      return Image.memory(
+        bytes,
+        height: 60,
+        width: 60,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => Image.asset(defaultAsset, height: 60, width: 60, fit: BoxFit.cover),
+      );
+    } catch (_) {
+      return Image.asset(defaultAsset, height: 60, width: 60, fit: BoxFit.cover);
+    }
   }
 }

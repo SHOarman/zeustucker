@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:zeustucker/core/routes/app_routes.dart';
 import 'package:zeustucker/presention/customwidget/custom_bottom_nav.dart';
 import 'package:zeustucker/core/services/controller/profilecontroller.dart';
+import 'package:zeustucker/core/services/api_services/api_services.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -71,28 +72,19 @@ class ProfileScreen extends StatelessWidget {
                 child: Obx(() {
                   final profile = profileController.profileData;
                   final profileImgBase64 = profile['profile_image'];
-                  ImageProvider imgProvider;
-                  if (profileImgBase64 != null && profileImgBase64.toString().isNotEmpty && profileImgBase64 != 'string') {
-                    final String imgStr = profileImgBase64.toString();
-                    if (imgStr.startsWith('http://') || imgStr.startsWith('https://')) {
-                      imgProvider = NetworkImage(imgStr);
-                    } else {
-                      try {
-                        imgProvider = MemoryImage(base64Decode(imgStr));
-                      } catch (_) {
-                        imgProvider = const AssetImage('assets/image/newprofile.png');
-                      }
-                    }
-                  } else {
-                    imgProvider = const AssetImage('assets/image/newprofile.png');
-                  }
-                  
                   return GestureDetector(
                     onTap: () => profileController.pickAndUpdateImage(context, false),
-                    child: CircleAvatar(
-                      radius: 56,
-                      backgroundImage: imgProvider,
-                      backgroundColor: Colors.white,
+                    child: SizedBox(
+                      width: 112,
+                      height: 112,
+                      child: ClipOval(
+                        child: _buildSafeProfileImage(
+                          profileImgBase64,
+                          'assets/image/newprofile.png',
+                          width: 112,
+                          height: 112,
+                        ),
+                      ),
                     ),
                   );
                 }),
@@ -149,26 +141,20 @@ class ProfileScreen extends StatelessWidget {
               // Reference Image Card
               Obx(() {
                 final profile = profileController.profileData;
-                final refImgBase64 = profile['reference_image'];
-                final name = profile['name'] ?? 'John';
+                final refImgSource = profile['reference_image'] ?? profile['selfie'] ?? profile['reference_image_path'];
+                final name = profile['name'] ?? profile['full_name'] ?? 'User';
                 final age = profile['age'] ?? '24';
-                final occupation = profile['occupation'] ?? 'Software Developer';
+                final occupation = profile['occupation'] ?? profile['profession'] ?? 'Member';
                 
-                ImageProvider refImgProvider;
-                if (refImgBase64 != null && refImgBase64.toString().isNotEmpty && refImgBase64 != 'string') {
-                  final String refStr = refImgBase64.toString();
-                  if (refStr.startsWith('http://') || refStr.startsWith('https://')) {
-                    refImgProvider = NetworkImage(refStr);
-                  } else {
-                    try {
-                      refImgProvider = MemoryImage(base64Decode(refStr));
-                    } catch (_) {
-                      refImgProvider = const AssetImage('assets/image/newprofile.png');
-                    }
-                  }
-                } else {
-                  refImgProvider = const AssetImage('assets/image/newprofile.png');
-                }
+                final Widget refImgWidget = ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: _buildSafeProfileImage(
+                    refImgSource,
+                    'assets/image/newprofile.png',
+                    width: 80,
+                    height: 60,
+                  ),
+                );
                 
                 return _buildCard(
                   child: Column(
@@ -195,12 +181,7 @@ class ProfileScreen extends StatelessWidget {
                         children: [
                           ClipRRect(
                             borderRadius: BorderRadius.circular(8),
-                            child: Image(
-                              image: refImgProvider,
-                              width: 80,
-                              height: 60,
-                              fit: BoxFit.cover,
-                            ),
+                            child: refImgWidget,
                           ),
                           const SizedBox(width: 16),
                           Expanded(
@@ -209,6 +190,8 @@ class ProfileScreen extends StatelessWidget {
                               children: [
                                 Text(
                                   name,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 15,
@@ -218,6 +201,8 @@ class ProfileScreen extends StatelessWidget {
                                 const SizedBox(height: 2),
                                 Text(
                                   'Age $age',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(
                                     color: Colors.grey,
                                     fontSize: 13,
@@ -226,6 +211,8 @@ class ProfileScreen extends StatelessWidget {
                                 const SizedBox(height: 2),
                                 Text(
                                   occupation,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(
                                     color: Colors.grey,
                                     fontSize: 13,
@@ -467,22 +454,6 @@ class ProfileScreen extends StatelessWidget {
                           coachImg = req['coach_profile_image'] ?? req['coach_image'] ?? req['image'];
                         }
                         
-                        ImageProvider coachImageProvider;
-                        if (coachImg != null && coachImg.toString().isNotEmpty && coachImg.toString() != 'string') {
-                          final String imgStr = coachImg.toString();
-                          if (imgStr.startsWith('http://') || imgStr.startsWith('https://')) {
-                            coachImageProvider = NetworkImage(imgStr);
-                          } else {
-                            try {
-                              coachImageProvider = MemoryImage(base64Decode(imgStr));
-                            } catch (_) {
-                              coachImageProvider = const AssetImage('assets/image/David Park.png');
-                            }
-                          }
-                        } else {
-                          coachImageProvider = const AssetImage('assets/image/David Park.png');
-                        }
-                        
                         final planVal = req['assign_initial_plan'] ?? req['plan'];
                         String planName = 'Pro Coaching Plan';
                         if (planVal is bool) {
@@ -497,9 +468,17 @@ class ProfileScreen extends StatelessWidget {
                             children: [
                               Row(
                                 children: [
-                                  CircleAvatar(
-                                    backgroundImage: coachImageProvider,
-                                    radius: 24,
+                                  SizedBox(
+                                    width: 48,
+                                    height: 48,
+                                    child: ClipOval(
+                                      child: _buildSafeProfileImage(
+                                        coachImg,
+                                        'assets/image/David Park.png',
+                                        width: 48,
+                                        height: 48,
+                                      ),
+                                    ),
                                   ),
                                   const SizedBox(width: 12),
                                   Expanded(
@@ -643,5 +622,95 @@ class ProfileScreen extends StatelessWidget {
       ),
       child: child,
     );
+  }
+
+  Widget _buildSafeProfileImage(dynamic imgSource, String defaultAsset, {double width = 100, double height = 100}) {
+    if (imgSource == null || imgSource.toString().isEmpty || imgSource.toString() == 'string' || imgSource.toString() == 'null') {
+      return Image.asset(defaultAsset, width: width, height: height, fit: BoxFit.cover);
+    }
+
+    final String imgStr = imgSource.toString().trim();
+
+    if (imgStr.startsWith('http://') || imgStr.startsWith('https://')) {
+      return Image.network(
+        imgStr,
+        width: width,
+        height: height,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          final String altUrl = imgStr.contains(':8000')
+              ? imgStr.replaceAll(':8000', ':8004')
+              : imgStr.replaceAll(':8004', ':8000');
+          return Image.network(
+            altUrl,
+            width: width,
+            height: height,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) => Image.asset(
+              defaultAsset,
+              width: width,
+              height: height,
+              fit: BoxFit.cover,
+            ),
+          );
+        },
+      );
+    }
+
+    if (imgStr.startsWith('/')) {
+      final String primaryUrl = "${ApiServices.baseUrl}$imgStr";
+      final String altUrl = "${ApiServices.baseUrl.replaceAll(':8000', ':8004')}$imgStr";
+      return Image.network(
+        primaryUrl,
+        width: width,
+        height: height,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => Image.network(
+          altUrl,
+          width: width,
+          height: height,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) => Image.asset(
+            defaultAsset,
+            width: width,
+            height: height,
+            fit: BoxFit.cover,
+          ),
+        ),
+      );
+    }
+
+    if (imgStr.startsWith('assets/')) {
+      return Image.asset(
+        imgStr,
+        width: width,
+        height: height,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => Image.asset(
+          defaultAsset,
+          width: width,
+          height: height,
+          fit: BoxFit.cover,
+        ),
+      );
+    }
+
+    try {
+      final bytes = base64Decode(imgStr);
+      return Image.memory(
+        bytes,
+        width: width,
+        height: height,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => Image.asset(
+          defaultAsset,
+          width: width,
+          height: height,
+          fit: BoxFit.cover,
+        ),
+      );
+    } catch (_) {
+      return Image.asset(defaultAsset, width: width, height: height, fit: BoxFit.cover);
+    }
   }
 }

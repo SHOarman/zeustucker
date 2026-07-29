@@ -1,6 +1,8 @@
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../../../core/services/api_services/api_services.dart';
 import '../../../../../core/services/controller/profilecontroller.dart';
 
 class CoachPremiumCard extends StatelessWidget {
@@ -77,26 +79,7 @@ class CoachPremiumCard extends StatelessWidget {
                                 shape: BoxShape.circle,
                               ),
                               child: ClipOval(
-                                child: profileImg != null && profileImg.isNotEmpty && profileImg != 'string'
-                                    ? (profileImg.startsWith('http')
-                                        ? Image.network(
-                                            profileImg,
-                                            width: 100,
-                                            height: 100,
-                                            fit: BoxFit.cover,
-                                          )
-                                        : Image.memory(
-                                            base64Decode(profileImg),
-                                            width: 100,
-                                            height: 100,
-                                            fit: BoxFit.cover,
-                                          ))
-                                    : Image.asset(
-                                        'assets/image/Panel 2.png',
-                                        width: 100,
-                                        height: 100,
-                                        fit: BoxFit.cover,
-                                      ),
+                                child: _buildProfileImage(profileImg),
                               ),
                             ),
                             // Verification Icon
@@ -159,5 +142,75 @@ class CoachPremiumCard extends StatelessWidget {
         );
       },
     );
+  }
+
+  Widget _buildProfileImage(String? profileImg) {
+    const String defaultAsset = 'assets/image/Panel 2.png';
+
+    if (profileImg == null || profileImg.isEmpty || profileImg == 'string') {
+      return Image.asset(defaultAsset, width: 100, height: 100, fit: BoxFit.cover);
+    }
+
+    if (profileImg.startsWith('http')) {
+      return Image.network(
+        profileImg,
+        width: 100,
+        height: 100,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          final String altUrl = profileImg.contains(':8000')
+              ? profileImg.replaceAll(':8000', ':8004')
+              : profileImg.replaceAll(':8004', ':8000');
+          return Image.network(
+            altUrl,
+            width: 100,
+            height: 100,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) => Image.asset(defaultAsset, width: 100, height: 100, fit: BoxFit.cover),
+          );
+        },
+      );
+    }
+
+    if (profileImg.startsWith('/')) {
+      final String primaryUrl = "${ApiServices.baseUrl}$profileImg";
+      final String altUrl = "${ApiServices.baseUrl.replaceAll(':8000', ':8004')}$profileImg";
+      return Image.network(
+        primaryUrl,
+        width: 100,
+        height: 100,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => Image.network(
+          altUrl,
+          width: 100,
+          height: 100,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) => Image.asset(defaultAsset, width: 100, height: 100, fit: BoxFit.cover),
+        ),
+      );
+    }
+
+    if (profileImg.startsWith('assets/')) {
+      return Image.asset(
+        profileImg,
+        width: 100,
+        height: 100,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => Image.asset(defaultAsset, width: 100, height: 100, fit: BoxFit.cover),
+      );
+    }
+
+    try {
+      final bytes = base64Decode(profileImg);
+      return Image.memory(
+        bytes,
+        width: 100,
+        height: 100,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => Image.asset(defaultAsset, width: 100, height: 100, fit: BoxFit.cover),
+      );
+    } catch (_) {
+      return Image.asset(defaultAsset, width: 100, height: 100, fit: BoxFit.cover);
+    }
   }
 }

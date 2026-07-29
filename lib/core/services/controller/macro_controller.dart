@@ -46,10 +46,14 @@ class LoggedMeal {
     final double? parsedFat = json['fat'] != null ? double.tryParse(json['fat'].toString()) : null;
     final double? parsedFiber = json['fiber'] != null ? double.tryParse(json['fiber'].toString()) : null;
 
+    final int parsedKcal = (json['kcal'] != null
+        ? num.tryParse(json['kcal'].toString())?.toInt()
+        : num.tryParse(json['calories']?.toString() ?? '')?.toInt()) ?? 0;
+
     return LoggedMeal(
-      name: json['food_name'] ?? json['name'] ?? '',
-      kcal: (json['kcal'] ?? json['calories'] ?? 0) as int,
-      id: json['id'],
+      name: json['food_name'] ?? json['name'] ?? json['food_item'] ?? '',
+      kcal: parsedKcal,
+      id: json['id']?.toString(),
       mealType: json['meal_type'] ?? json['macro_type'],
       amount: parsedAmount,
       amountUnit: json['amount_unit'],
@@ -206,45 +210,7 @@ class MacroController extends GetxController {
         debugPrint("Error fetching nutrition plans for macros: $e");
       }
 
-      try {
-        final dashboardUrl = Uri.parse(ApiServices.dashboard);
-        debugPrint(">>> FETCHING MACRO TARGETS FROM DASHBOARD: $dashboardUrl");
-        final dashboardResponse = await http.get(
-          dashboardUrl,
-          headers: headers,
-        );
-        if (dashboardResponse.statusCode == 200) {
-          final data = jsonDecode(dashboardResponse.body);
-          final clientDashboard = data['client_dashboard'];
-          if (clientDashboard != null) {
-            final todayRoutine = clientDashboard['today_routine'];
-            if (todayRoutine != null) {
-              caloriesGoal.value = _parseInt(
-                todayRoutine['goal_kcal'] ?? todayRoutine['calories'],
-                0,
-              );
-              proteinGoal.value = _parseDouble(
-                todayRoutine['goal_protein'] ?? todayRoutine['protein'],
-                0.0,
-              );
-              carbsGoal.value = _parseDouble(
-                todayRoutine['goal_carbs'] ?? todayRoutine['carbs'],
-                0.0,
-              );
-              fatsGoal.value = _parseDouble(
-                todayRoutine['goal_fats'] ?? todayRoutine['fat'],
-                0.0,
-              );
-              miscGoal.value = _parseDouble(
-                todayRoutine['goal_fiber'] ?? todayRoutine['fiber'],
-                0.0,
-              );
-            }
-          }
-        }
-      } catch (e) {
-        debugPrint("Error fetching dashboard for macros: $e");
-      }
+      // Note: macro targets are loaded from fetchTodayRoutine and nutrition plans
     } finally {
       isLoading.value = false;
     }
@@ -293,6 +259,9 @@ class MacroController extends GetxController {
       final token = prefs.getString('auth_token');
       if (token == null) return;
 
+      if (routineId.value.isEmpty) {
+        await fetchTodayRoutine();
+      }
       if (routineId.value.isEmpty) {
         debugPrint("Skipping fetchLoggedMeals: routineId is empty");
         return;

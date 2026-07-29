@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../core/services/api_services/api_services.dart';
 import '../../../core/services/controller/profilecontroller.dart';
 
 class EditProfile extends StatelessWidget {
@@ -43,28 +44,12 @@ class EditProfile extends StatelessWidget {
                           Obx(() {
                             final path = controller.selectedImagePath.value;
                             final base64Img = controller.profileData['profile_image'];
-                            ImageProvider imgProvider;
-                            if (path.isNotEmpty && path != "base64") {
-                              imgProvider = kIsWeb ? NetworkImage(path) : FileImage(File(path));
-                            } else if (base64Img != null && base64Img.toString().isNotEmpty && base64Img != 'string') {
-                              final String imgStr = base64Img.toString();
-                              if (imgStr.startsWith('http://') || imgStr.startsWith('https://')) {
-                                imgProvider = NetworkImage(imgStr);
-                              } else {
-                                try {
-                                  imgProvider = MemoryImage(base64Decode(imgStr));
-                                } catch (e) {
-                                  imgProvider = const AssetImage('assets/image/newprofile.png');
-                                }
-                              }
-                            } else {
-                              imgProvider = const AssetImage('assets/image/newprofile.png');
-                            }
-                            
-                            return CircleAvatar(
-                              radius: 50,
-                              backgroundColor: Colors.grey.shade200,
-                              backgroundImage: imgProvider,
+                            return SizedBox(
+                              width: 100,
+                              height: 100,
+                              child: ClipOval(
+                                child: _buildEditProfileAvatar(path, base64Img),
+                              ),
                             );
                           }),
                           Positioned(
@@ -271,5 +256,86 @@ class EditProfile extends StatelessWidget {
       ),
       child: child,
     );
+  }
+
+  Widget _buildEditProfileAvatar(String path, dynamic base64Img) {
+    const defaultAsset = 'assets/image/newprofile.png';
+
+    if (path.isNotEmpty && path != "base64") {
+      if (kIsWeb) {
+        return Image.network(
+          path,
+          width: 100,
+          height: 100,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) => Image.asset(defaultAsset, width: 100, height: 100, fit: BoxFit.cover),
+        );
+      } else {
+        return Image.file(
+          File(path),
+          width: 100,
+          height: 100,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) => Image.asset(defaultAsset, width: 100, height: 100, fit: BoxFit.cover),
+        );
+      }
+    }
+
+    if (base64Img != null && base64Img.toString().isNotEmpty && base64Img.toString() != 'string') {
+      final String imgStr = base64Img.toString().trim();
+      if (imgStr.startsWith('http://') || imgStr.startsWith('https://')) {
+        return Image.network(
+          imgStr,
+          width: 100,
+          height: 100,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            final altUrl = imgStr.contains(':8000')
+                ? imgStr.replaceAll(':8000', ':8004')
+                : imgStr.replaceAll(':8004', ':8000');
+            return Image.network(
+              altUrl,
+              width: 100,
+              height: 100,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) => Image.asset(defaultAsset, width: 100, height: 100, fit: BoxFit.cover),
+            );
+          },
+        );
+      }
+
+      if (imgStr.startsWith('/')) {
+        final primaryUrl = "${ApiServices.baseUrl}$imgStr";
+        final altUrl = "${ApiServices.baseUrl.replaceAll(':8000', ':8004')}$imgStr";
+        return Image.network(
+          primaryUrl,
+          width: 100,
+          height: 100,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) => Image.network(
+            altUrl,
+            width: 100,
+            height: 100,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) => Image.asset(defaultAsset, width: 100, height: 100, fit: BoxFit.cover),
+          ),
+        );
+      }
+
+      try {
+        final bytes = base64Decode(imgStr);
+        return Image.memory(
+          bytes,
+          width: 100,
+          height: 100,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) => Image.asset(defaultAsset, width: 100, height: 100, fit: BoxFit.cover),
+        );
+      } catch (_) {
+        return Image.asset(defaultAsset, width: 100, height: 100, fit: BoxFit.cover);
+      }
+    }
+
+    return Image.asset(defaultAsset, width: 100, height: 100, fit: BoxFit.cover);
   }
 }

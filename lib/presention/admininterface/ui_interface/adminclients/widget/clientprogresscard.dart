@@ -46,20 +46,12 @@ class ClientProgressCard extends StatelessWidget {
                 // --- Avatar with Notification ---
                 Stack(
                   children: [
-                    CircleAvatar(
-                      radius: 35,
-                      backgroundColor: const Color(0xFFF3F4F6),
-                      backgroundImage: () {
-                        if (imageUrl.startsWith('http')) {
-                          return NetworkImage(imageUrl) as ImageProvider;
-                        }
-                        if (imageUrl.length > 100) {
-                          try {
-                            return MemoryImage(base64Decode(imageUrl));
-                          } catch (_) {}
-                        }
-                        return AssetImage(imageUrl);
-                      }(),
+                    SizedBox(
+                      width: 70,
+                      height: 70,
+                      child: ClipOval(
+                        child: _buildCardAvatar(imageUrl),
+                      ),
                     ),
                     if (hasNotification)
                       Positioned(
@@ -151,5 +143,55 @@ class ClientProgressCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget _buildCardAvatar(String url) {
+    const defaultAsset = 'assets/image/David Park.png';
+
+    if (url.isEmpty || url == 'string' || url == 'null') {
+      return Image.asset(defaultAsset, width: 70, height: 70, fit: BoxFit.cover);
+    }
+
+    if (url.startsWith('http')) {
+      return Image.network(
+        url,
+        width: 70,
+        height: 70,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          final altUrl = url.contains(':8000') ? url.replaceAll(':8000', ':8004') : url.replaceAll(':8004', ':8000');
+          return Image.network(
+            altUrl,
+            width: 70,
+            height: 70,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) => Image.asset(defaultAsset, width: 70, height: 70, fit: BoxFit.cover),
+          );
+        },
+      );
+    }
+
+    if (url.startsWith('assets/')) {
+      return Image.asset(
+        url,
+        width: 70,
+        height: 70,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => Image.asset(defaultAsset, width: 70, height: 70, fit: BoxFit.cover),
+      );
+    }
+
+    try {
+      final bytes = base64Decode(url);
+      return Image.memory(
+        bytes,
+        width: 70,
+        height: 70,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => Image.asset(defaultAsset, width: 70, height: 70, fit: BoxFit.cover),
+      );
+    } catch (_) {
+      return Image.asset(defaultAsset, width: 70, height: 70, fit: BoxFit.cover);
+    }
   }
 }

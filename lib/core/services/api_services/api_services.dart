@@ -39,19 +39,18 @@ static const String forgot_password ="$baseUrl/password/forgot";
 
   //==================================storybook=================================================
   
-  static const String storybookBase = 'http://10.10.28.89:8004/api/v1';
+  static String get storybookBase => '${baseUrl.replaceAll(':8000', ':8004')}/api/v1';
 
-  static const String generateStorybook = "$storybookBase/storybook/generate";
-  static const String executeStorybookGeneration = "$storybookBase/storybook/generate/execute";
-
-  static String storybookDetail(String storybookId) => "$storybookBase/storybook/$storybookId";
-  static String storybookPage(String storybookId, int pageNumber) => "$storybookBase/storybook/$storybookId/page/$pageNumber";
-  static String storybookStatus(String storybookId) => "$storybookBase/storybook/$storybookId/status";
-  static String regenerateStoryText(String storybookId, int pageNumber) => "$storybookBase/storybook/$storybookId/page/$pageNumber/regenerate-story";
-  static String regenerateStoryImage(String storybookId, int pageNumber) => "$storybookBase/storybook/$storybookId/page/$pageNumber/regenerate-image";
-  static String regenerateStoryAndImage(String storybookId, int pageNumber) => "$storybookBase/storybook/$storybookId/page/$pageNumber/regenerate";
+  // All Storybook API endpoints run on Port 8000 (baseUrl)
+  static String get executeStorybookGeneration => "$baseUrl/storybook/generate/execute";
+  static String storybookStatus(String storybookId) => "$baseUrl/storybook/$storybookId/status";
+  static String storybookDetail(String storybookId) => "$baseUrl/storybook/$storybookId";
+  static String storybookPage(String storybookId, int pageNumber) => "$baseUrl/storybook/$storybookId/page/$pageNumber";
+  static String editStorybookPage(String storybookId, int pageNumber) => "$baseUrl/storybook/$storybookId/page/$pageNumber";
+  static String regenerateStoryText(String storybookId, int pageNumber) => "$baseUrl/storybook/$storybookId/page/$pageNumber/regenerate-story";
+  static String regenerateStoryImage(String storybookId, int pageNumber) => "$baseUrl/storybook/$storybookId/page/$pageNumber/regenerate-image";
+  static String regenerateStoryAndImage(String storybookId, int pageNumber) => "$baseUrl/storybook/$storybookId/page/$pageNumber/regenerate";
   static String storybookPdf(String storybookId) => "$storybookBase/storybook/$storybookId/pdf";
-  static String listStorybooks(String userId) => "$baseUrl/admin/storybooks?user_id=$userId&limit=1";
 
   //==================================workout-plans=============================================
   static const String workoutPlans = "$baseUrl/workout-plans";
@@ -72,6 +71,7 @@ static const String forgot_password ="$baseUrl/password/forgot";
   static String coachClientWeeklySummary(String clientId) => "$baseUrl/coach/clients/$clientId/weekly-summary";
 
   static String normalizeImageUrl(String url) {
+    if (url.isEmpty) return '';
     if (url.startsWith('http')) {
       return url.replaceAll(':8000', ':8004');
     }
@@ -82,6 +82,6 @@ static const String forgot_password ="$baseUrl/password/forgot";
     if (!path.startsWith('/')) {
       path = '/$path';
     }
-    return "http://10.10.28.89:8004$path";
+    return "${baseUrl.replaceAll(':8000', ':8004')}$path";
   }
 }

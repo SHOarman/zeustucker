@@ -56,12 +56,36 @@ class Resentaddprofile extends StatelessWidget { // Name changed here
                     ),
                   ],
                 ),
-                child: CircleAvatar(
-                  radius: 30,
-                  backgroundImage: imageUrl.startsWith('http')
-                      ? NetworkImage(imageUrl) as ImageProvider
-                      : AssetImage(imageUrl),
-                  backgroundColor: Colors.grey.shade100,
+                child: SizedBox(
+                  width: 60,
+                  height: 60,
+                  child: ClipOval(
+                    child: imageUrl.startsWith('http')
+                        ? Image.network(
+                            imageUrl,
+                            width: 60,
+                            height: 60,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => Image.asset(
+                              'assets/image/David Park.png',
+                              width: 60,
+                              height: 60,
+                              fit: BoxFit.cover,
+                            ),
+                          )
+                        : Image.asset(
+                            imageUrl,
+                            width: 60,
+                            height: 60,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => Image.asset(
+                              'assets/image/David Park.png',
+                              width: 60,
+                              height: 60,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                  ),
                 ),
               ),
             ),

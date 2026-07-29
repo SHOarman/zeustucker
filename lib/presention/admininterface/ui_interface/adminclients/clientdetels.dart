@@ -25,22 +25,21 @@ class Clientdetels extends StatelessWidget {
 
               if (client != null) ...[
                 (() {
-                  String formatDateRange(String? start, String? end) {
-                    if (start == null || start.isEmpty) return "Current Week";
-                    try {
-                      final sDate = DateTime.parse(start);
-                      final eDate = end != null && end.isNotEmpty ? DateTime.parse(end) : null;
-                      final months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-                      
-                      final sStr = "${sDate.day} ${months[sDate.month - 1]}";
-                      if (eDate != null) {
-                        final eStr = "${eDate.day} ${months[eDate.month - 1]}";
-                        return "$sStr - $eStr";
-                      }
-                      return sStr;
-                    } catch (_) {
-                      return start;
+                  String formatDateRange(Map<String, dynamic> clientMap) {
+                    final months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                    
+                    DateTime startDate = DateTime.now();
+                    final rawDate = clientMap['created_at'] ?? clientMap['creation_date'] ?? clientMap['joined_date'] ?? clientMap['start_date'] ?? clientMap['week_start'];
+                    if (rawDate != null && rawDate.toString().isNotEmpty) {
+                      try {
+                        startDate = DateTime.parse(rawDate.toString()).toLocal();
+                      } catch (_) {}
                     }
+                    
+                    final endDate = startDate.add(const Duration(days: 6));
+                    final sStr = "${startDate.day} ${months[startDate.month - 1]}";
+                    final eStr = "${endDate.day} ${months[endDate.month - 1]}";
+                    return "$sStr - $eStr";
                   }
 
                   final String imageUrl = (client['profile_image'] != null && client['profile_image'].toString().isNotEmpty && client['profile_image'] != 'string')
@@ -48,7 +47,7 @@ class Clientdetels extends StatelessWidget {
                       : (client['image'] ?? "assets/image/David Park.png");
                   
                   final String fitnessGoal = client['fitness_goal'] ?? 'General Fitness';
-                  final String weekRange = formatDateRange(client['week_start'], client['week_end']);
+                  final String weekRange = formatDateRange(client);
                   final String programName = "$fitnessGoal • $weekRange";
 
                   return ClientProfileHeader(
@@ -107,22 +106,42 @@ class _DailyStorybookCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Container(
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                color: const Color(0xFFF3F4F6),
-                image: client != null && client!['image'] != null
-                    ? DecorationImage(
-                        image: client!['image'].startsWith('http') ? NetworkImage(client!['image']) as ImageProvider : AssetImage(client!['image']),
-                        fit: BoxFit.cover,
-                      )
-                    : null,
+            ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: SizedBox(
+                width: 60,
+                height: 60,
+                child: client != null && client!['image'] != null && client!['image'].toString().isNotEmpty && client!['image'].toString() != 'string'
+                    ? (client!['image'].toString().startsWith('http')
+                        ? Image.network(
+                            client!['image'].toString(),
+                            width: 60,
+                            height: 60,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => Image.asset(
+                              'assets/image/David Park.png',
+                              width: 60,
+                              height: 60,
+                              fit: BoxFit.cover,
+                            ),
+                          )
+                        : Image.asset(
+                            client!['image'].toString(),
+                            width: 60,
+                            height: 60,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => Image.asset(
+                              'assets/image/David Park.png',
+                              width: 60,
+                              height: 60,
+                              fit: BoxFit.cover,
+                            ),
+                          ))
+                    : Container(
+                        color: const Color(0xFFF3F4F6),
+                        child: const Icon(Icons.person, color: Color(0xFF9CA3AF)),
+                      ),
               ),
-              child: client == null || client!['image'] == null
-                  ? const Icon(Icons.person, color: Color(0xFF9CA3AF))
-                  : null,
             ),
             const SizedBox(width: 16),
             Expanded(

@@ -21,15 +21,36 @@ class Panelcard extends StatelessWidget {
     return Stack(
       children: [
         // ১. প্রধান ইমেজ কন্টেইনার (Rounded Corners সহ)
-        Container(
-          width: width,
-          height: height,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(28),
-            image: DecorationImage(
-              image: imageUrl.startsWith('http') ? NetworkImage(imageUrl) as ImageProvider : AssetImage(imageUrl),
-              fit: BoxFit.cover,
-            ),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(28),
+          child: SizedBox(
+            width: width,
+            height: height,
+            child: imageUrl.startsWith('http')
+                ? Image.network(
+                    imageUrl,
+                    width: width,
+                    height: height,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Image.asset(
+                      'assets/image/Panel 2.png',
+                      width: width,
+                      height: height,
+                      fit: BoxFit.cover,
+                    ),
+                  )
+                : Image.asset(
+                    imageUrl,
+                    width: width,
+                    height: height,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Image.asset(
+                      'assets/image/Panel 2.png',
+                      width: width,
+                      height: height,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
           ),
         ),
 

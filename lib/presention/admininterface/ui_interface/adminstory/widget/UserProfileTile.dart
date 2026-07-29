@@ -38,12 +38,36 @@ class CustomUserTile extends StatelessWidget {
           const SizedBox(width: 12),
 
           // 2. User Profile Image
-          CircleAvatar(
-            radius: 24,
-            backgroundColor: Colors.grey[200],
-            backgroundImage: isAsset
-                ? AssetImage(imageUrl) as ImageProvider
-                : NetworkImage(imageUrl),
+          SizedBox(
+            width: 48,
+            height: 48,
+            child: ClipOval(
+              child: isAsset
+                  ? Image.asset(
+                      imageUrl,
+                      width: 48,
+                      height: 48,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Image.asset(
+                        'assets/image/David Park.png',
+                        width: 48,
+                        height: 48,
+                        fit: BoxFit.cover,
+                      ),
+                    )
+                  : Image.network(
+                      imageUrl,
+                      width: 48,
+                      height: 48,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Image.asset(
+                        'assets/image/David Park.png',
+                        width: 48,
+                        height: 48,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+            ),
           ),
 
           const SizedBox(width: 12),

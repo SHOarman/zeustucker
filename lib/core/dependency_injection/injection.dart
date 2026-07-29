@@ -8,6 +8,8 @@ import 'package:zeustucker/core/services/controller/profilecontroller.dart';
 
 import '../services/controller/macro_controller.dart';
 
+import 'package:zeustucker/core/services/controller/storybook_controller.dart';
+
 class DependencyInjection {
   static void bindings() {
 
@@ -16,7 +18,8 @@ class DependencyInjection {
 
     Get.lazyPut(()=>LoginController());
     //==========home controller=============================
-    Get.lazyPut(()=>HomeController());
+    Get.lazyPut(()=>HomeController(), fenix: true);
+    Get.lazyPut(()=>StorybookController(), fenix: true);
 
     //======================macro controller===========================
     Get.lazyPut(()=>MacroController());

@@ -1,8 +1,9 @@
 import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../routes/app_routes.dart';
 import '../../api_services/api_services.dart';
@@ -213,6 +214,42 @@ class ClientController extends GetxController {
 
       const String contextJson = "string";
 
+      String? selfieVal = (client['selfie'] ??
+              client['reference_image'] ??
+              client['profile_image'] ??
+              client['selfie_url'] ??
+              client['image'])
+          ?.toString()
+          .trim();
+
+      // Fetch client profile from API if reference_image is not in client object
+      if ((selfieVal == null || selfieVal.isEmpty || selfieVal == 'string') && clientId.isNotEmpty) {
+        try {
+          final profileUrl = Uri.parse(ApiServices.getCoachClientProfile(clientId));
+          final profileResp = await http.get(
+            profileUrl,
+            headers: {
+              'accept': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
+          );
+          if (profileResp.statusCode == 200) {
+            final profileData = jsonDecode(profileResp.body);
+            if (profileData is Map) {
+              selfieVal = (profileData['selfie'] ??
+                      profileData['reference_image'] ??
+                      profileData['profile_image'] ??
+                      profileData['image'])
+                  ?.toString()
+                  .trim();
+            }
+          }
+        } catch (e) {
+          debugPrint("Error fetching client profile for reference image: $e");
+        }
+      }
+
+      // 1st API: POST /storybook/generate/execute
       final executeUrl = Uri.parse(ApiServices.executeStorybookGeneration);
       final request = http.MultipartRequest('POST', executeUrl);
       request.headers.addAll({
@@ -222,20 +259,79 @@ class ClientController extends GetxController {
       request.fields['context_json'] = contextJson;
       request.fields['client_id'] = clientId;
 
+      if (selfieVal != null && selfieVal.isNotEmpty && selfieVal != 'string') {
+        try {
+          final file = File(selfieVal);
+          if (file.existsSync()) {
+            final int fileLength = await file.length();
+            if (fileLength <= 950000) {
+              request.files.add(await http.MultipartFile.fromPath('selfie', selfieVal));
+              debugPrint(">>> Attached selfie as MultipartFile from path: $selfieVal");
+            } else {
+              final bytes = await file.readAsBytes();
+              request.files.add(http.MultipartFile.fromBytes(
+                'selfie',
+                bytes.sublist(0, 950000),
+                filename: 'selfie.jpg',
+              ));
+              debugPrint(">>> Truncated selfie file to 950KB and attached as MultipartFile");
+            }
+          } else if (selfieVal.startsWith('http://') || selfieVal.startsWith('https://')) {
+            request.fields['selfie'] = selfieVal;
+            debugPrint(">>> Attached selfie as URL String: $selfieVal");
+          } else {
+            try {
+              String cleanBase64 = selfieVal.replaceAll(RegExp(r'^data:image\/[a-z]+;base64,'), '').trim();
+              cleanBase64 = cleanBase64.replaceAll(RegExp(r'\s+'), '');
+              cleanBase64 = base64.normalize(cleanBase64);
+              Uint8List bytes = base64Decode(cleanBase64);
+              if (bytes.length > 950000) {
+                bytes = bytes.sublist(0, 950000);
+              }
+              request.files.add(http.MultipartFile.fromBytes(
+                'selfie',
+                bytes,
+                filename: 'selfie.jpg',
+              ));
+              debugPrint(">>> Successfully attached Base64 selfie as MultipartFile Bytes (byte size: ${bytes.length} bytes)");
+            } catch (e) {
+              debugPrint(">>> Base64 decode failed for selfie ($e), setting default field 'string'");
+              request.fields['selfie'] = 'string';
+            }
+          }
+        } catch (e) {
+          debugPrint(">>> Exception preparing selfie ($e), setting default field 'string'");
+          request.fields['selfie'] = 'string';
+        }
+      } else {
+        request.fields['selfie'] = 'string';
+      }
+
+      debugPrint("==================================================");
+      debugPrint(">>> 🚀 [CREATE STORYBOOK - 1ST API REQUEST]");
+      debugPrint(">>> URL: $executeUrl");
+      debugPrint(">>> Method: POST (multipart/form-data)");
+      debugPrint(">>> Headers: ${request.headers}");
+      debugPrint(">>> Fields: ${request.fields}");
+      debugPrint("==================================================");
+
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
 
-      debugPrint("Execute Storybook Status: ${response.statusCode}");
-      debugPrint("Execute Storybook Body: ${response.body}");
+      debugPrint("==================================================");
+      debugPrint(">>> 📩 [CREATE STORYBOOK - 1ST API RESPONSE]");
+      debugPrint(">>> Status Code: ${response.statusCode}");
+      debugPrint(">>> Body: ${response.body}");
+      debugPrint("==================================================");
       
       if (response.statusCode == 202) {
         final Map<String, dynamic> resData = jsonDecode(response.body);
-        final String? storybookId = resData['storybook_id'];
+        final String? storybookId = resData['storybook_id']?.toString();
         
-        if (storybookId != null) {
-          debugPrint("Storybook creation started successfully! ID: $storybookId");
-          
-          _pollStorybookStatus(storybookId, clientName, token);
+        if (storybookId != null && storybookId.isNotEmpty) {
+          debugPrint("Storybook creation started successfully! ID from API: $storybookId");
+          // 2nd API: Poll status using storybook_id directly returned from API
+          _pollStorybookStatus(storybookId, clientName, token, client);
         } else {
           generatingStorybookClientName.value = "";
           Get.snackbar(
@@ -266,16 +362,17 @@ class ClientController extends GetxController {
     }
   }
 
-  void _pollStorybookStatus(String storybookId, String clientName, String token) {
-    const pollInterval = Duration(seconds: 30);
+  void _pollStorybookStatus(String storybookId, String clientName, String token, Map<String, dynamic> client) {
+    const pollInterval = Duration(seconds: 5);
     int attempts = 0;
-    const maxAttempts = 30;
+    const maxAttempts = 60;
 
     Future.doWhile(() async {
       await Future.delayed(pollInterval);
       attempts++;
       
       try {
+        // 2nd API: GET /storybook/{storybook_id}/status
         final url = Uri.parse(ApiServices.storybookStatus(storybookId));
         final response = await http.get(
           url,
@@ -290,7 +387,7 @@ class ClientController extends GetxController {
           final Map<String, dynamic> statusData = jsonDecode(response.body);
           final String status = statusData['status'] ?? '';
           
-          debugPrint("Storybook $storybookId status: $status");
+          debugPrint("Storybook $storybookId status from API: $status");
 
           if (status == 'COMPLETED') {
             generatingStorybookClientName.value = "";
@@ -298,11 +395,14 @@ class ClientController extends GetxController {
             Get.defaultDialog(
               title: "Success",
               middleText: "Storybook generated successfully for $clientName!",
-              textConfirm: "OK",
+              textConfirm: "View Storybook",
+              textCancel: "Close",
               confirmTextColor: Colors.white,
               buttonColor: const Color(0xFF00A37B),
               onConfirm: () {
                 Get.back();
+                // 3rd API: Fetch story details using storybookId from API
+                fetchAndOpenClientStorybookById(storybookId, client);
               },
             );
             return false;
@@ -327,7 +427,7 @@ class ClientController extends GetxController {
         generatingStorybookClientName.value = "";
         Get.snackbar(
           "Storybook Status",
-          "Storybook generation for $clientName is taking longer than expected. Please check back later.",
+          "Storybook generation for $clientName is taking longer than expected.",
           backgroundColor: Colors.amber,
           colorText: Colors.black87,
         );
@@ -339,11 +439,66 @@ class ClientController extends GetxController {
   }
 
   Future<void> fetchAndOpenClientStorybook(Map<String, dynamic> client) async {
-    final String clientId = (client['client_id'] ?? client['client_uuid'] ?? client['user_id'] ?? client['id'] ?? '').toString().trim();
-    if (clientId.isEmpty || clientId == 'null') {
-      Get.snackbar("Error", "Client ID is missing.");
+    debugPrint(">>> [FETCH STORYBOOK] Client Map: $client");
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token');
+    
+    final String clientId = (client['id'] ?? client['client_id'] ?? client['user_id'] ?? client['_id'] ?? client['uuid'] ?? client['client_uuid'] ?? '').toString().trim();
+    final String clientName = client['name'] ?? client['email'] ?? 'Client';
+
+    String storybookId = (client['storybook_id'] ?? client['latest_storybook_id'] ?? client['storybook']?['id'] ?? '').toString().trim();
+    
+    // Fetch storybookId directly from Server API profile if not in client object
+    if (storybookId.isEmpty && clientId.isNotEmpty && token != null) {
+      try {
+        final profileUrl = Uri.parse(ApiServices.getCoachClientProfile(clientId));
+        final profileResp = await http.get(
+          profileUrl,
+          headers: {
+            'accept': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+        );
+        if (profileResp.statusCode == 200) {
+          final profileData = jsonDecode(profileResp.body);
+          if (profileData is Map) {
+            storybookId = (profileData['storybook_id'] ?? profileData['latest_storybook_id'] ?? profileData['storybook']?['id'] ?? '').toString().trim();
+          }
+        }
+      } catch (e) {
+        debugPrint("Error fetching client profile from API: $e");
+      }
+    }
+
+    debugPrint(">>> [FETCH STORYBOOK] API storybookId: '$storybookId', clientId: '$clientId'");
+
+    if (storybookId.isEmpty) {
+      Get.defaultDialog(
+        title: "No Storybook",
+        middleText: "No storybook has been generated for $clientName yet. Would you like to generate one now?",
+        textConfirm: "Generate Now",
+        textCancel: "Cancel",
+        confirmTextColor: Colors.white,
+        buttonColor: const Color(0xFF00A37B),
+        onConfirm: () {
+          Get.back();
+          generateStorybookForClient(client);
+        },
+      );
       return;
     }
+
+    await fetchAndOpenClientStorybookById(storybookId, client);
+  }
+
+  /// 3rd API: GET /storybook/{storybook_id}
+  /// Fetches storybook details directly from server API using storybookId
+  Future<void> fetchAndOpenClientStorybookById(String storybookId, Map<String, dynamic> client) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token');
+    final String clientName = client['name'] ?? client['email'] ?? 'Client';
+
+    if (token == null) return;
 
     Get.dialog(
       const Center(
@@ -355,91 +510,79 @@ class ClientController extends GetxController {
     );
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('auth_token');
-      if (token == null) {
-        Get.back();
-        return;
-      }
-
-      // 1. List storybooks for this user
-      final listUrl = Uri.parse(ApiServices.listStorybooks(clientId));
-      final listResponse = await http.get(
-        listUrl,
+      // 3rd API: GET /storybook/{storybook_id}
+      final detailUrl = Uri.parse(ApiServices.storybookDetail(storybookId));
+      debugPrint(">>> [3RD API] Fetching storybook detail API: $detailUrl");
+      final detailResponse = await http.get(
+        detailUrl,
         headers: {
           'accept': 'application/json',
           'Authorization': 'Bearer $token',
         },
       );
 
-      debugPrint("List storybooks status: ${listResponse.statusCode}");
-      if (listResponse.statusCode == 200) {
-        final List<dynamic> storybooks = jsonDecode(listResponse.body);
-        if (storybooks.isEmpty) {
-          Get.back(); // close loading dialog
-          Get.snackbar("No Storybook", "No storybook has been generated for this client yet.");
-          return;
+      Get.back(); // close loading dialog
+      debugPrint("[3RD API] Detail Status: ${detailResponse.statusCode}");
+      debugPrint("[3RD API] Detail Body: ${detailResponse.body}");
+
+      if (detailResponse.statusCode == 200) {
+        final dynamic decoded = jsonDecode(detailResponse.body);
+        Map<String, dynamic> storybookData = {};
+
+        if (decoded is Map<String, dynamic>) {
+          storybookData = Map<String, dynamic>.from(decoded);
+          if (storybookData['pages'] is List) {
+            final List pagesList = List.from(storybookData['pages']);
+            pagesList.sort((a, b) => ((a['page_number'] ?? 0) as num).compareTo((b['page_number'] ?? 0) as num));
+            storybookData['pages'] = pagesList;
+          }
+        } else if (decoded is List && decoded.isNotEmpty) {
+          final matchedPages = decoded
+              .where((item) => item is Map && item['storybook_id']?.toString() == storybookId)
+              .map((e) => Map<String, dynamic>.from(e as Map))
+              .toList();
+          matchedPages.sort((a, b) => ((a['page_number'] ?? 0) as num).compareTo((b['page_number'] ?? 0) as num));
+
+          if (matchedPages.isNotEmpty) {
+            storybookData = {
+              'storybook_id': storybookId,
+              'pdf_url': ApiServices.storybookPdf(storybookId),
+              'pages': matchedPages,
+            };
+          }
         }
 
-        final latestStorybook = storybooks.first;
-        final String storybookId = latestStorybook['id'];
-        final String status = (latestStorybook['status'] ?? '').toString().toUpperCase();
+        if (storybookData.isNotEmpty) {
+          // Normalize PDF URL to Port 8004
+          if (storybookData['pdf_url'] == null || storybookData['pdf_url'].toString().isEmpty) {
+            storybookData['pdf_url'] = ApiServices.storybookPdf(storybookId);
+          } else {
+            storybookData['pdf_url'] = ApiServices.normalizeImageUrl(storybookData['pdf_url'].toString());
+          }
 
-        debugPrint("Latest Storybook ID: $storybookId, Status: $status");
-
-        if (status == 'PENDING' || status == 'PROCESSING') {
-          Get.back(); // close loading dialog
-          Get.snackbar(
-            "Generating",
-            "Daily Storybook is currently generating for this client. Please wait.",
-            backgroundColor: Colors.amber,
-            colorText: Colors.black87,
-            duration: const Duration(seconds: 4),
-          );
-          return;
-        }
-
-        if (status == 'FAILED') {
-          Get.back(); // close loading dialog
-          Get.snackbar(
-            "Failed",
-            "Daily Storybook generation failed for this client. Tap 'CREATE STORY' to try again.",
-            backgroundColor: Colors.redAccent,
-            colorText: Colors.white,
-            duration: const Duration(seconds: 4),
-          );
-          return;
-        }
-
-        // 2. Fetch full storybook details with pages
-        final detailUrl = Uri.parse(ApiServices.storybookDetail(storybookId));
-        final detailResponse = await http.get(
-          detailUrl,
-          headers: {
-            'accept': 'application/json',
-            'Authorization': 'Bearer $token',
-          },
-        );
-
-        Get.back(); // close loading dialog
-        debugPrint("Get storybook detail status: ${detailResponse.statusCode}");
-        if (detailResponse.statusCode == 200) {
-          final Map<String, dynamic> storybookData = jsonDecode(detailResponse.body);
           Get.toNamed(AppRoutes.viewstory, arguments: {
             'client': client,
             'storybook': storybookData,
           });
-        } else {
-          Get.snackbar("Error", "Failed to retrieve storybook pages.");
+          return;
         }
-      } else {
-        Get.back();
-        Get.snackbar("Error", "Failed to fetch client's storybooks.");
       }
+
+      Get.defaultDialog(
+        title: "No Storybook",
+        middleText: "Could not retrieve storybook for $clientName from server. Would you like to generate one?",
+        textConfirm: "Generate Now",
+        textCancel: "Cancel",
+        confirmTextColor: Colors.white,
+        buttonColor: const Color(0xFF00A37B),
+        onConfirm: () {
+          Get.back();
+          generateStorybookForClient(client);
+        },
+      );
     } catch (e) {
       Get.back();
       debugPrint("Error fetching client storybook: $e");
-      Get.snackbar("Error", "An error occurred: $e");
     }
   }
 }

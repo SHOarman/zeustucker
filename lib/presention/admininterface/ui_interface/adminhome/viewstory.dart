@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:zeustucker/core/services/api_services/api_services.dart';
 import 'package:zeustucker/core/services/controller/homecontroller.dart';
 import 'package:zeustucker/core/services/controller/adminpenelcontroller/clientcontoller.dart';
@@ -80,7 +81,7 @@ class Viewstory extends StatelessWidget {
                       ),
                     ),
             ),
-            _buildBottomButtons(context),
+            _buildBottomButtons(context, storybook?['pdf_url']),
           ],
         ),
       ),
@@ -174,8 +175,15 @@ class Viewstory extends StatelessWidget {
       width: double.infinity,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.blue.shade200, width: 1.5),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
+        border: Border.all(color: const Color(0xFFE5E7EB), width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -183,46 +191,39 @@ class Viewstory extends StatelessWidget {
           Stack(
             children: [
               ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(14),
-                  topRight: Radius.circular(14),
-                  bottomLeft: Radius.circular(6),
-                  bottomRight: Radius.circular(6),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(19)),
+                child: AspectRatio(
+                  aspectRatio: 1.0,
+                  child: imageUrl.startsWith('http')
+                      ? Image.network(
+                          imageUrl,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          headers: authToken.isNotEmpty
+                              ? {'Authorization': 'Bearer $authToken'}
+                              : null,
+                          errorBuilder: (context, error, stackTrace) => Container(
+                            color: const Color(0xFFF3F4F6),
+                            child: const Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.image_outlined, size: 48, color: Color(0xFF9CA3AF)),
+                                SizedBox(height: 8),
+                                Text("Story Image", style: TextStyle(color: Color(0xFF9CA3AF))),
+                              ],
+                            ),
+                          ),
+                        )
+                      : Image.asset(
+                          imageUrl.isEmpty ? 'assets/image/Morning Gym Routine.png' : imageUrl,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Container(
+                            color: const Color(0xFFF3F4F6),
+                            child: const Icon(Icons.image, size: 48, color: Color(0xFF9CA3AF)),
+                          ),
+                        ),
                 ),
-                child: imageUrl.startsWith('http')
-                    ? Image.network(
-                        imageUrl,
-                        width: double.infinity,
-                        height: 400,
-                        fit: BoxFit.cover,
-                        headers: authToken.isNotEmpty
-                            ? {'Authorization': 'Bearer $authToken'}
-                            : null,
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          height: 300,
-                          color: Colors.grey.shade200,
-                          child: const Icon(
-                            Icons.image,
-                            size: 50,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      )
-                    : Image.asset(
-                        imageUrl.isEmpty ? 'assets/image/Morning Gym Routine.png' : imageUrl,
-                        width: double.infinity,
-                        height: 400,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          height: 300,
-                          color: Colors.grey.shade200,
-                          child: const Icon(
-                            Icons.image,
-                            size: 50,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ),
               ),
               Positioned(
                 bottom: 12,
@@ -239,21 +240,30 @@ class Viewstory extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: RichText(
-              text: TextSpan(
-                style: const TextStyle(
-                  fontSize: 13,
-                  color: Colors.black87,
-                  height: 1.5,
-                ),
-                children: [
-                  TextSpan(
-                    text: '$time — ',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (time.isNotEmpty) ...[
+                  Text(
+                    time,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF00BFA5),
+                    ),
                   ),
-                  TextSpan(text: description),
+                  const SizedBox(height: 6),
                 ],
-              ),
+                Text(
+                  description.isNotEmpty ? description : fullStory,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF374151),
+                    height: 1.5,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -272,7 +282,7 @@ class Viewstory extends StatelessWidget {
     );
   }
 
-  Widget _buildBottomButtons(BuildContext context) {
+  Widget _buildBottomButtons(BuildContext context, String? pdfUrl) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -281,6 +291,45 @@ class Viewstory extends StatelessWidget {
       ),
       child: Column(
         children: [
+          if (pdfUrl != null && pdfUrl.isNotEmpty) ...[
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton.icon(
+                onPressed: () async {
+                  final String normalizedPdfUrl = ApiServices.normalizeImageUrl(pdfUrl);
+                  debugPrint("Opening PDF URL: $normalizedPdfUrl");
+                  final Uri uri = Uri.parse(normalizedPdfUrl);
+                  try {
+                    if (await canLaunchUrl(uri)) {
+                      await launchUrl(uri, mode: LaunchMode.externalApplication);
+                    } else {
+                      await launchUrl(uri, mode: LaunchMode.inAppWebView);
+                    }
+                  } catch (e) {
+                    Get.snackbar(
+                      'PDF URL',
+                      normalizedPdfUrl,
+                      backgroundColor: const Color(0xFF00BFA5),
+                      colorText: Colors.white,
+                      duration: const Duration(seconds: 5),
+                    );
+                  }
+                },
+                icon: const Icon(Icons.picture_as_pdf, color: Colors.white),
+                label: const Text(
+                  'Download PDF',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF00BFA5),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
+                  elevation: 0,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
           // --- Approve & Publish Button ---
           SizedBox(
             width: double.infinity,
