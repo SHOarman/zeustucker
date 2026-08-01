@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:zeustucker/core/routes/app_routes.dart';
@@ -47,58 +46,7 @@ class LibraryScreen extends StatelessWidget {
 
               const SizedBox(height: 20),
 
-              // PDF Download Banner for User
-              Obx(() {
-                final pdfUrl = homeController.currentPdfUrl.value;
-                if (pdfUrl.isEmpty) return const SizedBox.shrink();
-                return Container(
-                  margin: const EdgeInsets.only(right: 16, bottom: 20),
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFDCFCE7),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFF166534).withOpacity(0.3)),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.picture_as_pdf, color: Color(0xFF166534)),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          "Full Storybook PDF Available",
-                          style: GoogleFonts.poppins(
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF166534),
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF166534),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                        onPressed: () {
-                          Clipboard.setData(ClipboardData(text: pdfUrl));
-                          Get.snackbar(
-                            "PDF Download Link",
-                            pdfUrl,
-                            snackPosition: SnackPosition.BOTTOM,
-                            backgroundColor: const Color(0xFF1CBBA7),
-                            colorText: Colors.white,
-                            duration: const Duration(seconds: 4),
-                          );
-                        },
-                        child: const Text("Download PDF", style: TextStyle(fontSize: 12)),
-                      ),
-                    ],
-                  ),
-                );
-              }),
+              const SizedBox(height: 20),
 
               Obx(() {
                 if (homeController.isStoryLoading.value) {
@@ -112,13 +60,21 @@ class LibraryScreen extends StatelessWidget {
                   );
                 }
                 if (homeController.clientPages.isEmpty) {
-                  return const SizedBox.shrink();
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 30),
+                    child: Center(
+                      child: Text(
+                        "No storybook chapters generated yet.",
+                        style: TextStyle(color: Colors.grey, fontSize: 16),
+                      ),
+                    ),
+                  );
                 }
 
                 return _buildChapterSection(
-                  chapter: "Chapter 3",
-                  routine: "MORNING ROUTINE V2",
-                  status: "FINALISED",
+                  chapter: "Chapter 1",
+                  routine: "MORNING ROUTINE",
+                  status: "COMPLETED",
                   statusColor: const Color(0xFF166534),
                   statusBg: const Color(0xFFDCFCE7),
                   chapterData: homeController.clientPages.map((page) {
@@ -147,35 +103,6 @@ class LibraryScreen extends StatelessWidget {
                   }).toList(),
                 );
               }),
-
-              const SizedBox(height: 45),
-              _buildChapterSection(
-                chapter: "Chapter 2",
-                routine: "NIGHT OWL REFLECTION",
-                status: "MASTERED",
-                statusColor: const Color(0xFF166534),
-                statusBg: const Color(0xFFDCFCE7),
-                chapterData: [
-                  {
-                    "image": "assets/image/chapter22.png",
-                    "name": "Golden Hour",
-                    "onTap": () {
-                      Get.toNamed(AppRoutes.librarydetails);
-                    },
-                    "isNetwork": false,
-                    "authToken": "",
-                  },
-                  {
-                    "image": "assets/image/chapter21.png",
-                    "name": "High Mountain",
-                    "onTap": () {
-                      Get.toNamed(AppRoutes.librarydetails);
-                    },
-                    "isNetwork": false,
-                    "authToken": "",
-                  },
-                ],
-              ),
 
               const SizedBox(height: 40),
               Row(
@@ -209,8 +136,7 @@ class LibraryScreen extends StatelessWidget {
     required String status,
     required Color statusColor,
     required Color statusBg,
-    required List<Map<String, dynamic>>
-    chapterData,
+    required List<Map<String, dynamic>> chapterData,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -264,21 +190,28 @@ class LibraryScreen extends StatelessWidget {
             ],
           ),
         ),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          physics: const BouncingScrollPhysics(),
-          child: Row(
-            children: chapterData
-                .map(
-                  (data) => _ImageCard(
-                    imagePath: data['image']!,
-                    imageName: data['name']!,
-                    onTap: data['onTap'],
-                    isNetwork: data['isNetwork'] ?? false,
-                    authToken: data['authToken'] ?? "",
-                  ),
-                )
-                .toList(),
+        Padding(
+          padding: const EdgeInsets.only(right: 16),
+          child: GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              childAspectRatio: 0.75,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+            ),
+            itemCount: chapterData.length,
+            itemBuilder: (context, index) {
+              final data = chapterData[index];
+              return _ImageCard(
+                imagePath: data['image']!,
+                imageName: data['name']!,
+                onTap: data['onTap'],
+                isNetwork: data['isNetwork'] ?? false,
+                authToken: data['authToken'] ?? "",
+              );
+            },
           ),
         ),
       ],
@@ -305,32 +238,31 @@ class _ImageCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.only(right: 16),
-        width: 192,
-        height: 256,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
         child: Stack(
           children: [
-            Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(32),
-                image: DecorationImage(
-                  image: isNetwork
-                      ? NetworkImage(
-                          imagePath,
-                          headers: authToken.isNotEmpty
-                              ? {'Authorization': 'Bearer $authToken'}
-                              : null,
-                        ) as ImageProvider
-                      : AssetImage(imagePath) as ImageProvider,
-                  fit: BoxFit.cover,
-                ),
-              ),
+            Positioned.fill(
+              child: isNetwork
+                  ? Image.network(
+                      imagePath,
+                      fit: BoxFit.cover,
+                      headers: authToken.isNotEmpty
+                          ? {'Authorization': 'Bearer $authToken'}
+                          : null,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        color: Colors.grey.shade200,
+                        child: const Icon(Icons.image, size: 40, color: Colors.grey),
+                      ),
+                    )
+                  : Image.asset(
+                      imagePath,
+                      fit: BoxFit.cover,
+                    ),
             ),
             Positioned.fill(
               child: Container(
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(32),
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
@@ -343,11 +275,10 @@ class _ImageCard extends StatelessWidget {
                 ),
               ),
             ),
-            // Text Layer
             Positioned(
-              bottom: 24,
-              left: 20,
-              right: 20,
+              bottom: 16,
+              left: 16,
+              right: 16,
               child: Text(
                 imageName,
                 overflow: TextOverflow.ellipsis,

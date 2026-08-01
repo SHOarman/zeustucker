@@ -49,12 +49,15 @@ class Clientroseter extends StatelessWidget {
             ],
           ),
           SizedBox(height: 5,),
-         Row(
-           children: [
-             Text("Total Clients: ", style: TextStyle(fontSize: 16, color: Colors.black54),),
-             Text("10", style: TextStyle(fontSize: 16, color: Color(0xff06D7A0), fontWeight: FontWeight.bold),),
-           ],
-         ),
+          Row(
+            children: [
+              const Text("Total Clients: ", style: TextStyle(fontSize: 16, color: Colors.black54)),
+              Obx(() => Text(
+                "${controller.clientList.length}",
+                style: const TextStyle(fontSize: 16, color: Color(0xff06D7A0), fontWeight: FontWeight.bold),
+              )),
+            ],
+          ),
 
            SizedBox(height: 24),
 

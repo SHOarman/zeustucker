@@ -234,30 +234,56 @@ class EditProfileController extends GetxController {
         return false;
       }
 
-      final Map<String, dynamic> requestBody = {};
-      if (name != null) requestBody['name'] = name;
-      if (dateOfBirth != null) requestBody['date_of_birth'] = dateOfBirth;
-      if (gender != null) requestBody['gender'] = gender;
-      if (occupation != null) {
-        requestBody['occupation'] = occupation;
-        requestBody['profession'] = occupation;
-      }
-      if (bio != null) requestBody['bio'] = bio;
-      if (profileImage != null) requestBody['profile_image'] = profileImage;
-      if (referenceImage != null) requestBody['reference_image'] = referenceImage;
-      if (useReferenceImage != null) requestBody['use_reference_image'] = useReferenceImage;
+      final String updateUrlStr = ApiServices.updateSelfProfile;
+      final url = Uri.parse(updateUrlStr);
 
-      final logBody = Map<String, dynamic>.from(requestBody);
-      if (logBody['profile_image'] != null) {
-        logBody['profile_image'] = "...[base64 profile image truncated]...";
+      final Map<String, dynamic> jsonBody = {};
+      if (name != null && name.isNotEmpty) jsonBody['name'] = name;
+      if (dateOfBirth != null && dateOfBirth.isNotEmpty) jsonBody['date_of_birth'] = dateOfBirth;
+      if (gender != null && gender.isNotEmpty) jsonBody['gender'] = gender;
+      if (occupation != null && occupation.isNotEmpty) {
+        jsonBody['occupation'] = occupation;
+        jsonBody['profession'] = occupation;
       }
-      if (logBody['reference_image'] != null) {
-        logBody['reference_image'] = "...[base64 reference image truncated]...";
+      if (bio != null && bio.isNotEmpty) {
+        jsonBody['bio'] = bio;
+        jsonBody['short_bio'] = bio;
       }
-      print("Update Profile Settings Request: PATCH ${ApiServices.updateSelfProfile}");
-      print("Update Profile Settings Payload: ${jsonEncode(logBody)}");
+      if (useReferenceImage != null) jsonBody['use_reference_image'] = useReferenceImage;
 
-      final url = Uri.parse(ApiServices.updateSelfProfile);
+      // Process profileImage to Base64 (Data URI format)
+      if (profileImage != null && profileImage.isNotEmpty && profileImage != 'base64') {
+        String val = profileImage;
+        if (!kIsWeb && File(val.replaceFirst('file://', '')).existsSync()) {
+          final bytes = await File(val.replaceFirst('file://', '')).readAsBytes();
+          val = base64Encode(bytes);
+        }
+        if (!val.startsWith('data:') && !val.startsWith('http')) {
+          val = 'data:image/jpeg;base64,$val';
+        }
+        jsonBody['profile_image'] = val;
+      }
+
+      // Process referenceImage to Base64 (Data URI format)
+      if (referenceImage != null && referenceImage.isNotEmpty && referenceImage != 'base64') {
+        String val = referenceImage;
+        if (!kIsWeb && File(val.replaceFirst('file://', '')).existsSync()) {
+          final bytes = await File(val.replaceFirst('file://', '')).readAsBytes();
+          val = base64Encode(bytes);
+        }
+        if (!val.startsWith('data:') && !val.startsWith('http')) {
+          val = 'data:image/jpeg;base64,$val';
+        }
+        jsonBody['reference_image'] = val;
+      }
+
+      final logBody = Map<String, dynamic>.from(jsonBody);
+      if (logBody['profile_image'] != null) logBody['profile_image'] = "...[base64 profile image truncated]...";
+      if (logBody['reference_image'] != null) logBody['reference_image'] = "...[base64 reference image truncated]...";
+
+      print("Update Profile Settings Request (JSON): PATCH $url");
+      print("Payload: ${jsonEncode(logBody)}");
+
       final response = await http.patch(
         url,
         headers: {
@@ -265,29 +291,64 @@ class EditProfileController extends GetxController {
           'accept': 'application/json',
           'Authorization': 'Bearer $token',
         },
-        body: jsonEncode(requestBody),
+        body: jsonEncode(jsonBody),
       );
 
+      final String safeBody = response.body.length > 300 ? "${response.body.substring(0, 300)}...[truncated]" : response.body;
       print("Update Profile Settings Response Status: ${response.statusCode}");
-      print("Update Profile Settings Response Body: ${response.body}");
+      print("Update Profile Settings Response Body: $safeBody");
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         return true;
-      } else {
-        String errorMessage = 'Failed to update profile';
-        try {
-          final errorData = jsonDecode(response.body);
-          if (errorData['detail'] != null) {
-            errorMessage = errorData['detail'];
-          }
-        } catch (_) {}
-        Get.snackbar(
-          'Error',
-          errorMessage,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
       }
+
+      // Format fallback: try plain Base64 without data URI prefix if 400 or 422 error
+      if (response.statusCode == 400 || response.statusCode == 422) {
+        bool modified = false;
+        if (jsonBody['profile_image'] != null && jsonBody['profile_image'].toString().startsWith('data:')) {
+          jsonBody['profile_image'] = jsonBody['profile_image'].toString().split(',').last;
+          modified = true;
+        }
+        if (jsonBody['reference_image'] != null && jsonBody['reference_image'].toString().startsWith('data:')) {
+          jsonBody['reference_image'] = jsonBody['reference_image'].toString().split(',').last;
+          modified = true;
+        }
+
+        if (modified) {
+          print("Retrying JSON PATCH with plain Base64 (without Data URI prefix)...");
+          final retryResponse = await http.patch(
+            url,
+            headers: {
+              'Content-Type': 'application/json',
+              'accept': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
+            body: jsonEncode(jsonBody),
+          );
+
+          final String safeRetryBody = retryResponse.body.length > 300 ? "${retryResponse.body.substring(0, 300)}...[truncated]" : retryResponse.body;
+          print("Retry Profile Settings Response Status: ${retryResponse.statusCode}");
+          print("Retry Profile Settings Response Body: $safeRetryBody");
+
+          if (retryResponse.statusCode == 200 || retryResponse.statusCode == 201) {
+            return true;
+          }
+        }
+      }
+
+      String errorMessage = 'Failed to update profile';
+      try {
+        final errorData = jsonDecode(response.body);
+        if (errorData['detail'] != null) {
+          errorMessage = errorData['detail'];
+        }
+      } catch (_) {}
+      Get.snackbar(
+        'Error',
+        errorMessage,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     } catch (e) {
       Get.snackbar(
         'Error',
@@ -727,14 +788,13 @@ class EditProfileController extends GetxController {
     final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 50);
     if (pickedFile != null) {
       try {
-        final bytes = await pickedFile.readAsBytes();
-        final base64Image = base64Encode(bytes);
+        final imgSource = kIsWeb ? await pickedFile.readAsBytes().then((b) => base64Encode(b)) : pickedFile.path;
         
         bool success;
         if (isReferenceImage) {
-          success = await updateSelfProfileSettings(referenceImage: base64Image);
+          success = await updateSelfProfileSettings(referenceImage: imgSource);
         } else {
-          success = await updateSelfProfileSettings(profileImage: base64Image);
+          success = await updateSelfProfileSettings(profileImage: imgSource);
         }
         
         if (success) {

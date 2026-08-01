@@ -8,6 +8,7 @@ class UserStoryTile extends StatelessWidget {
   final String name;
   final String status;
   final VoidCallback onViewStory;
+  final VoidCallback? onTap;
 
   const UserStoryTile({
     super.key,
@@ -15,6 +16,7 @@ class UserStoryTile extends StatelessWidget {
     required this.name,
     required this.status,
     required this.onViewStory,
+    this.onTap,
   });
 
   @override
@@ -25,19 +27,22 @@ class UserStoryTile extends StatelessWidget {
         clipBehavior: Clip.none,
         alignment: Alignment.centerLeft,
         children: [
-          Container(
-            height: 82,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(25),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.04),
-                  blurRadius: 15,
-                  offset: const Offset(0, 8),
-                ),
-              ],
+          GestureDetector(
+            onTap: onTap,
+            child: Container(
+              height: 82,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(25),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.04),
+                    blurRadius: 15,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
             ),
           ),
 

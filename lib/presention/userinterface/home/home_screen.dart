@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:zeustucker/presention/customwidget/custom_bottom_nav.dart';
@@ -76,7 +75,29 @@ class HomeScreen extends StatelessWidget {
 
                   return Column(
                     children: [
-                      const SizedBox(height: 60),
+                      const SizedBox(height: 50),
+                      // Story Title above image
+                      Obx(() {
+                        if (controller.clientPages.isEmpty) return const SizedBox.shrink();
+                        final idx = controller.currentIndex.value;
+                        if (idx >= controller.clientPages.length) return const SizedBox.shrink();
+                        final page = controller.clientPages[idx];
+                        final String storyText = page['story'] ?? '';
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                          child: Text(
+                            storyText,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.poppins(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF18181B),
+                            ),
+                          ),
+                        );
+                      }),
                       Expanded(
                         child: Stack(
                           alignment: Alignment.center,
@@ -88,7 +109,6 @@ class HomeScreen extends StatelessWidget {
                               itemBuilder: (context, index) {
                                 final page = controller.clientPages[index];
                                 final String rawImg = page['image_url'] ?? '';
-                                final String storyText = page['story'] ?? '';
                                 final String normalizedUrl = controller.normalizeImageUrl(rawImg);
 
                                 return Padding(
@@ -100,14 +120,14 @@ class HomeScreen extends StatelessWidget {
                                       borderRadius: BorderRadius.circular(20),
                                       child: Image.network(
                                         normalizedUrl,
-                                        height: 460,
+                                        height: 440,
                                         width: double.infinity,
                                         fit: BoxFit.cover,
                                         headers: controller.authToken.isNotEmpty
                                             ? {'Authorization': 'Bearer ${controller.authToken}'}
                                             : null,
                                         errorBuilder: (context, error, stackTrace) => Container(
-                                          height: 460,
+                                          height: 440,
                                           width: double.infinity,
                                           color: Colors.grey.shade200,
                                           child: const Icon(
@@ -176,40 +196,6 @@ class HomeScreen extends StatelessWidget {
                           ),
                         ),
                       ),
-                      // PDF Download / View Button
-                      Obx(() {
-                        final pdfUrl = controller.currentPdfUrl.value;
-                        if (pdfUrl.isEmpty) return const SizedBox.shrink();
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 20),
-                          child: ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF00A37B),
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                            ),
-                            icon: const Icon(Icons.picture_as_pdf, color: Colors.white),
-                            label: const Text(
-                              "Download Storybook (PDF)",
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            onPressed: () {
-                              Clipboard.setData(ClipboardData(text: pdfUrl));
-                              Get.snackbar(
-                                "PDF Download Link",
-                                pdfUrl,
-                                snackPosition: SnackPosition.BOTTOM,
-                                backgroundColor: const Color(0xFF1CBBA7),
-                                colorText: Colors.white,
-                                duration: const Duration(seconds: 4),
-                              );
-                            },
-                          ),
-                        );
-                      }),
                     ],
                   );
                 }),

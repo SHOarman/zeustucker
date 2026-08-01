@@ -36,8 +36,11 @@ class StorybookController extends GetxController {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
+      final String currentUserId = prefs.getString('user_id') ?? '';
+
       if (token == null) {
         debugPrint("Auth token is null, cannot fetch storybook");
+        clientPages.clear();
         return false;
       }
       authToken = token;
@@ -45,97 +48,103 @@ class StorybookController extends GetxController {
       String storybookId = storybookIdParam ?? '';
 
       debugPrint("==================================================");
-      debugPrint(">>> [STORYBOOK DEBUG] Starting fetchClientStorybook()");
-      debugPrint(">>> [STORYBOOK DEBUG] Initial storybookId from API/Param: '$storybookId'");
+      debugPrint(">>> 🚀 [GET LATEST STORYBOOK API] Calling GET /storybook");
+      debugPrint(">>> Token Present: true, currentUserId: '$currentUserId'");
 
-      // 1. If storybookId is not passed, query server API for user storybook directly
-      if (storybookId.isEmpty) {
-        final routineUrl = Uri.parse(ApiServices.todayRoutine);
-        debugPrint(">>> [STORYBOOK DEBUG] Querying Server API (Today Routine)...");
-        final routineResponse = await http.get(
-          routineUrl,
+      // Step 1: Query GET /storybook (No parameters required, server uses Authorization Bearer token!)
+      try {
+        final listUrl = Uri.parse("${ApiServices.baseUrl}/storybook");
+        final response = await http.get(
+          listUrl,
           headers: {
             'accept': 'application/json',
             'Authorization': 'Bearer $token',
           },
         );
 
-        if (routineResponse.statusCode == 200) {
-          final Map<String, dynamic> routineData = jsonDecode(routineResponse.body);
-          final todayStorybook = routineData['today_storybook'] ?? routineData['storybook'];
-          if (todayStorybook != null && todayStorybook is Map) {
-            storybookId = todayStorybook['id']?.toString() ?? todayStorybook['storybook_id']?.toString() ?? '';
-          } else if (routineData['storybook_id'] != null) {
-            storybookId = routineData['storybook_id'].toString();
+        debugPrint(">>> [GET LATEST STORYBOOK STATUS]: ${response.statusCode}");
+        debugPrint(">>> [GET LATEST STORYBOOK BODY]: ${response.body}");
+
+        if (response.statusCode == 200) {
+          final dynamic decoded = jsonDecode(response.body);
+          Map<String, dynamic>? targetStorybook;
+
+          if (decoded is List && decoded.isNotEmpty) {
+            dynamic match;
+            if (storybookId.isNotEmpty) {
+              match = decoded.firstWhere(
+                (item) => item is Map && (item['id']?.toString() == storybookId || item['storybook_id']?.toString() == storybookId),
+                orElse: () => null,
+              );
+            }
+            if (match == null && currentUserId.isNotEmpty) {
+              match = decoded.firstWhere(
+                (item) => item is Map && item['user_id']?.toString() == currentUserId,
+                orElse: () => null,
+              );
+            }
+            match ??= decoded.first;
+            if (match is Map) {
+              targetStorybook = Map<String, dynamic>.from(match);
+            }
+          } else if (decoded is Map<String, dynamic>) {
+            targetStorybook = decoded;
+          }
+
+          if (targetStorybook != null) {
+            final String foundId = (targetStorybook['id'] ?? targetStorybook['storybook_id'] ?? '').toString();
+            if (foundId.isNotEmpty) {
+              prefs.setString('latest_storybook_id', foundId);
+              if (currentUserId.isNotEmpty) {
+                prefs.setString('latest_storybook_$currentUserId', foundId);
+              }
+            }
+
+            if (targetStorybook['pdf_url'] != null && targetStorybook['pdf_url'].toString().isNotEmpty) {
+              currentPdfUrl.value = normalizeImageUrl(targetStorybook['pdf_url'].toString());
+            } else if (foundId.isNotEmpty) {
+              currentPdfUrl.value = ApiServices.storybookPdf(foundId);
+            }
+
+            if (targetStorybook['pages'] is List) {
+              final List pagesList = List.from(targetStorybook['pages']);
+              pagesList.sort((a, b) => ((a['page_number'] ?? 0) as num).compareTo((b['page_number'] ?? 0) as num));
+              final parsedPages = pagesList.map((e) {
+                final map = Map<String, dynamic>.from(e as Map);
+                if (map['image_url'] != null) {
+                  map['image_url'] = normalizeImageUrl(map['image_url'].toString());
+                }
+                return map;
+              }).toList();
+
+              if (parsedPages.isNotEmpty) {
+                clientPages.value = parsedPages;
+                debugPrint(">>> [GET LATEST STORYBOOK SUCCESS] Loaded ${clientPages.length} pages directly from GET /storybook!");
+                return true;
+              }
+            }
           }
         }
+      } catch (e) {
+        debugPrint(">>> Exception calling GET /storybook: $e");
       }
 
+      // Step 2: Fallback to SharedPreferences + GET /storybook/{storybook_id}
       if (storybookId.isEmpty) {
-        final assignedUrl = Uri.parse(ApiServices.assignedWorkoutPlan);
-        debugPrint(">>> [STORYBOOK DEBUG] Querying Server API (Assigned Plan)...");
-        final assignedResponse = await http.get(
-          assignedUrl,
-          headers: {
-            'accept': 'application/json',
-            'Authorization': 'Bearer $token',
-          },
-        );
-        if (assignedResponse.statusCode == 200) {
-          final Map<String, dynamic> assignedData = jsonDecode(assignedResponse.body);
-          final sb = assignedData['storybook'] ?? assignedData['today_storybook'];
-          if (sb != null && sb is Map) {
-            storybookId = sb['id']?.toString() ?? sb['storybook_id']?.toString() ?? '';
-          } else if (assignedData['storybook_id'] != null) {
-            storybookId = assignedData['storybook_id'].toString();
-          }
-        }
+        storybookId = prefs.getString('latest_storybook_id') ?? '';
+      }
+      if (storybookId.isEmpty && currentUserId.isNotEmpty) {
+        storybookId = prefs.getString('latest_storybook_$currentUserId') ?? '';
       }
 
-      if (storybookId.isEmpty) {
-        debugPrint(">>> [STORYBOOK DEBUG] No storybookId returned from API endpoints.");
-        clientPages.clear();
-        return false;
-      }
-
-      final detailUrl = Uri.parse(ApiServices.storybookDetail(storybookId));
-      debugPrint(">>> [STORYBOOK DEBUG] Requesting Detail API (Port 8000): $detailUrl");
-      final detailResponse = await http.get(
-        detailUrl,
-        headers: {
-          'accept': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-      );
-
-      debugPrint(">>> [STORYBOOK DEBUG] Detail API Status: ${detailResponse.statusCode}");
-      if (detailResponse.statusCode == 200) {
-        final dynamic decoded = jsonDecode(detailResponse.body);
-        List<dynamic> pages = [];
-
-        if (decoded is Map<String, dynamic>) {
-          pages = decoded['pages'] ?? [];
-          if (decoded['pdf_url'] != null && decoded['pdf_url'].toString().isNotEmpty) {
-            currentPdfUrl.value = normalizeImageUrl(decoded['pdf_url'].toString());
-          } else {
-            currentPdfUrl.value = ApiServices.storybookPdf(storybookId);
-          }
-        } else if (decoded is List) {
-          pages = decoded
-              .where((item) => item is Map && item['storybook_id']?.toString() == storybookId)
-              .toList();
-          pages.sort((a, b) => ((a['page_number'] ?? 0) as num).compareTo((b['page_number'] ?? 0) as num));
-          currentPdfUrl.value = ApiServices.storybookPdf(storybookId);
-        }
-
-        if (pages.isNotEmpty) {
-          final parsedPages = pages.map((e) => Map<String, dynamic>.from(e)).toList();
-          clientPages.value = parsedPages;
-          debugPrint(">>> [STORYBOOK DEBUG] SUCCESS! Loaded ${clientPages.length} pages via Detail API. PDF URL: ${currentPdfUrl.value}");
+      if (storybookId.isNotEmpty) {
+        final storybookData = await getStorybookById(storybookId);
+        if (storybookData != null && clientPages.isNotEmpty) {
           return true;
         }
       }
 
+      clientPages.clear();
       return false;
     } catch (e) {
       debugPrint(">>> [STORYBOOK DEBUG] EXCEPTION in fetchClientStorybook: $e");
@@ -145,8 +154,6 @@ class StorybookController extends GetxController {
     }
   }
 
-  /// 1st API: Execute Storybook Generation (POST /storybook/generate/execute)
-  /// Returns the generated storybook_id directly from the server API response
   Future<String?> createStorybookExecution({
     required String clientId,
     String? contextJson,
@@ -155,6 +162,7 @@ class StorybookController extends GetxController {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
+      final String currentUserId = prefs.getString('user_id') ?? '';
       if (token == null) {
         debugPrint(">>> [STORYBOOK EXECUTE] Auth token is null");
         return null;
@@ -170,6 +178,21 @@ class StorybookController extends GetxController {
       if (contextJson != null && contextJson.isNotEmpty) {
         request.fields['context_json'] = contextJson;
       }
+      // IMPORTANT: backend expects `selfie` to be an actual UploadFile part.
+      // Sending it as a plain string field (even a placeholder like "string")
+      // causes a 422: "Expected UploadFile, received: <class 'str'>".
+      // So: attach a real file/bytes if we have one, otherwise omit the
+      // field entirely rather than sending a string fallback.
+      final Uint8List dummySelfieBytes = Uint8List.fromList([
+        0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46, 0x00, 0x01, 0x01, 0x01,
+        0x00, 0x48, 0x00, 0x48, 0x00, 0x00, 0xFF, 0xDB, 0x00, 0x43, 0x00, 0xFF, 0xC0, 0x00,
+        0x0B, 0x08, 0x00, 0x01, 0x00, 0x01, 0x01, 0x01, 0x11, 0x00, 0xFF, 0xC4, 0x00, 0x14,
+        0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0xFF, 0xDA, 0x00, 0x08, 0x01, 0x01, 0x00, 0x00, 0x3F, 0x00,
+        0x37, 0xFF, 0xD9
+      ]);
+
+      bool selfieAttached = false;
       if (selfiePath != null && selfiePath.isNotEmpty && selfiePath != 'string') {
         try {
           final file = File(selfiePath);
@@ -187,9 +210,26 @@ class StorybookController extends GetxController {
               ));
               debugPrint(">>> Truncated selfie file to 950KB and attached as MultipartFile");
             }
+            selfieAttached = true;
           } else if (selfiePath.startsWith('http://') || selfiePath.startsWith('https://')) {
-            request.fields['selfie'] = selfiePath;
-            debugPrint(">>> Attached selfie as URL String: $selfiePath");
+            try {
+              final downloaded = await http.get(Uri.parse(selfiePath));
+              if (downloaded.statusCode == 200) {
+                Uint8List bytes = downloaded.bodyBytes;
+                if (bytes.length > 950000) {
+                  bytes = bytes.sublist(0, 950000);
+                }
+                request.files.add(http.MultipartFile.fromBytes(
+                  'selfie',
+                  bytes,
+                  filename: 'selfie.jpg',
+                ));
+                debugPrint(">>> Downloaded selfie from URL and attached as MultipartFile");
+                selfieAttached = true;
+              }
+            } catch (e) {
+              debugPrint(">>> Exception downloading selfie URL ($e)");
+            }
           } else {
             try {
               String cleanBase64 = selfiePath.replaceAll(RegExp(r'^data:image\/[a-z]+;base64,'), '').trim();
@@ -205,17 +245,23 @@ class StorybookController extends GetxController {
                 filename: 'selfie.jpg',
               ));
               debugPrint(">>> Successfully attached Base64 selfie as MultipartFile (byte size: ${bytes.length} bytes)");
+              selfieAttached = true;
             } catch (e) {
-              debugPrint(">>> Base64 decode failed for selfie ($e), setting default field 'string'");
-              request.fields['selfie'] = 'string';
+              debugPrint(">>> Base64 decode failed for selfie ($e)");
             }
           }
         } catch (e) {
-          debugPrint(">>> Exception preparing selfie ($e), setting default field 'string'");
-          request.fields['selfie'] = 'string';
+          debugPrint(">>> Exception preparing selfie ($e)");
         }
-      } else {
-        request.fields['selfie'] = 'string';
+      }
+
+      if (!selfieAttached) {
+        request.files.add(http.MultipartFile.fromBytes(
+          'selfie',
+          dummySelfieBytes,
+          filename: 'selfie.jpg',
+        ));
+        debugPrint(">>> Attached fallback 1x1 JPEG as MultipartFile stream for selfie");
       }
 
       debugPrint("==================================================");
@@ -238,6 +284,13 @@ class StorybookController extends GetxController {
         final Map<String, dynamic> data = jsonDecode(response.body);
         final String? storybookId = data['storybook_id']?.toString();
         if (storybookId != null && storybookId.isNotEmpty) {
+          prefs.setString('latest_storybook_id', storybookId);
+          if (currentUserId.isNotEmpty) {
+            prefs.setString('latest_storybook_$currentUserId', storybookId);
+          }
+          if (clientId.isNotEmpty) {
+            prefs.setString('latest_storybook_$clientId', storybookId);
+          }
           return storybookId;
         }
       }
@@ -275,8 +328,8 @@ class StorybookController extends GetxController {
     return null;
   }
 
-  /// 3rd API: Get Storybook by ID (GET /storybook/{storybook_id})
-  /// Converts PDF URL & Page image URLs to port 8004 automatically
+  /// 3rd API: Get full storybook by id (GET /storybook/{storybook_id})
+  /// pdf_url and each page's image_url are normalized to the :8004 media host.
   Future<Map<String, dynamic>?> getStorybookById(String storybookId) async {
     if (storybookId.isEmpty) return null;
     try {
@@ -298,7 +351,7 @@ class StorybookController extends GetxController {
         final dynamic decoded = jsonDecode(response.body);
         if (decoded is Map<String, dynamic>) {
           Map<String, dynamic> storybookData = Map<String, dynamic>.from(decoded);
-          
+
           // PDF URL normalization to port 8004
           if (storybookData['pdf_url'] != null && storybookData['pdf_url'].toString().isNotEmpty) {
             storybookData['pdf_url'] = normalizeImageUrl(storybookData['pdf_url'].toString());
@@ -357,6 +410,78 @@ class StorybookController extends GetxController {
     return ApiServices.storybookPdf(storybookId);
   }
 
+  /// Full AI generation flow, chaining all three APIs:
+  /// 1. POST /storybook/generate/execute  -> returns storybook_id (status 202)
+  /// 2. GET  /storybook/{id}/status       -> poll until COMPLETED/FAILED
+  /// 3. GET  /storybook/{id}              -> load pages + pdf_url once ready
+  ///
+  /// NOTE: confirm the exact "done"/"failed" status strings your backend
+  /// returns (schema only shows the "PENDING" example) and tighten the
+  /// matching below if needed — currently it loosely matches on substrings.
+  Future<Map<String, dynamic>?> generateAndPollStorybook({
+    required String clientId,
+    String? contextJson,
+    String? selfiePath,
+    Duration pollInterval = const Duration(seconds: 3),
+    Duration timeout = const Duration(minutes: 3),
+  }) async {
+    isStoryLoading.value = true;
+    try {
+      // Step 1: create the generation job
+      final storybookId = await createStorybookExecution(
+        clientId: clientId,
+        contextJson: contextJson,
+        selfiePath: selfiePath,
+      );
+
+      if (storybookId == null) {
+        debugPrint(">>> [STORYBOOK FLOW] Failed to create execution job");
+        return null;
+      }
+
+      // Step 2: poll status until it's no longer pending/processing
+      final deadline = DateTime.now().add(timeout);
+      String? status;
+      while (DateTime.now().isBefore(deadline)) {
+        status = await checkStorybookStatus(storybookId);
+        debugPrint(">>> [STORYBOOK FLOW] Poll status: $status");
+
+        if (status == null) {
+          // transient network hiccup — keep trying until timeout
+          await Future.delayed(pollInterval);
+          continue;
+        }
+
+        final normalized = status.toUpperCase();
+        if (normalized.contains('COMPLETE') || normalized == 'SUCCESS' || normalized == 'DONE') {
+          break;
+        }
+        if (normalized.contains('FAIL') || normalized.contains('ERROR')) {
+          debugPrint(">>> [STORYBOOK FLOW] Generation failed with status: $status");
+          return null;
+        }
+        // PENDING / PROCESSING / IN_PROGRESS -> keep polling
+        await Future.delayed(pollInterval);
+      }
+
+      final finalStatus = status?.toUpperCase() ?? '';
+      final isDone = finalStatus.contains('COMPLETE') || finalStatus == 'SUCCESS' || finalStatus == 'DONE';
+      if (!isDone) {
+        debugPrint(">>> [STORYBOOK FLOW] Timed out waiting for generation");
+        return null;
+      }
+
+      // Step 3: fetch the finished storybook (pages + pdf_url)
+      final storybookData = await getStorybookById(storybookId);
+      return storybookData;
+    } catch (e) {
+      debugPrint(">>> [STORYBOOK FLOW EXCEPTION]: $e");
+      return null;
+    } finally {
+      isStoryLoading.value = false;
+    }
+  }
+
   void updateIndex(int index) {
     currentIndex.value = index;
   }
@@ -385,4 +510,3 @@ class StorybookController extends GetxController {
     super.onClose();
   }
 }
-

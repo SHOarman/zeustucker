@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:zeustucker/presention/admininterface/ui_interface/adminclients/widget/add_user_button.dart';
 import '../../../../core/routes/app_routes.dart';
 import '../../../../core/services/controller/adminpenelcontroller/clientcontoller.dart';
-import 'widget/clientprogresscard.dart';
+import '../adminhome/homewidget/user_story_tile.dart';
 import 'widget/client_roseter.dart';
 import '../../widget/customnevadminbutton.dart';
 
@@ -55,32 +55,69 @@ class Adminclient extends StatelessWidget {
 
               const SizedBox(height: 10),
 
-              Obx(() => ListView.separated(
-                shrinkWrap: true,
-                padding: EdgeInsets.zero,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: controller.clientList.length,
-                separatorBuilder: (context, index) => const SizedBox(height: 12),
-                itemBuilder: (context, index) {
-                  var client = controller.clientList[index];
-                  final String name = client['name'] ?? client['email'] ?? 'Client';
-                  final String imageUrl = (client['profile_image'] != null && client['profile_image'].toString().isNotEmpty && client['profile_image'] != 'string')
-                      ? client['profile_image']
-                      : (client['image'] ?? "assets/image/David Park.png");
-                  final double progress = (client['progress'] != null) ? double.parse(client['progress'].toString()) : 0.0;
-                  final bool hasNotification = client['hasNotification'] ?? false;
+              Obx(() {
+                final list = controller.filteredClients;
 
-                  return ClientProgressCard(
-                    name: name,
-                    imageUrl: imageUrl,
-                    progress: progress,
-                    hasNotification: hasNotification,
-                    onTap: () {
-                      Get.toNamed(AppRoutes.clientdetails, arguments: client);
-                    },
+                if (controller.isLoading.value && list.isEmpty) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(30.0),
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation(Color(0xFF00A37B)),
+                      ),
+                    ),
                   );
-                },
-              )),
+                }
+
+                if (list.isEmpty) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(30.0),
+                      child: Text(
+                        "No clients found",
+                        style: TextStyle(color: Colors.grey, fontSize: 16),
+                      ),
+                    ),
+                  );
+                }
+
+                return ListView.separated(
+                  shrinkWrap: true,
+                  padding: EdgeInsets.zero,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: list.length,
+                  separatorBuilder: (context, index) => const SizedBox(height: 12),
+                  itemBuilder: (context, index) {
+                    var client = list[index];
+                    final String name = client['name'] ?? client['email'] ?? 'Client';
+                    final String imageUrl = (client['profile_image'] != null &&
+                            client['profile_image'].toString().isNotEmpty &&
+                            client['profile_image'] != 'string')
+                        ? client['profile_image']
+                        : "assets/image/David Park.png";
+                    final String status = client['fitness_goal'] ?? client['occupation'] ?? "Active Client";
+
+                    return UserStoryTile(
+                      imageUrl: imageUrl,
+                      name: name,
+                      status: status,
+                      onTap: () {
+                        Get.toNamed(AppRoutes.clientdetails, arguments: client);
+                      },
+                      onViewStory: () {
+                        final String? storybookId = client['storybook_id']?.toString() ?? client['latest_storybook_id']?.toString();
+                        if (storybookId != null && storybookId.isNotEmpty && storybookId != 'null' && storybookId != 'string') {
+                          debugPrint(">>> 📦 [SOURCE: CLIENT OBJECT PARAMETER] Storybook ID: '$storybookId' for $name");
+                          controller.fetchAndOpenClientStorybookById(storybookId, client);
+                        } else {
+                          debugPrint(">>> 🔄 [SOURCE: FALLBACK LOOKUP (Cache/Server)] Checking for $name");
+                          controller.fetchAndOpenClientStorybook(client);
+                        }
+                      },
+                    );
+                  },
+                );
+              }),
 
               const SizedBox(height: 20),
 

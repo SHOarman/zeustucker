@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:zeustucker/core/services/api_services/api_services.dart';
 import 'package:zeustucker/core/services/controller/homecontroller.dart';
 import 'package:zeustucker/core/services/controller/adminpenelcontroller/clientcontoller.dart';
@@ -75,13 +74,13 @@ class Viewstory extends StatelessWidget {
                                 authToken: authToken,
                               ),
                             );
-                          }).toList(),
+                          }),
                           const SizedBox(height: 30),
                         ],
                       ),
                     ),
             ),
-            _buildBottomButtons(context, storybook?['pdf_url']),
+            const SizedBox(height: 10),
           ],
         ),
       ),
@@ -282,109 +281,4 @@ class Viewstory extends StatelessWidget {
     );
   }
 
-  Widget _buildBottomButtons(BuildContext context, String? pdfUrl) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: Colors.grey.shade200)),
-      ),
-      child: Column(
-        children: [
-          if (pdfUrl != null && pdfUrl.isNotEmpty) ...[
-            SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: ElevatedButton.icon(
-                onPressed: () async {
-                  final String normalizedPdfUrl = ApiServices.normalizeImageUrl(pdfUrl);
-                  debugPrint("Opening PDF URL: $normalizedPdfUrl");
-                  final Uri uri = Uri.parse(normalizedPdfUrl);
-                  try {
-                    if (await canLaunchUrl(uri)) {
-                      await launchUrl(uri, mode: LaunchMode.externalApplication);
-                    } else {
-                      await launchUrl(uri, mode: LaunchMode.inAppWebView);
-                    }
-                  } catch (e) {
-                    Get.snackbar(
-                      'PDF URL',
-                      normalizedPdfUrl,
-                      backgroundColor: const Color(0xFF00BFA5),
-                      colorText: Colors.white,
-                      duration: const Duration(seconds: 5),
-                    );
-                  }
-                },
-                icon: const Icon(Icons.picture_as_pdf, color: Colors.white),
-                label: const Text(
-                  'Download PDF',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF00BFA5),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
-                  elevation: 0,
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-          ],
-          // --- Approve & Publish Button ---
-          SizedBox(
-            width: double.infinity,
-            height: 52,
-            child: ElevatedButton.icon(
-              onPressed: () {
-                Get.snackbar('Published', 'Story approved and published!');
-              },
-              // Ekhane default Icon-er poriborte Image.asset use kora holo
-              icon: Image.asset(
-                'assets/image/Icon (4).png', // Tomar image path
-                width: 20,
-                height: 20,
-                color: Colors.white, // Image-ta jodi single color hoy tobe white kora jabe
-              ),
-              label: const Text(
-                'Approve & Publish',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF00BFA5),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
-                elevation: 0,
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-
-          // --- Request Changes Button ---
-          SizedBox(
-            width: double.infinity,
-            height: 52,
-            child: ElevatedButton.icon(
-              onPressed: () {
-                Get.snackbar('Request Changes', 'Feedback form opened.');
-              },
-              // Ekhane-o Image.asset use kora holo
-              icon: Image.asset(
-                'assets/image/Icon (3).png', // Tomar image path
-                width: 20,
-                height: 20,
-                color: Colors.white,
-              ),
-              label: const Text(
-                'Request Changes',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1E1E1E),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
-                elevation: 0,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }}
+}

@@ -41,7 +41,6 @@ static const String forgot_password ="$baseUrl/password/forgot";
   
   static String get storybookBase => '${baseUrl.replaceAll(':8000', ':8004')}/api/v1';
 
-  // All Storybook API endpoints run on Port 8000 (baseUrl)
   static String get executeStorybookGeneration => "$baseUrl/storybook/generate/execute";
   static String storybookStatus(String storybookId) => "$baseUrl/storybook/$storybookId/status";
   static String storybookDetail(String storybookId) => "$baseUrl/storybook/$storybookId";
