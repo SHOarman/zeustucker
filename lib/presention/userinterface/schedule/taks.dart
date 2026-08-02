@@ -149,12 +149,13 @@ class Taks extends StatelessWidget {
                     String iconPath = "assets/icon/Container (4).png";
 
                     if (!isNoGoal) {
-                      final item = day.items.first;
-                      final instruction = item.instruction;
-                      final parts = instruction.split(' ');
-                      title = parts.isNotEmpty ? parts.first : "Task";
-                      subtitle = parts.length > 1 ? parts.sublist(1).join(' ') : null;
-                      iconPath = "assets/icon/Container (2).png"; // task container icon
+                      final completedItems = day.items.where((x) => x.completed).toList().reversed.toList();
+                      final uncompletedItems = day.items.where((x) => !x.completed).toList().reversed.toList();
+                      final sortedItems = [...completedItems, ...uncompletedItems];
+
+                      title = sortedItems.map((x) => x.instruction).join(", ");
+                      subtitle = null;
+                      iconPath = "assets/icon/Container (2).png";
                     }
 
                     return WorkoutDayCard(

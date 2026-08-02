@@ -93,6 +93,7 @@ class LibraryScreen extends StatelessWidget {
                             "storybook_id": page['storybook_id'],
                             "page_number": pageNum,
                             "story": storyText,
+                            "title": page['title'],
                             "image_url": normalizedUrl,
                           },
                         );

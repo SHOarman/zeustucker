@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:zeustucker/core/services/api_services/api_services.dart';
 import 'package:zeustucker/core/services/controller/macro_controller.dart';
+import 'package:zeustucker/core/services/controller/homecontroller.dart';
 
 // ── DailyPoint/WeeklySummary models (for graph) ───────────────────────────
 class DailyPoint {
@@ -348,6 +349,20 @@ class ScheduleController extends GetxController {
   final RxInt todayTasksCompleted = 0.obs;
   final RxInt todayTasksAssigned = 0.obs;
 
+  void syncWithHomeController() {
+    if (Get.isRegistered<HomeController>()) {
+      final hc = Get.find<HomeController>();
+      if (hc.workoutItems.isNotEmpty) {
+        todayWorkoutAssigned.value = hc.workoutItems.length;
+        todayWorkoutCompleted.value = hc.workoutItems.where((x) => x.completed).length;
+      }
+      if (hc.todayGoals.isNotEmpty) {
+        todayTasksAssigned.value = hc.todayGoals.length;
+        todayTasksCompleted.value = hc.todayGoals.where((x) => x.completed).length;
+      }
+    }
+  }
+
   @override
   void onInit() {
     super.onInit();
@@ -359,6 +374,7 @@ class ScheduleController extends GetxController {
     await fetchWeeklyWorkouts();
     await fetchWeeklyMeals();
     await fetchWeeklyGoals();
+    syncWithHomeController();
   }
 
   Future<void> fetchWeeklySummary() async {

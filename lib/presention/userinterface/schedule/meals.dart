@@ -155,7 +155,7 @@ class Meals extends StatelessWidget {
 
                     if (!isNoMeal) {
                       title = "Logged: ${day.consumed.kcal.round()} kcal";
-                      iconPath = "assets/icon/Container (3).png"; // meals icon
+                      iconPath = "assets/icon/Container (3).png";
                     }
 
                     return WorkoutDayCard(

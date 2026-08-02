@@ -6,7 +6,7 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../api_services/api_services.dart';
-import 'schedule_controller.dart' show GoalItem, GoalDay;
+import 'schedule_controller.dart' show GoalItem, GoalDay, ScheduleController;
 import 'storybook_controller.dart';
 import 'macro_controller.dart';
 
@@ -42,7 +42,15 @@ class HomeController extends GetxController {
   var workoutItems = <WorkoutItem>[].obs;
   var isWorkoutLoading = false.obs;
 
-  final PageController pageController = PageController();
+  PageController _pageController = PageController();
+  PageController get pageController {
+    try {
+      final _ = _pageController.initialPage;
+    } catch (_) {
+      _pageController = PageController(initialPage: currentIndex.value);
+    }
+    return _pageController;
+  }
 
   @override
   void onInit() {
@@ -80,6 +88,7 @@ class HomeController extends GetxController {
         final List<dynamic> itemsJson = data['items'] ?? [];
         workoutItems.value = itemsJson.map((x) => WorkoutItem.fromJson(x)).toList();
         hasWorkout.value = workoutItems.isNotEmpty;
+        _notifyScheduleController();
       } else {
         workoutItems.clear();
         hasWorkout.value = false;
@@ -99,6 +108,7 @@ class HomeController extends GetxController {
     if (index != -1) {
       workoutItems[index].completed = completed;
       workoutItems.refresh();
+      _notifyScheduleController();
     }
 
     try {
@@ -214,7 +224,15 @@ class HomeController extends GetxController {
   }
 
 //====================add Routing-====================================
-  final noteController = TextEditingController();
+  TextEditingController _noteController = TextEditingController();
+  TextEditingController get noteController {
+    try {
+      final _ = _noteController.text;
+    } catch (_) {
+      _noteController = TextEditingController();
+    }
+    return _noteController;
+  }
 
   void postNote() {
     String note = noteController.text.trim();
@@ -365,11 +383,18 @@ class HomeController extends GetxController {
       }
 
       todayGoals.assignAll(tempGoals);
+      _notifyScheduleController();
     } catch (e) {
       debugPrint("Error fetching today goals: $e");
       todayGoals.clear();
     } finally {
       isGoalsLoading.value = false;
+    }
+  }
+
+  void _notifyScheduleController() {
+    if (Get.isRegistered<ScheduleController>()) {
+      Get.find<ScheduleController>().syncWithHomeController();
     }
   }
 
@@ -384,6 +409,7 @@ class HomeController extends GetxController {
         completed: completed,
       );
       todayGoals.refresh();
+      _notifyScheduleController();
     }
 
     try {

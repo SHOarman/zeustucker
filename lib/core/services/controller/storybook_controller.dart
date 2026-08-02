@@ -14,7 +14,15 @@ class StorybookController extends GetxController {
   var currentIndex = 0.obs;
   String authToken = "";
 
-  final PageController pageController = PageController();
+  PageController _pageController = PageController();
+  PageController get pageController {
+    try {
+      final _ = _pageController.initialPage;
+    } catch (_) {
+      _pageController = PageController(initialPage: currentIndex.value);
+    }
+    return _pageController;
+  }
 
   Map<String, dynamic> parseJwt(String token) {
     final parts = token.split('.');

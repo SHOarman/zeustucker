@@ -82,11 +82,14 @@ class HomeScreen extends StatelessWidget {
                         final idx = controller.currentIndex.value;
                         if (idx >= controller.clientPages.length) return const SizedBox.shrink();
                         final page = controller.clientPages[idx];
-                        final String storyText = page['story'] ?? '';
+                        final rawTitle = page['title'];
+                        final String titleText = (rawTitle != null && rawTitle.toString() != 'null')
+                            ? rawTitle.toString()
+                            : '';
                         return Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                           child: Text(
-                            storyText,
+                            titleText,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             textAlign: TextAlign.center,

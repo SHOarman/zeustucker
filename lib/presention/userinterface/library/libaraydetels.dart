@@ -16,6 +16,10 @@ class Libaraydetels extends StatelessWidget {
     final String storyText = args?['story'] ?? '';
     final String imageUrl = args?['image_url'] ?? '';
     final bool isNetwork = imageUrl.isNotEmpty;
+    final rawTitle = args?['title'];
+    final String titleText = (rawTitle != null && rawTitle.toString() != 'null')
+        ? rawTitle.toString()
+        : '';
 
     String authToken = "";
     if (Get.isRegistered<HomeController>()) {
@@ -25,7 +29,7 @@ class Libaraydetels extends StatelessWidget {
     }
 
     final String displayChapter = isNetwork ? "PAGE $pageNumber" : "CHAPTER 3";
-    final String displayTitle = isNetwork ? "Page Review" : "Finding Your Rhythm";
+    final String displayTitle = isNetwork ? titleText : "Finding Your Rhythm";
     final String quoteText = isNetwork
         ? storyText
         : "This week felt different. You didn't just show up; you dominated the morning sessions. Like a character in a graphic novel, you've unlocked a new tier of consistency that's starting to define your story.";

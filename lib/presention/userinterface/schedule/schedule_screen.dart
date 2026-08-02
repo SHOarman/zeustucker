@@ -10,6 +10,7 @@ class ScheduleScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ctrl = Get.put(ScheduleController());
+    ctrl.syncWithHomeController();
 
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAFB),

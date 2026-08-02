@@ -149,20 +149,22 @@ class Workout extends StatelessWidget {
                     String iconPath = "assets/icon/Container (4).png";
 
                     if (!isNoWorkout) {
-                      final item = day.items.first;
-                      final instruction = item.instruction;
-                      final parts = instruction.split(' ');
-                      title = parts.isNotEmpty ? parts.first : "Workout";
-                      subtitle = parts.length > 1 ? parts.sublist(1).join(' ') : null;
+                      final completedItems = day.items.where((x) => x.completed).toList().reversed.toList();
+                      final uncompletedItems = day.items.where((x) => !x.completed).toList().reversed.toList();
+                      final sortedItems = [...completedItems, ...uncompletedItems];
 
-                      if (instruction.toLowerCase().contains("strength")) {
+                      title = sortedItems.map((x) => x.instruction).join(", ");
+                      subtitle = null;
+
+                      final firstInstr = sortedItems.first.instruction.toLowerCase();
+                      if (firstInstr.contains("strength")) {
                         iconPath = "assets/icon/Container (1).png";
-                      } else if (instruction.toLowerCase().contains("custom")) {
+                      } else if (firstInstr.contains("custom")) {
                         iconPath = "assets/icon/Container (2).png";
-                      } else if (instruction.toLowerCase().contains("cardio")) {
+                      } else if (firstInstr.contains("cardio")) {
                         iconPath = "assets/icon/Container (3).png";
                       } else {
-                        iconPath = "assets/icon/Container (1).png"; // default fallback icon
+                        iconPath = "assets/icon/Container (1).png";
                       }
                     }
 
