@@ -7,8 +7,29 @@ import '../../api_services/api_services.dart';
 import 'clientcontoller.dart';
 
 class Adminsendrequestcontroller extends GetxController {
-  final emailController = TextEditingController();
-  final messageController = TextEditingController();
+  TextEditingController _emailController = TextEditingController();
+  TextEditingController get emailController {
+    try {
+      void dummy() {}
+      _emailController.addListener(dummy);
+      _emailController.removeListener(dummy);
+    } catch (_) {
+      _emailController = TextEditingController();
+    }
+    return _emailController;
+  }
+
+  TextEditingController _messageController = TextEditingController();
+  TextEditingController get messageController {
+    try {
+      void dummy() {}
+      _messageController.addListener(dummy);
+      _messageController.removeListener(dummy);
+    } catch (_) {
+      _messageController = TextEditingController();
+    }
+    return _messageController;
+  }
   
   var assignInitialPlan = true.obs; // Defaults to true
   var selectedPlan = 'Pro Coaching Plan'.obs;
@@ -25,8 +46,6 @@ class Adminsendrequestcontroller extends GetxController {
 
   @override
   void onClose() {
-    emailController.dispose();
-    messageController.dispose();
     super.onClose();
   }
 

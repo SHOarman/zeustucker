@@ -323,82 +323,36 @@ class Libaraydetels extends StatelessWidget {
               ],
             ),
 
-            const SizedBox(height: 24),
 
-            // Final Reflection Card
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.02),
-                    spreadRadius: 1,
-                    blurRadius: 10,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                     Image.asset("assets/image/Container (5).png"),
-                      const SizedBox(width: 8),
-                      Text(
-                        'FINAL REFLECTION',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey.shade600,
-                          letterSpacing: 1.0,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    '"I noticed that prep on Sunday made Wednesday\'s workout much easier to commit to. Focus for next chapter: hydration."',
-                    style: TextStyle(
-                      color: Colors.grey.shade700,
-                      fontSize: 14,
-                      height: 1.4,
-                    ),
-                  ),
-                ],
-              ),
-            ),
 
-            const SizedBox(height: 32),
+
+            const SizedBox(height: 52),
 
             // Action Buttons
-            SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: ElevatedButton.icon(
-                onPressed: () {},
-                icon: const Icon(Icons.refresh, color: Colors.white, size: 20),
-                label: const Text(
-                  'Regenerate this Chapter',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF00BFA5),
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
+            // SizedBox(
+            //   width: double.infinity,
+            //   height: 52,
+            //   child: ElevatedButton.icon(
+            //     onPressed: () {},
+            //     icon: const Icon(Icons.refresh, color: Colors.white, size: 20),
+            //     label: const Text(
+            //       'Regenerate this Chapter',
+            //       style: TextStyle(
+            //         color: Colors.white,
+            //         fontSize: 15,
+            //         fontWeight: FontWeight.w600,
+            //       ),
+            //     ),
+            //     style: ElevatedButton.styleFrom(
+            //       backgroundColor: const Color(0xFF00BFA5),
+            //       elevation: 0,
+            //       shape: RoundedRectangleBorder(
+            //         borderRadius: BorderRadius.circular(12),
+            //       ),
+            //     ),
+            //   ),
+            // ),
+            // const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
               height: 52,

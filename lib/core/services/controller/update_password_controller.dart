@@ -7,9 +7,41 @@ import '../api_services/api_services.dart';
 import '../../routes/app_routes.dart';
 
 class UpdatePasswordController extends GetxController {
-  final currentPasswordController = TextEditingController();
-  final newPasswordController = TextEditingController();
-  final confirmPasswordController = TextEditingController();
+  TextEditingController _currentPasswordController = TextEditingController();
+  TextEditingController get currentPasswordController {
+    try {
+      void dummy() {}
+      _currentPasswordController.addListener(dummy);
+      _currentPasswordController.removeListener(dummy);
+    } catch (_) {
+      _currentPasswordController = TextEditingController();
+    }
+    return _currentPasswordController;
+  }
+
+  TextEditingController _newPasswordController = TextEditingController();
+  TextEditingController get newPasswordController {
+    try {
+      void dummy() {}
+      _newPasswordController.addListener(dummy);
+      _newPasswordController.removeListener(dummy);
+    } catch (_) {
+      _newPasswordController = TextEditingController();
+    }
+    return _newPasswordController;
+  }
+
+  TextEditingController _confirmPasswordController = TextEditingController();
+  TextEditingController get confirmPasswordController {
+    try {
+      void dummy() {}
+      _confirmPasswordController.addListener(dummy);
+      _confirmPasswordController.removeListener(dummy);
+    } catch (_) {
+      _confirmPasswordController = TextEditingController();
+    }
+    return _confirmPasswordController;
+  }
 
   final isLoading = false.obs;
 
@@ -163,9 +195,6 @@ class UpdatePasswordController extends GetxController {
 
   @override
   void onClose() {
-    currentPasswordController.dispose();
-    newPasswordController.dispose();
-    confirmPasswordController.dispose();
     super.onClose();
   }
 }

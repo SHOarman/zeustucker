@@ -33,8 +33,8 @@ class ScheduleScreen extends StatelessWidget {
               ),
               const SizedBox(height: 20),
 
-              // Image Section
-              _buildTopImageCard(),
+              // // Image Section
+              // _buildTopImageCard(),
 
               const SizedBox(height: 30),
 
@@ -181,61 +181,7 @@ class ScheduleScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTopImageCard() {
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(16),
-          child: Image.asset(
-            'assets/image/unnamed.jpg',
-            width: double.infinity,
-            height: 180,
-            fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) => Container(
-              width: double.infinity,
-              height: 180,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: const Icon(Icons.image, size: 50, color: Colors.grey),
-            ),
-          ),
-        ),
-        // Badge
-        Positioned(
-          bottom: -15,
-          left: 0,
-          right: 0,
-          child: Center(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: const Text(
-                '6 Pages',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
+
 
   Widget _buildBarChart(ScheduleController ctrl) {
     final labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];

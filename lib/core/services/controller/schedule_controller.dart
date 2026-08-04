@@ -39,18 +39,18 @@ class DailyPoint {
 
   factory DailyPoint.fromJson(Map<String, dynamic> json) {
     return DailyPoint(
-      date: json['date'] ?? '',
-      day: json['day'] ?? '',
-      combinedScore: (json['combined_score'] ?? 0.0).toDouble(),
-      workoutCompleted: json['workout_completed'] ?? 0,
-      workoutAssigned: json['workout_assigned'] ?? 0,
-      mealComponentsScored: json['meal_components_scored'] ?? 0,
-      dailyGoalsCompleted: json['daily_goals_completed'] ?? 0,
-      dailyGoalsAssigned: json['daily_goals_assigned'] ?? 0,
-      workoutApplicable: json['workout_applicable'] ?? false,
-      mealApplicable: json['meal_applicable'] ?? false,
-      dailyGoalApplicable: json['daily_goal_applicable'] ?? false,
-      isFuture: json['is_future'] ?? false,
+      date: json['date']?.toString() ?? '',
+      day: json['day']?.toString() ?? '',
+      combinedScore: (json['combined_score'] as num?)?.toDouble() ?? 0.0,
+      workoutCompleted: (json['workout_completed'] as num?)?.toInt() ?? 0,
+      workoutAssigned: (json['workout_assigned'] as num?)?.toInt() ?? 0,
+      mealComponentsScored: (json['meal_components_scored'] as num?)?.toInt() ?? 0,
+      dailyGoalsCompleted: (json['daily_goals_completed'] as num?)?.toInt() ?? 0,
+      dailyGoalsAssigned: (json['daily_goals_assigned'] as num?)?.toInt() ?? 0,
+      workoutApplicable: json['workout_applicable'] == true,
+      mealApplicable: json['meal_applicable'] == true,
+      dailyGoalApplicable: json['daily_goal_applicable'] == true,
+      isFuture: json['is_future'] == true,
     );
   }
 }
@@ -71,10 +71,13 @@ class WeeklySummary {
   factory WeeklySummary.fromJson(Map<String, dynamic> json) {
     final list = json['daily_points'] as List? ?? [];
     return WeeklySummary(
-      userId: json['user_id'] ?? '',
-      weekStart: json['week_start'] ?? '',
-      weekEnd: json['week_end'] ?? '',
-      dailyPoints: list.map((x) => DailyPoint.fromJson(x)).toList(),
+      userId: json['user_id']?.toString() ?? '',
+      weekStart: json['week_start']?.toString() ?? '',
+      weekEnd: json['week_end']?.toString() ?? '',
+      dailyPoints: list
+          .whereType<Map>()
+          .map((x) => DailyPoint.fromJson(Map<String, dynamic>.from(x)))
+          .toList(),
     );
   }
 }
@@ -96,11 +99,13 @@ class WorkoutItem {
 
   factory WorkoutItem.fromJson(Map<String, dynamic> json) {
     return WorkoutItem(
-      id: json['id'] ?? '',
-      position: (json['position'] ?? 0) is num ? (json['position'] as num).toInt() : 0,
-      instruction: json['instruction'] ?? '',
-      completed: json['completed'] == true || json['completed'] == 1 || json['completed'].toString() == 'true',
-      completedAt: json['completed_at'],
+      id: json['id']?.toString() ?? '',
+      position: (json['position'] as num?)?.toInt() ?? 0,
+      instruction: json['instruction']?.toString() ?? '',
+      completed: json['completed'] == true ||
+          json['completed'] == 1 ||
+          json['completed'].toString() == 'true',
+      completedAt: json['completed_at']?.toString(),
     );
   }
 }
@@ -130,27 +135,32 @@ class WorkoutDay {
 
   factory WorkoutDay.fromJson(Map<String, dynamic> json) {
     final list = json['items'] as List? ?? [];
-    final items = list.map((x) => WorkoutItem.fromJson(x)).toList();
+    final items = list
+        .whereType<Map>()
+        .map((x) => WorkoutItem.fromJson(Map<String, dynamic>.from(x)))
+        .toList();
 
-    int assigned = json['assigned_count'] ?? 0;
+    int assigned = (json['assigned_count'] as num?)?.toInt() ?? 0;
     if (assigned == 0) {
       assigned = items.length;
     }
 
-    int completed = json['completed_count'] ?? 0;
+    int completed = (json['completed_count'] as num?)?.toInt() ?? 0;
     if (completed == 0) {
       completed = items.where((x) => x.completed).length;
     }
 
+    final rawScore = (json['workout_score'] as num?) ?? 0;
+
     return WorkoutDay(
-      date: json['date'] ?? '',
-      day: json['day'] ?? '',
-      isFuture: json['is_future'] ?? false,
-      applicable: json['applicable'] ?? false,
-      workoutScore: json['workout_score'] ?? 0,
+      date: json['date']?.toString() ?? '',
+      day: json['day']?.toString() ?? '',
+      isFuture: json['is_future'] == true,
+      applicable: json['applicable'] == true,
+      workoutScore: rawScore.round(),
       completedCount: completed,
       assignedCount: assigned,
-      allCompleted: json['all_completed'] ?? false,
+      allCompleted: json['all_completed'] == true,
       items: items,
     );
   }
@@ -172,10 +182,12 @@ class GoalItem {
 
   factory GoalItem.fromJson(Map<String, dynamic> json) {
     return GoalItem(
-      id: json['id'] ?? '',
-      position: json['position'] ?? 0,
-      instruction: json['instruction'] ?? '',
-      completed: json['completed'] ?? false,
+      id: json['id']?.toString() ?? '',
+      position: (json['position'] as num?)?.toInt() ?? 0,
+      instruction: json['instruction']?.toString() ?? '',
+      completed: json['completed'] == true ||
+          json['completed'] == 1 ||
+          json['completed'].toString() == 'true',
     );
   }
 }
@@ -205,27 +217,32 @@ class GoalDay {
 
   factory GoalDay.fromJson(Map<String, dynamic> json) {
     final list = json['items'] as List? ?? [];
-    final items = list.map((x) => GoalItem.fromJson(x)).toList();
+    final items = list
+        .whereType<Map>()
+        .map((x) => GoalItem.fromJson(Map<String, dynamic>.from(x)))
+        .toList();
 
-    int assigned = json['assigned_count'] ?? 0;
+    int assigned = (json['assigned_count'] as num?)?.toInt() ?? 0;
     if (assigned == 0) {
       assigned = items.length;
     }
 
-    int completed = json['completed_count'] ?? 0;
+    int completed = (json['completed_count'] as num?)?.toInt() ?? 0;
     if (completed == 0) {
       completed = items.where((x) => x.completed).length;
     }
 
+    final rawScore = (json['daily_goal_score'] as num?) ?? 0;
+
     return GoalDay(
-      date: json['date'] ?? '',
-      day: json['day'] ?? '',
-      isFuture: json['is_future'] ?? false,
-      applicable: json['applicable'] ?? false,
-      dailyGoalScore: json['daily_goal_score'] ?? 0,
+      date: json['date']?.toString() ?? '',
+      day: json['day']?.toString() ?? '',
+      isFuture: json['is_future'] == true,
+      applicable: json['applicable'] == true,
+      dailyGoalScore: rawScore.round(),
       completedCount: completed,
       assignedCount: assigned,
-      allCompleted: json['all_completed'] ?? false,
+      allCompleted: json['all_completed'] == true,
       items: items,
     );
   }

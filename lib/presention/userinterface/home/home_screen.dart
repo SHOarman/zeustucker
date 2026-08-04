@@ -228,6 +228,18 @@ class HomeScreen extends StatelessWidget {
                 final String name = profileController.profileData['name'] ?? profileController.profileData['full_name'] ?? 'User';
                 final String? profileImage = profileController.profileData['profile_image'];
 
+                final hour = DateTime.now().hour;
+                String greeting;
+                if (hour >= 5 && hour < 12) {
+                  greeting = "Good Morning";
+                } else if (hour >= 12 && hour < 17) {
+                  greeting = "Good Afternoon";
+                } else if (hour >= 17 && hour < 21) {
+                  greeting = "Good Evening";
+                } else {
+                  greeting = "Good Night";
+                }
+
                 return Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -236,7 +248,7 @@ class HomeScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "Good Morning, $name!",
+                            "$greeting, $name!",
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: GoogleFonts.poppins(

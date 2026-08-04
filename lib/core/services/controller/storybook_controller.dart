@@ -17,7 +17,9 @@ class StorybookController extends GetxController {
   PageController _pageController = PageController();
   PageController get pageController {
     try {
-      final _ = _pageController.initialPage;
+      void dummy() {}
+      _pageController.addListener(dummy);
+      _pageController.removeListener(dummy);
     } catch (_) {
       _pageController = PageController(initialPage: currentIndex.value);
     }
@@ -514,7 +516,6 @@ class StorybookController extends GetxController {
 
   @override
   void onClose() {
-    pageController.dispose();
     super.onClose();
   }
 }

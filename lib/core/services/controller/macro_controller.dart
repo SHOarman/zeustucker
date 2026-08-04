@@ -89,8 +89,29 @@ class MacroController extends GetxController {
 
   // ── LoggedMealsSection State ───────────────────────
   final RxString selectedMealType = 'BREAKFAST'.obs;
-  late final TextEditingController foodNameCtrl = TextEditingController();
-  late final TextEditingController kcalCtrl = TextEditingController();
+  TextEditingController _foodNameCtrl = TextEditingController();
+  TextEditingController get foodNameCtrl {
+    try {
+      void dummy() {}
+      _foodNameCtrl.addListener(dummy);
+      _foodNameCtrl.removeListener(dummy);
+    } catch (_) {
+      _foodNameCtrl = TextEditingController();
+    }
+    return _foodNameCtrl;
+  }
+
+  TextEditingController _kcalCtrl = TextEditingController();
+  TextEditingController get kcalCtrl {
+    try {
+      void dummy() {}
+      _kcalCtrl.addListener(dummy);
+      _kcalCtrl.removeListener(dummy);
+    } catch (_) {
+      _kcalCtrl = TextEditingController();
+    }
+    return _kcalCtrl;
+  }
 
   @override
   void onInit() {
@@ -790,8 +811,6 @@ class MacroController extends GetxController {
 
   @override
   void onClose() {
-    foodNameCtrl.dispose();
-    kcalCtrl.dispose();
     super.onClose();
   }
 }

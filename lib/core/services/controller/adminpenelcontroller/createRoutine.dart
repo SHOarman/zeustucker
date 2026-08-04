@@ -8,14 +8,101 @@ import '../../api_services/api_services.dart';
 
 class Createroutine extends GetxController {
   // Input fields
-  final exerciseController = TextEditingController();
-  final caloriesController = TextEditingController();
-  final proteinController = TextEditingController();
-  final carbsController = TextEditingController();
-  final fatsController = TextEditingController();
-  final fiberController = TextEditingController();
-  final waterGoalController = TextEditingController();
-  final dailyGoalInputController = TextEditingController();
+  TextEditingController _exerciseController = TextEditingController();
+  TextEditingController get exerciseController {
+    try {
+      void dummy() {}
+      _exerciseController.addListener(dummy);
+      _exerciseController.removeListener(dummy);
+    } catch (_) {
+      _exerciseController = TextEditingController();
+    }
+    return _exerciseController;
+  }
+
+  TextEditingController _caloriesController = TextEditingController();
+  TextEditingController get caloriesController {
+    try {
+      void dummy() {}
+      _caloriesController.addListener(dummy);
+      _caloriesController.removeListener(dummy);
+    } catch (_) {
+      _caloriesController = TextEditingController();
+    }
+    return _caloriesController;
+  }
+
+  TextEditingController _proteinController = TextEditingController();
+  TextEditingController get proteinController {
+    try {
+      void dummy() {}
+      _proteinController.addListener(dummy);
+      _proteinController.removeListener(dummy);
+    } catch (_) {
+      _proteinController = TextEditingController();
+    }
+    return _proteinController;
+  }
+
+  TextEditingController _carbsController = TextEditingController();
+  TextEditingController get carbsController {
+    try {
+      void dummy() {}
+      _carbsController.addListener(dummy);
+      _carbsController.removeListener(dummy);
+    } catch (_) {
+      _carbsController = TextEditingController();
+    }
+    return _carbsController;
+  }
+
+  TextEditingController _fatsController = TextEditingController();
+  TextEditingController get fatsController {
+    try {
+      void dummy() {}
+      _fatsController.addListener(dummy);
+      _fatsController.removeListener(dummy);
+    } catch (_) {
+      _fatsController = TextEditingController();
+    }
+    return _fatsController;
+  }
+
+  TextEditingController _fiberController = TextEditingController();
+  TextEditingController get fiberController {
+    try {
+      void dummy() {}
+      _fiberController.addListener(dummy);
+      _fiberController.removeListener(dummy);
+    } catch (_) {
+      _fiberController = TextEditingController();
+    }
+    return _fiberController;
+  }
+
+  TextEditingController _waterGoalController = TextEditingController();
+  TextEditingController get waterGoalController {
+    try {
+      void dummy() {}
+      _waterGoalController.addListener(dummy);
+      _waterGoalController.removeListener(dummy);
+    } catch (_) {
+      _waterGoalController = TextEditingController();
+    }
+    return _waterGoalController;
+  }
+
+  TextEditingController _dailyGoalInputController = TextEditingController();
+  TextEditingController get dailyGoalInputController {
+    try {
+      void dummy() {}
+      _dailyGoalInputController.addListener(dummy);
+      _dailyGoalInputController.removeListener(dummy);
+    } catch (_) {
+      _dailyGoalInputController = TextEditingController();
+    }
+    return _dailyGoalInputController;
+  }
 
   // Client details
   var clientId = ''.obs;
@@ -65,14 +152,6 @@ class Createroutine extends GetxController {
 
   @override
   void onClose() {
-    exerciseController.dispose();
-    caloriesController.dispose();
-    proteinController.dispose();
-    carbsController.dispose();
-    fatsController.dispose();
-    fiberController.dispose();
-    waterGoalController.dispose();
-    dailyGoalInputController.dispose();
     super.onClose();
   }
 

@@ -27,11 +27,11 @@ class WorkoutItem {
 
   factory WorkoutItem.fromJson(Map<String, dynamic> json) {
     return WorkoutItem(
-      id: json['id'] ?? '',
-      position: json['position'] ?? 0,
-      instruction: json['instruction'] ?? '',
-      completed: json['completed'] ?? false,
-      completedAt: json['completed_at'],
+      id: json['id']?.toString() ?? '',
+      position: (json['position'] as num?)?.toInt() ?? 0,
+      instruction: json['instruction']?.toString() ?? '',
+      completed: json['completed'] == true || json['completed'] == 1 || json['completed'].toString() == 'true',
+      completedAt: json['completed_at']?.toString(),
     );
   }
 }
@@ -45,7 +45,9 @@ class HomeController extends GetxController {
   PageController _pageController = PageController();
   PageController get pageController {
     try {
-      final _ = _pageController.initialPage;
+      void dummy() {}
+      _pageController.addListener(dummy);
+      _pageController.removeListener(dummy);
     } catch (_) {
       _pageController = PageController(initialPage: currentIndex.value);
     }
@@ -227,7 +229,9 @@ class HomeController extends GetxController {
   TextEditingController _noteController = TextEditingController();
   TextEditingController get noteController {
     try {
-      final _ = _noteController.text;
+      void dummy() {}
+      _noteController.addListener(dummy);
+      _noteController.removeListener(dummy);
     } catch (_) {
       _noteController = TextEditingController();
     }
@@ -544,8 +548,6 @@ class HomeController extends GetxController {
 
   @override
   void onClose() {
-    pageController.dispose();
-    noteController.dispose();
     super.onClose();
   }
 }

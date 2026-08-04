@@ -3,8 +3,8 @@ import 'package:get/get.dart';
 import 'package:zeustucker/presention/admininterface/ui_interface/adminclients/widget/add_user_button.dart';
 import '../../../../core/routes/app_routes.dart';
 import '../../../../core/services/controller/adminpenelcontroller/clientcontoller.dart';
-import '../adminhome/homewidget/user_story_tile.dart';
 import 'widget/client_roseter.dart';
+import 'widget/clientprogresscard.dart';
 import '../../widget/customnevadminbutton.dart';
 
 class Adminclient extends StatelessWidget {
@@ -95,24 +95,18 @@ class Adminclient extends StatelessWidget {
                             client['profile_image'] != 'string')
                         ? client['profile_image']
                         : "assets/image/David Park.png";
-                    final String status = client['fitness_goal'] ?? client['occupation'] ?? "Active Client";
+                    final double progress = (client['progress'] is num)
+                        ? (client['progress'] as num).toDouble()
+                        : 0.0;
+                    final bool hasNotification = client['has_notification'] == true;
 
-                    return UserStoryTile(
-                      imageUrl: imageUrl,
+                    return ClientProgressCard(
                       name: name,
-                      status: status,
+                      imageUrl: imageUrl,
+                      progress: progress,
+                      hasNotification: hasNotification,
                       onTap: () {
                         Get.toNamed(AppRoutes.clientdetails, arguments: client);
-                      },
-                      onViewStory: () {
-                        final String? storybookId = client['storybook_id']?.toString() ?? client['latest_storybook_id']?.toString();
-                        if (storybookId != null && storybookId.isNotEmpty && storybookId != 'null' && storybookId != 'string') {
-                          debugPrint(">>> 📦 [SOURCE: CLIENT OBJECT PARAMETER] Storybook ID: '$storybookId' for $name");
-                          controller.fetchAndOpenClientStorybookById(storybookId, client);
-                        } else {
-                          debugPrint(">>> 🔄 [SOURCE: FALLBACK LOOKUP (Cache/Server)] Checking for $name");
-                          controller.fetchAndOpenClientStorybook(client);
-                        }
                       },
                     );
                   },
