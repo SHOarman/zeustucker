@@ -62,7 +62,7 @@ static const coachportal="/coachportal";
 static const addnewclient="/addnewclient";
 static const editroutine="/editroutine";
 static const viewstory="/viewstory";
-
+static const allclinet="/allclinet";
 
 //===============================adminclient==================================
 static const clientaddnew="/clientaddnew";

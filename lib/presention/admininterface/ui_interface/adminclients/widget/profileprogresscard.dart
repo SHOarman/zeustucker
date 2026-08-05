@@ -6,6 +6,7 @@ class ClientProfileHeader extends StatelessWidget {
   final String imageUrl;
   final String programName;
   final double progress;
+  final bool hasNotification;
   final VoidCallback onBackTap;
   final VoidCallback onMenuTap;
 
@@ -15,6 +16,7 @@ class ClientProfileHeader extends StatelessWidget {
     required this.imageUrl,
     required this.programName,
     required this.progress,
+    this.hasNotification = false,
     required this.onBackTap,
     required this.onMenuTap,
   });
@@ -47,19 +49,37 @@ class ClientProfileHeader extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 10),
-          Container(
-            padding: const EdgeInsets.all(4),
-            decoration: const BoxDecoration(
-              color: Color(0xFFE0F2F1),
-              shape: BoxShape.circle,
-            ),
-          child: SizedBox(
-            width: 110,
-            height: 110,
-            child: ClipOval(
-              child: _buildProgressAvatar(imageUrl),
-            ),
-          ),
+          Stack(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFE0F2F1),
+                  shape: BoxShape.circle,
+                ),
+                child: SizedBox(
+                  width: 110,
+                  height: 110,
+                  child: ClipOval(
+                    child: _buildProgressAvatar(imageUrl),
+                  ),
+                ),
+              ),
+              if (hasNotification || progress < 0.50)
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFF4D4D),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 3),
+                    ),
+                    child: const Icon(Icons.priority_high, size: 24, color: Colors.white),
+                  ),
+                ),
+            ],
           ),
           const SizedBox(height: 16),
           Text(

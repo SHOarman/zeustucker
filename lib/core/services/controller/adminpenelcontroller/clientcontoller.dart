@@ -497,17 +497,21 @@ class ClientController extends GetxController {
             generatingStorybookClientName.value = "";
             await _cacheStorybookId(client, storybookId);
 
-            Get.defaultDialog(
-              title: "Success",
-              middleText: "Storybook generated successfully for $clientName!",
-              textConfirm: "View Storybook",
-              textCancel: "Close",
-              confirmTextColor: Colors.white,
-              buttonColor: const Color(0xFF00A37B),
-              onConfirm: () {
-                Get.back();
-                fetchAndOpenClientStorybookById(storybookId, client);
-              },
+            Get.snackbar(
+              "Success",
+              "Storybook generated successfully for $clientName!",
+              backgroundColor: const Color(0xFF00A37B),
+              colorText: Colors.white,
+              duration: const Duration(seconds: 5),
+              mainButton: TextButton(
+                onPressed: () {
+                  fetchAndOpenClientStorybookById(storybookId, client);
+                },
+                child: const Text(
+                  "View Storybook",
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+              ),
             );
             return false;
           } else if (statusUpper == 'FAILED' || statusUpper == 'ERROR') {

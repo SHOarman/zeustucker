@@ -3,6 +3,7 @@ import 'package:zeustucker/core/routes/app_routes.dart';
 import 'package:zeustucker/presention/admininterface/ui_interface/adminclients/adminclient.dart';
 import 'package:zeustucker/presention/admininterface/ui_interface/adminclients/clientaddnew.dart';
 import 'package:zeustucker/presention/admininterface/ui_interface/adminclients/clientdetels.dart';
+import 'package:zeustucker/presention/admininterface/ui_interface/adminhome/all_clinet.dart';
 import 'package:zeustucker/presention/admininterface/ui_interface/adminhome/addnewclient.dart';
 import 'package:zeustucker/presention/admininterface/ui_interface/adminhome/editruting.dart';
 import 'package:zeustucker/presention/admininterface/ui_interface/adminhome/magaeclients.dart';
@@ -155,7 +156,12 @@ class AppPages {
     ),
     GetPage(
       name: AppRoutes.viewstory,
-      page: () => const Viewstory(),
+      page: () =>  Viewstory(),
+      transition: Transition.noTransition,
+    ),
+    GetPage(
+      name: AppRoutes.allclinet,
+      page: () => const AllClinet(),
       transition: Transition.noTransition,
     ),
 

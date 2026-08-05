@@ -162,7 +162,7 @@ class Adminhome extends StatelessWidget {
                   ),
                   TextButton(
                     onPressed: () {
-                      Get.toNamed(AppRoutes.adminclient);
+                      Get.toNamed(AppRoutes.allclinet);
                     },
                     child: Text(
                       "View All",
@@ -200,10 +200,8 @@ class Adminhome extends StatelessWidget {
                   );
                 }
 
-                // Show only the last 3 added clients
-                final homeClients = controller.clientList.length > 3
-                    ? controller.clientList.sublist(controller.clientList.length - 3)
-                    : controller.clientList;
+                // Show only the 3 newest clients
+                final homeClients = controller.clientList.reversed.take(3).toList();
 
                 return ListView.separated(
                   shrinkWrap: true,

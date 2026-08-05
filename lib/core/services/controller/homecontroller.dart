@@ -181,7 +181,7 @@ class HomeController extends GetxController {
 
   StorybookController get storybookCtrl => Get.isRegistered<StorybookController>() 
       ? Get.find<StorybookController>() 
-      : Get.put(StorybookController());
+      : Get.put(StorybookController(), permanent: true);
 
   RxList<Map<String, dynamic>> get clientPages => storybookCtrl.clientPages;
   RxBool get isStoryLoading => storybookCtrl.isStoryLoading;

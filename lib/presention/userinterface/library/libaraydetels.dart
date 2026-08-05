@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:zeustucker/core/services/controller/homecontroller.dart';
 import 'package:zeustucker/core/services/controller/adminpenelcontroller/clientcontoller.dart';
+import 'package:zeustucker/core/services/controller/schedule_controller.dart';
+import 'package:zeustucker/core/services/controller/macro_controller.dart';
 
 class Libaraydetels extends StatelessWidget {
   const Libaraydetels({super.key});
@@ -237,14 +239,19 @@ class Libaraydetels extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        const Text(
-                          '12',
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
-                        ),
+                        Obx(() {
+                          final scheduleCtrl = Get.isRegistered<ScheduleController>() 
+                              ? Get.find<ScheduleController>() 
+                              : Get.put(ScheduleController());
+                          return Text(
+                            '${scheduleCtrl.workoutCompleted.value}',
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                          );
+                        }),
                         const SizedBox(height: 2),
                         Text(
                           'WORKOUTS',
@@ -288,24 +295,40 @@ class Libaraydetels extends StatelessWidget {
                             ),
                             shape: BoxShape.circle,
                           ),
-                          child: Text(
-                            '85',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.orange.shade600,
-                            ),
-                          ),
+                          child: Obx(() {
+                            final macroCtrl = Get.isRegistered<MacroController>() 
+                                ? Get.find<MacroController>() 
+                                : Get.put(MacroController());
+                            final consumed = macroCtrl.caloriesConsumed.value;
+                            final goal = macroCtrl.caloriesGoal.value;
+                            final percent = goal > 0 ? (consumed / goal * 100).round() : 0;
+                            return Text(
+                              '$percent',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.orange.shade600,
+                              ),
+                            );
+                          }),
                         ),
                         const SizedBox(height: 8),
-                        const Text(
-                          '85%',
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
-                        ),
+                        Obx(() {
+                          final macroCtrl = Get.isRegistered<MacroController>() 
+                              ? Get.find<MacroController>() 
+                              : Get.put(MacroController());
+                          final consumed = macroCtrl.caloriesConsumed.value;
+                          final goal = macroCtrl.caloriesGoal.value;
+                          final percent = goal > 0 ? (consumed / goal * 100).round() : 0;
+                          return Text(
+                            '$percent%',
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                          );
+                        }),
                         const SizedBox(height: 2),
                         Text(
                           'NUTRITION',

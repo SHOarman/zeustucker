@@ -53,10 +53,10 @@ class ClientProgressCard extends StatelessWidget {
                         child: _buildCardAvatar(imageUrl),
                       ),
                     ),
-                    if (hasNotification)
+                    if (hasNotification || progress < 0.50)
                       Positioned(
-                        top: 2,
-                        right: 2,
+                        top: 0,
+                        right: 0,
                         child: Container(
                           padding: const EdgeInsets.all(4),
                           decoration: BoxDecoration(
@@ -64,7 +64,7 @@ class ClientProgressCard extends StatelessWidget {
                             shape: BoxShape.circle,
                             border: Border.all(color: Colors.white, width: 2),
                           ),
-                          child: const Icon(Icons.priority_high, size: 10, color: Colors.white),
+                          child: const Icon(Icons.priority_high, size: 16, color: Colors.white),
                         ),
                       ),
                   ],

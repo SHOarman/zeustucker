@@ -13,7 +13,7 @@ class LibraryScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final HomeController homeController = Get.isRegistered<HomeController>()
         ? Get.find<HomeController>()
-        : Get.put(HomeController());
+        : Get.put(HomeController(), permanent: true);
 
     return Scaffold(
       bottomNavigationBar: const CustomBottomNav(selectIndex: 1),

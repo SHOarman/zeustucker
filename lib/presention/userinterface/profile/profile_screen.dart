@@ -401,7 +401,7 @@ class ProfileScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
 
-              // Coach Requests Card
+              //====================================================================
               Obx(() {
                 if (profileController.coachRequests.isEmpty) {
                   return const SizedBox.shrink();
@@ -538,13 +538,13 @@ class ProfileScreen extends StatelessWidget {
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.end,
                                 children: [
-                                  TextButton(
-                                    onPressed: () => profileController.declineCoachRequest(reqId),
-                                    style: TextButton.styleFrom(
-                                      foregroundColor: Colors.red.shade400,
-                                    ),
-                                    child: const Text('Decline'),
-                                  ),
+                                  // TextButton(
+                                  //   onPressed: () => profileController.declineCoachRequest(reqId),
+                                  //   style: TextButton.styleFrom(
+                                  //     foregroundColor: Colors.red.shade400,
+                                  //   ),
+                                  //   child: const Text('Decline'),
+                                  // ),
                                   const SizedBox(width: 8),
                                   ElevatedButton(
                                     onPressed: () => profileController.acceptCoachRequest(reqId),

@@ -15,10 +15,10 @@ import '../../../core/services/controller/profilecontroller.dart';
 class HomeScreen extends StatelessWidget {
   HomeScreen({super.key});
 
-  final HomeController controller = Get.put(HomeController());
+  final HomeController controller = Get.put(HomeController(), permanent: true);
   final MacroController macroController = Get.isRegistered<MacroController>()
       ? Get.find<MacroController>()
-      : Get.put(MacroController());
+      : Get.put(MacroController(), permanent: true);
 
   void _showStoryDialog(BuildContext context) {
     controller.fetchClientStorybook();
@@ -75,9 +75,13 @@ class HomeScreen extends StatelessWidget {
 
                   return Column(
                     children: [
-                      const SizedBox(height: 50),
-                      // Story Title above image
-                      Obx(() {
+                      const SizedBox(height: 30),
+                      Expanded(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+
+                            Obx(() {
                         if (controller.clientPages.isEmpty) return const SizedBox.shrink();
                         final idx = controller.currentIndex.value;
                         if (idx >= controller.clientPages.length) return const SizedBox.shrink();
@@ -94,14 +98,16 @@ class HomeScreen extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                             textAlign: TextAlign.center,
                             style: GoogleFonts.poppins(
-                              fontSize: 15,
+                              fontSize: 26,
                               fontWeight: FontWeight.bold,
                               color: const Color(0xFF18181B),
                             ),
                           ),
                         );
                       }),
-                      Expanded(
+                      const SizedBox(height: 10),
+                      SizedBox(
+                        height: 440,
                         child: Stack(
                           alignment: Alignment.center,
                           children: [
@@ -175,8 +181,11 @@ class HomeScreen extends StatelessWidget {
                           ],
                         ),
                       ),
-                      // Reactive Dots
-                      Padding(
+                    ],
+                  ),
+                ),
+                // Reactive Dots
+                Padding(
                         padding: const EdgeInsets.symmetric(vertical: 15),
                         child: Obx(
                           () => Row(

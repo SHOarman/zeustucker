@@ -62,8 +62,9 @@ class Clientdetels extends StatelessWidget {
                   );
                 })(),
                 _DailyStorybookCard(client: client),
-                const _CurrentRoutineCard(),
-                const _ProgressNotesCard(),
+                // const _CurrentRoutineCard(),
+                // const _ProgressNotesCard(),
+                SizedBox(height: 100,),
                 _BottomActionButtons(client: client),
                 const SizedBox(height: 40),
               ] else
@@ -310,77 +311,77 @@ class _CurrentRoutineCard extends StatelessWidget {
   }
 }
 
-class _ProgressNotesCard extends StatelessWidget {
-  const _ProgressNotesCard();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(top: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFE5E7EB), width: 1),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 60,
-            height: 60,
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              color: Color(0xFFE8FBF4),
-            ),
-            child: const Icon(
-              Icons.receipt_long_rounded,
-              color: Color(0xFF00C48C),
-              size: 28,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  "Progress Notes",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF1F2937),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  "Feeling stronger in the morning...",
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey.shade500,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-          const Icon(
-            Icons.arrow_forward_ios_rounded,
-            size: 18,
-            color: Color(0xFF00C48C),
-          ),
-        ],
-      ),
-    );
-  }
-}
+// class _ProgressNotesCard extends StatelessWidget {
+//   const _ProgressNotesCard();
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return Container(
+//       margin: const EdgeInsets.only(top: 16),
+//       padding: const EdgeInsets.all(16),
+//       decoration: BoxDecoration(
+//         color: Colors.white,
+//         borderRadius: BorderRadius.circular(24),
+//         border: Border.all(color: const Color(0xFFE5E7EB), width: 1),
+//         boxShadow: [
+//           BoxShadow(
+//             color: Colors.black.withValues(alpha: 0.03),
+//             blurRadius: 10,
+//             offset: const Offset(0, 4),
+//           ),
+//         ],
+//       ),
+//       child: Row(
+//         children: [
+//           // Container(
+//           //   width: 60,
+//           //   height: 60,
+//           //   decoration: const BoxDecoration(
+//           //     shape: BoxShape.circle,
+//           //     color: Color(0xFFE8FBF4),
+//           //   ),
+//           //   child: const Icon(
+//           //     Icons.receipt_long_rounded,
+//           //     color: Color(0xFF00C48C),
+//           //     size: 28,
+//           //   ),
+//           // ),
+//           // const SizedBox(width: 16),
+//           // Expanded(
+//           //   child: Column(
+//           //     crossAxisAlignment: CrossAxisAlignment.start,
+//           //     children: [
+//           //       const Text(
+//           //         "Progress Notes",
+//           //         style: TextStyle(
+//           //           fontSize: 18,
+//           //           fontWeight: FontWeight.w700,
+//           //           color: Color(0xFF1F2937),
+//           //         ),
+//           //       ),
+//           //       const SizedBox(height: 4),
+//           //       Text(
+//           //         "Feeling stronger in the morning...",
+//           //         style: TextStyle(
+//           //           fontSize: 14,
+//           //           color: Colors.grey.shade500,
+//           //         ),
+//           //         maxLines: 1,
+//           //         overflow: TextOverflow.ellipsis,
+//           //       ),
+//           //     ],
+//           //   ),
+//           // ),
+//           // const Icon(
+//           //   Icons.arrow_forward_ios_rounded,
+//           //   size: 18,
+//           //   color: Color(0xFF00C48C),
+//           // ),
+//         ],
+//       ),
+//     );
+//   }
+// }
 
 class _BottomActionButtons extends StatelessWidget {
   final Map<String, dynamic> client;
@@ -392,32 +393,7 @@ class _BottomActionButtons extends StatelessWidget {
       margin: const EdgeInsets.only(top: 32),
       child: Row(
         children: [
-          Expanded(
-            child: ElevatedButton(
-              onPressed: () {
 
-                Get.toNamed(AppRoutes.editroutine);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF00C48C),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 22),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                elevation: 6,
-                shadowColor: const Color(0xFF00C48C).withValues(alpha: 0.5),
-              ),
-              child: const Text(
-                "EDIT ROUTINE",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ),
-          ),
           const SizedBox(width: 16),
           Expanded(
             child: ElevatedButton(
