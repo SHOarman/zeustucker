@@ -365,7 +365,7 @@ class MacroController extends GetxController {
         }
       }
 
-      final combinedNotes = checklistJson + '|||' + dailyNotes.value;
+      final combinedNotes = "$checklistJson|||${dailyNotes.value}";
 
       final headers = {
         'Content-Type': 'application/json',
@@ -553,7 +553,7 @@ class MacroController extends GetxController {
       debugPrint("Create Macro Log Body: ${response.body}");
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        print("Successfully created macro log: ${response.body}");
+        debugPrint("Successfully created macro log: ${response.body}");
         final data = jsonDecode(response.body);
         if (data['routine'] != null && data['routine']['id'] != null) {
           routineId.value = data['routine']['id'].toString();
@@ -561,10 +561,10 @@ class MacroController extends GetxController {
         fetchLoggedMeals(); // Refresh logged meals list
         fetchRecentFoods(mealType); // Refresh recent foods list
       } else {
-        print("Failed to create macro log: ${response.statusCode} - ${response.body}");
+        debugPrint("Failed to create macro log: ${response.statusCode} - ${response.body}");
       }
     } catch (e) {
-      print("Error creating macro log: $e");
+      debugPrint("Error creating macro log: $e");
     }
   }
 
@@ -647,13 +647,13 @@ class MacroController extends GetxController {
       debugPrint("Update Macro Log Body: ${response.body}");
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        print("Successfully updated macro log: ${response.body}");
+        debugPrint("Successfully updated macro log: ${response.body}");
         fetchLoggedMeals(); // Refresh logged meals list
       } else {
-        print("Failed to update macro log: ${response.statusCode} - ${response.body}");
+        debugPrint("Failed to update macro log: ${response.statusCode} - ${response.body}");
       }
     } catch (e) {
-      print("Error updating macro log: $e");
+      debugPrint("Error updating macro log: $e");
     }
   }
 
@@ -807,10 +807,5 @@ class MacroController extends GetxController {
 
   String get calMultiplier {
     return '${caloriesConsumed.value}';
-  }
-
-  @override
-  void onClose() {
-    super.onClose();
   }
 }

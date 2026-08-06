@@ -136,44 +136,44 @@ class ScheduleScreen extends StatelessWidget {
               }),
 
               const SizedBox(height: 40),
-
-              // Generate Weekly Story Button
-              SizedBox(
-                width: double.infinity,
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF48D1A3), Color(0xFF00A781)],
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: ElevatedButton(
-                    onPressed: () {
-
-                      //=====================================================
-                      Get.toNamed(AppRoutes.weeklystoty);
-
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.transparent,
-                      shadowColor: Colors.transparent,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text(
-                      'Generate Weekly Story',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
+              //
+              // // Generate Weekly Story Button
+              // SizedBox(
+              //   width: double.infinity,
+              //   child: Container(
+              //     decoration: BoxDecoration(
+              //       gradient: const LinearGradient(
+              //         colors: [Color(0xFF48D1A3), Color(0xFF00A781)],
+              //       ),
+              //       borderRadius: BorderRadius.circular(12),
+              //     ),
+              //     child: ElevatedButton(
+              //       onPressed: () {
+              //
+              //         //=====================================================
+              //         Get.toNamed(AppRoutes.weeklystoty);
+              //
+              //       },
+              //       style: ElevatedButton.styleFrom(
+              //         backgroundColor: Colors.transparent,
+              //         shadowColor: Colors.transparent,
+              //         padding: const EdgeInsets.symmetric(vertical: 16),
+              //         shape: RoundedRectangleBorder(
+              //           borderRadius: BorderRadius.circular(12),
+              //         ),
+              //       ),
+              //       child: const Text(
+              //         'Generate Weekly Story',
+              //         style: TextStyle(
+              //           fontSize: 16,
+              //           fontWeight: FontWeight.w600,
+              //           color: Colors.white,
+              //         ),
+              //       ),
+              //     ),
+              //   ),
+              // ),
+              // const SizedBox(height: 20),
             ],
           ),
         ),

@@ -112,36 +112,30 @@ class _DailyStorybookCard extends StatelessWidget {
               child: SizedBox(
                 width: 60,
                 height: 60,
-                child: client != null && client!['image'] != null && client!['image'].toString().isNotEmpty && client!['image'].toString() != 'string'
-                    ? (client!['image'].toString().startsWith('http')
-                        ? Image.network(
-                            client!['image'].toString(),
-                            width: 60,
-                            height: 60,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => Image.asset(
-                              'assets/image/David Park.png',
-                              width: 60,
-                              height: 60,
-                              fit: BoxFit.cover,
-                            ),
-                          )
-                        : Image.asset(
-                            client!['image'].toString(),
-                            width: 60,
-                            height: 60,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => Image.asset(
-                              'assets/image/David Park.png',
-                              width: 60,
-                              height: 60,
-                              fit: BoxFit.cover,
-                            ),
-                          ))
-                    : Container(
-                        color: const Color(0xFFF3F4F6),
-                        child: const Icon(Icons.person, color: Color(0xFF9CA3AF)),
-                      ),
+                child: FutureBuilder<String?>(
+                  future: client != null 
+                      ? Get.find<ClientController>().fetchClientCoverImage((client!['id'] ?? client!['client_id'] ?? client!['user_id'] ?? '').toString())
+                      : Future.value(null),
+                  builder: (context, snapshot) {
+                    final coverUrl = snapshot.data;
+                    if (coverUrl != null && coverUrl.isNotEmpty) {
+                      return Image.network(
+                        coverUrl,
+                        width: 60,
+                        height: 60,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          color: const Color(0xFFF3F4F6),
+                          child: const Icon(Icons.person, color: Color(0xFF9CA3AF)),
+                        ),
+                      );
+                    }
+                    return Container(
+                      color: const Color(0xFFF3F4F6),
+                      child: const Icon(Icons.person, color: Color(0xFF9CA3AF)),
+                    );
+                  },
+                ),
               ),
             ),
             const SizedBox(width: 16),

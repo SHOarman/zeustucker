@@ -323,7 +323,10 @@ class EditProfile extends StatelessWidget {
       }
 
       try {
-        final bytes = base64Decode(imgStr);
+        final String cleanBase64 = imgStr.startsWith('data:image') && imgStr.contains('base64,')
+            ? imgStr.split('base64,').last
+            : imgStr;
+        final bytes = base64Decode(cleanBase64);
         return Image.memory(
           bytes,
           width: 100,

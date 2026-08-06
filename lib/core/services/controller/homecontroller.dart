@@ -1,5 +1,6 @@
 
 
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -37,12 +38,14 @@ class WorkoutItem {
 }
 
 class HomeController extends GetxController {
+
   var currentIndex = 0.obs;
   var hasWorkout = false.obs;
   var workoutItems = <WorkoutItem>[].obs;
   var isWorkoutLoading = false.obs;
 
   PageController _pageController = PageController();
+
   PageController get pageController {
     try {
       void dummy() {}
@@ -88,7 +91,8 @@ class HomeController extends GetxController {
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
         final List<dynamic> itemsJson = data['items'] ?? [];
-        workoutItems.value = itemsJson.map((x) => WorkoutItem.fromJson(x)).toList();
+        workoutItems.value =
+            itemsJson.map((x) => WorkoutItem.fromJson(x)).toList();
         hasWorkout.value = workoutItems.isNotEmpty;
         _notifyScheduleController();
       } else {
@@ -104,7 +108,8 @@ class HomeController extends GetxController {
     }
   }
 
-  Future<void> toggleWorkoutItemCompletion(String workoutItemId, bool completed) async {
+  Future<void> toggleWorkoutItemCompletion(String workoutItemId,
+      bool completed) async {
     // Optimistic update
     final index = workoutItems.indexWhere((item) => item.id == workoutItemId);
     if (index != -1) {
@@ -118,7 +123,8 @@ class HomeController extends GetxController {
       final token = prefs.getString('auth_token');
       if (token == null) return;
 
-      final url = Uri.parse(ApiServices.patchAssignedWorkoutItem(workoutItemId));
+      final url = Uri.parse(
+          ApiServices.patchAssignedWorkoutItem(workoutItemId));
       final response = await http.patch(
         url,
         headers: {
@@ -142,7 +148,9 @@ class HomeController extends GetxController {
         }
         Get.snackbar(
           "Success",
-          completed ? "Workout marked as completed!" : "Workout marked as incomplete!",
+          completed
+              ? "Workout marked as completed!"
+              : "Workout marked as incomplete!",
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: const Color(0xFF1CBBA7),
           colorText: Colors.white,
@@ -179,19 +187,26 @@ class HomeController extends GetxController {
     }
   }
 
-  StorybookController get storybookCtrl => Get.isRegistered<StorybookController>() 
-      ? Get.find<StorybookController>() 
-      : Get.put(StorybookController(), permanent: true);
+  StorybookController get storybookCtrl =>
+      Get.isRegistered<StorybookController>()
+          ? Get.find<StorybookController>()
+          : Get.put(StorybookController(), permanent: true);
 
   RxList<Map<String, dynamic>> get clientPages => storybookCtrl.clientPages;
+
   RxBool get isStoryLoading => storybookCtrl.isStoryLoading;
+
   RxString get currentPdfUrl => storybookCtrl.currentPdfUrl;
+
+  RxString get coverImageUrl => storybookCtrl.coverImageUrl;
+
   String get authToken => storybookCtrl.authToken;
 
   String normalizeImageUrl(String url) => storybookCtrl.normalizeImageUrl(url);
 
   Future<bool> fetchClientStorybook({String? storybookIdParam}) {
-    return storybookCtrl.fetchClientStorybook(storybookIdParam: storybookIdParam);
+    return storybookCtrl.fetchClientStorybook(
+        storybookIdParam: storybookIdParam);
   }
 
   Future<String?> fetchStorybookPdfUrl(String storybookId) {
@@ -219,6 +234,7 @@ class HomeController extends GetxController {
       );
     }
   }
+
   //====================working================workout
 
   void toggleWorkout() {
@@ -227,6 +243,7 @@ class HomeController extends GetxController {
 
 //====================add Routing-====================================
   TextEditingController _noteController = TextEditingController();
+
   TextEditingController get noteController {
     try {
       void dummy() {}
@@ -250,7 +267,6 @@ class HomeController extends GetxController {
           snackPosition: SnackPosition.BOTTOM);
     }
   }
-
 
 
   final RxList<GoalItem> todayGoals = <GoalItem>[].obs;
@@ -283,7 +299,8 @@ class HomeController extends GetxController {
         final dynamic parsedJson = jsonDecode(response.body);
         List<dynamic> daysList = [];
         if (parsedJson is Map) {
-          daysList = parsedJson['days'] ?? parsedJson['items'] ?? parsedJson['goals'] ?? [];
+          daysList = parsedJson['days'] ?? parsedJson['items'] ??
+              parsedJson['goals'] ?? [];
         } else if (parsedJson is List) {
           daysList = parsedJson;
         }
@@ -298,14 +315,16 @@ class HomeController extends GetxController {
         var todayDay = fetched.firstWhereOrNull((d) {
           try {
             final date = DateTime.parse(d.date).toLocal();
-            return date.year == today.year && date.month == today.month && date.day == today.day;
+            return date.year == today.year && date.month == today.month &&
+                date.day == today.day;
           } catch (_) {
             return false;
           }
         });
 
         // Fallback: Use first non-empty GoalDay if exact date match is not found
-        todayDay ??= fetched.firstWhereOrNull((d) => d.items.isNotEmpty) ?? (fetched.isNotEmpty ? fetched.first : null);
+        todayDay ??= fetched.firstWhereOrNull((d) => d.items.isNotEmpty) ??
+            (fetched.isNotEmpty ? fetched.first : null);
 
         if (todayDay != null) {
           tempGoals = List<GoalItem>.from(todayDay.items);
@@ -323,31 +342,38 @@ class HomeController extends GetxController {
         },
       );
 
-      debugPrint("Today Routine Status in fetchTodayGoals: ${routineResponse.statusCode}");
+      debugPrint("Today Routine Status in fetchTodayGoals: ${routineResponse
+          .statusCode}");
       if (routineResponse.statusCode == 200) {
-        final Map<String, dynamic> routineData = jsonDecode(routineResponse.body);
+        final Map<String, dynamic> routineData = jsonDecode(
+            routineResponse.body);
 
         // If tempGoals is empty, check if routineData contains goals list directly
         if (tempGoals.isEmpty) {
-          final List<dynamic> routineGoals = routineData['goals'] ?? routineData['daily_goals'] ?? [];
+          final List<dynamic> routineGoals = routineData['goals'] ??
+              routineData['daily_goals'] ?? [];
           if (routineGoals.isNotEmpty) {
             tempGoals = routineGoals.map((x) {
               if (x is Map<String, dynamic>) return GoalItem.fromJson(x);
-              if (x is Map) return GoalItem.fromJson(Map<String, dynamic>.from(x));
+              if (x is Map)
+                return GoalItem.fromJson(Map<String, dynamic>.from(x));
               return null;
             }).whereType<GoalItem>().toList();
           }
         }
 
         final String rawNotes = routineData['notes'] ?? '';
-        final String notesStr = rawNotes.contains('|||') ? rawNotes.split('|||')[0] : rawNotes;
+        final String notesStr = rawNotes.contains('|||') ? rawNotes.split(
+            '|||')[0] : rawNotes;
         if (notesStr.isNotEmpty && notesStr.startsWith('[')) {
           try {
             final List<dynamic> decodedNotes = jsonDecode(notesStr);
             final Map<String, bool> completedMap = {};
             for (var item in decodedNotes) {
               if (item is Map) {
-                final instr = (item['instruction'] ?? item['text'])?.toString().trim();
+                final instr = (item['instruction'] ?? item['text'])
+                    ?.toString()
+                    .trim();
                 final completedVal = item['completed'] == true;
                 if (instr != null && instr.isNotEmpty) {
                   completedMap[instr] = completedVal;
@@ -378,12 +404,13 @@ class HomeController extends GetxController {
 
       // Fallback: If tempGoals is still empty, map from workoutItems
       if (tempGoals.isEmpty && workoutItems.isNotEmpty) {
-        tempGoals = workoutItems.map((w) => GoalItem(
-          id: w.id,
-          position: w.position,
-          instruction: w.instruction,
-          completed: w.completed,
-        )).toList();
+        tempGoals = workoutItems.map((w) =>
+            GoalItem(
+              id: w.id,
+              position: w.position,
+              instruction: w.instruction,
+              completed: w.completed,
+            )).toList();
       }
 
       todayGoals.assignAll(tempGoals);
@@ -402,7 +429,8 @@ class HomeController extends GetxController {
     }
   }
 
-  Future<void> toggleGoalItemCompletion(String goalItemId, bool completed) async {
+  Future<void> toggleGoalItemCompletion(String goalItemId,
+      bool completed) async {
     final index = todayGoals.indexWhere((item) => item.id == goalItemId);
     if (index != -1) {
       final oldItem = todayGoals[index];
@@ -433,7 +461,8 @@ class HomeController extends GetxController {
 
       String textNote = '';
       if (macroCtrl.routineId.value.isNotEmpty) {
-        final todayUrl = Uri.parse(ApiServices.routineDetail(macroCtrl.routineId.value));
+        final todayUrl = Uri.parse(
+            ApiServices.routineDetail(macroCtrl.routineId.value));
         final todayRes = await http.get(
           todayUrl,
           headers: {
@@ -454,18 +483,20 @@ class HomeController extends GetxController {
       }
 
       final dateStr = DateTime.now().toLocal().toIso8601String().split('T')[0];
-      final goalsJson = jsonEncode(todayGoals.map((item) => {
+      final goalsJson = jsonEncode(todayGoals.map((item) =>
+      {
         'id': item.id,
         'position': item.position,
         'instruction': item.instruction,
         'completed': item.completed,
       }).toList());
 
-      final combinedNotes = goalsJson + '|||' + textNote;
+      final combinedNotes = "$goalsJson|||$textNote";
 
       http.Response response;
       if (macroCtrl.routineId.value.isNotEmpty) {
-        final url = Uri.parse(ApiServices.routineDetail(macroCtrl.routineId.value));
+        final url = Uri.parse(
+            ApiServices.routineDetail(macroCtrl.routineId.value));
         debugPrint(">>> PATCH daily goals to existing routine: $url");
         response = await http.patch(
           url,
@@ -506,7 +537,9 @@ class HomeController extends GetxController {
         }
         Get.snackbar(
           "Success",
-          completed ? "Goal marked as completed!" : "Goal marked as incomplete!",
+          completed
+              ? "Goal marked as completed!"
+              : "Goal marked as incomplete!",
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: const Color(0xFF1CBBA7),
           colorText: Colors.white,
@@ -546,8 +579,5 @@ class HomeController extends GetxController {
     }
   }
 
-  @override
-  void onClose() {
-    super.onClose();
-  }
+
 }

@@ -8,6 +8,8 @@ class CustomText extends StatelessWidget {
   final Color? color;
   final TextAlign? textAlign;
   final bool useJakarta; // Jakarta font use korben ki na seta decide korben
+  final int? maxLines;
+  final TextOverflow? overflow;
 
   const CustomText({
     super.key,
@@ -17,6 +19,8 @@ class CustomText extends StatelessWidget {
     this.color,
     this.textAlign,
     this.useJakarta = true,
+    this.maxLines,
+    this.overflow,
   });
 
   @override
@@ -37,6 +41,8 @@ class CustomText extends StatelessWidget {
       text,
       textAlign: textAlign,
       style: style,
+      maxLines: maxLines,
+      overflow: overflow,
     );
   }
 }

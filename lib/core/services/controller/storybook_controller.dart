@@ -11,6 +11,7 @@ class StorybookController extends GetxController {
   var clientPages = <Map<String, dynamic>>[].obs;
   var isStoryLoading = false.obs;
   var currentPdfUrl = ''.obs;
+  var coverImageUrl = ''.obs;
   var currentIndex = 0.obs;
   String authToken = "";
 
@@ -114,6 +115,10 @@ class StorybookController extends GetxController {
               currentPdfUrl.value = normalizeImageUrl(targetStorybook['pdf_url'].toString());
             } else if (foundId.isNotEmpty) {
               currentPdfUrl.value = ApiServices.storybookPdf(foundId);
+            }
+
+            if (targetStorybook['cover_image_url'] != null && targetStorybook['cover_image_url'].toString().isNotEmpty) {
+              coverImageUrl.value = normalizeImageUrl(targetStorybook['cover_image_url'].toString());
             }
 
             if (targetStorybook['pages'] is List) {
@@ -369,6 +374,11 @@ class StorybookController extends GetxController {
             storybookData['pdf_url'] = ApiServices.storybookPdf(storybookId);
           }
           currentPdfUrl.value = storybookData['pdf_url'];
+
+          if (storybookData['cover_image_url'] != null && storybookData['cover_image_url'].toString().isNotEmpty) {
+            storybookData['cover_image_url'] = normalizeImageUrl(storybookData['cover_image_url'].toString());
+            coverImageUrl.value = storybookData['cover_image_url'];
+          }
 
           if (storybookData['pages'] is List) {
             final List pagesList = List.from(storybookData['pages']);

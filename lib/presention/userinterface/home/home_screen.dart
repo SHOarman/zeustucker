@@ -165,7 +165,6 @@ class HomeScreen extends StatelessWidget {
                                     )
                                   : const SizedBox.shrink(),
                             ),
-                            // Forward Arrow
                             Obx(
                               () => controller.currentIndex.value <
                                       controller.clientPages.length - 1
@@ -297,35 +296,60 @@ class HomeScreen extends StatelessWidget {
                 height: 530,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
-                  image: const DecorationImage(
-                    image: AssetImage("assets/image/book.png"),
-                    fit: BoxFit.cover,
-                  ),
                 ),
-                child: Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 20),
-                    child: GestureDetector(
-                      onTap: () => _showStoryDialog(context),
-                      child: Container(
-                        width: 180,
-                        height: 56,
-                        decoration: BoxDecoration(
-                          color: Colors.black,
-                          borderRadius: BorderRadius.circular(25),
-                        ),
-                        child: Center(
-                          child: Text(
-                            "Open Book",
-                            style: GoogleFonts.poppins(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      Obx(() {
+                        final coverUrl = controller.coverImageUrl.value;
+                        if (coverUrl.isNotEmpty) {
+                          return Image.network(
+                            coverUrl,
+                            fit: BoxFit.cover,
+                            headers: controller.authToken.isNotEmpty
+                                ? {'Authorization': 'Bearer ${controller.authToken}'}
+                                : null,
+                            errorBuilder: (context, error, stackTrace) => Image.asset(
+                              "assets/image/book.png",
+                              fit: BoxFit.cover,
+                            ),
+                          );
+                        } else {
+                          return Image.asset(
+                            "assets/image/book.png",
+                            fit: BoxFit.cover,
+                          );
+                        }
+                      }),
+                      Align(
+                        alignment: Alignment.bottomCenter,
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 20),
+                          child: GestureDetector(
+                            onTap: () => _showStoryDialog(context),
+                            child: Container(
+                              width: 180,
+                              height: 56,
+                              decoration: BoxDecoration(
+                                color: Colors.black,
+                                borderRadius: BorderRadius.circular(25),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  "Open Book",
+                                  style: GoogleFonts.poppins(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
               ),
@@ -415,14 +439,14 @@ class HomeScreen extends StatelessWidget {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 30),
-                    CustomDottedCard(
-                      bodyText: hasTarget
-                          ? "Daily Target: $cal kcal (Protein: ${prot}g | Carbs: ${carb}g | Fats: ${fat}g)"
-                          : "No macro targets set for today.",
-                      centerWidget: Image.asset("assets/image/cicel.png"),
-                      onTap: () {},
-                    ),
+                    // const SizedBox(height: 30),
+                    // CustomDottedCard(
+                    //   bodyText: hasTarget
+                    //       ? "Daily Target: $cal kcal (Protein: ${prot}g | Carbs: ${carb}g | Fats: ${fat}g)"
+                    //       : "No macro targets set for today.",
+                    //   centerWidget: Image.asset("assets/image/cicel.png"),
+                    //   onTap: () {},
+                    // ),
                   ],
                 );
               }),
@@ -627,32 +651,32 @@ class HomeScreen extends StatelessWidget {
 
               const SizedBox(height: 30),
 
-              Row(
-                children: [
-                  Image.asset("assets/image/notes.png", height: 20, width: 20),
-                  SizedBox(width: 8),
-                  Text(
-                    "Routine Notes",
-                    style: TextStyle(
-                      color: Color(0xff111827),
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 12,),
-              RoutineNoteInput(
-                controller: controller.noteController,
-                onPost: controller.postNote,
-              ),
+              // Row(
+              //   children: [
+              //     Image.asset("assets/image/notes.png", height: 20, width: 20),
+              //     SizedBox(width: 8),
+              //     Text(
+              //       "Routine Notes",
+              //       style: TextStyle(
+              //         color: Color(0xff111827),
+              //         fontSize: 20,
+              //         fontWeight: FontWeight.w600,
+              //       ),
+              //     ),
+              //   ],
+              // ),
+              // SizedBox(height: 12,),
+              // RoutineNoteInput(
+              //   controller: controller.noteController,
+              //   onPost: controller.postNote,
+              // ),
 
-              SizedBox(height: 12,),
-              CustomDottedCard(
-                bodyText: "No routine notes for today.",
-                centerWidget: Image.asset("assets/image/addrouting.png"),
-                onTap: () {},
-              ),
+              // SizedBox(height: 12,),
+              // CustomDottedCard(
+              //   bodyText: "No routine notes for today.",
+              //   centerWidget: Image.asset("assets/image/addrouting.png"),
+              //   onTap: () {},
+              // ),
 
             ],
           ),
@@ -726,7 +750,10 @@ class HomeScreen extends StatelessWidget {
     }
 
     try {
-      final bytes = base64Decode(profileImage);
+      final String cleanBase64 = profileImage.startsWith('data:image') && profileImage.contains('base64,')
+          ? profileImage.split('base64,').last
+          : profileImage;
+      final bytes = base64Decode(cleanBase64);
       return Image.memory(
         bytes,
         height: 60,

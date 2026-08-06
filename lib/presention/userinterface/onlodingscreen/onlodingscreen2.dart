@@ -377,6 +377,24 @@ class OnlodingScreen2 extends StatelessWidget {
                 controller: authController.bioController,
               ),
 
+              const SizedBox(height: 16),
+
+              // ── Wake Up Time ──────────────────────────────────────────────
+              CustomTextField(
+                labelText: 'Wake Up Time',
+                hintText: 'e.g., 6:00 AM',
+                controller: authController.wakeUpTimeController,
+              ),
+
+              const SizedBox(height: 16),
+
+              // ── Bed Time ──────────────────────────────────────────────────
+              CustomTextField(
+                labelText: 'Bed Time',
+                hintText: 'e.g., 10:00 PM',
+                controller: authController.bedTimeController,
+              ),
+
               const SizedBox(height: 32),
 
               // ── Continue button ──────────────────────────────────────────
@@ -391,6 +409,14 @@ class OnlodingScreen2 extends StatelessWidget {
                     authController.tempHeight = authController.heightController.text.trim();
                     authController.tempWeight = int.tryParse(authController.weightController.text.trim());
                     authController.tempTargetWeight = int.tryParse(authController.targetWeightController.text.trim());
+                    authController.tempWakeUpTime = authController.wakeUpTimeController.text.trim();
+                    authController.tempBedTime = authController.bedTimeController.text.trim();
+                    
+                    print("--- Onloading Screen 2 Data ---");
+                    print("Wake Up Time: ${authController.tempWakeUpTime}");
+                    print("Bed Time: ${authController.tempBedTime}");
+                    print("-------------------------------");
+                    
                     Get.toNamed(AppRoutes.onloading3);
                   },
                 ),

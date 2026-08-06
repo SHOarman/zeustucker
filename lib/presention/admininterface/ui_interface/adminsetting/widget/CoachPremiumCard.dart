@@ -201,7 +201,10 @@ class CoachPremiumCard extends StatelessWidget {
     }
 
     try {
-      final bytes = base64Decode(profileImg);
+      final String cleanBase64 = profileImg.startsWith('data:image') && profileImg.contains('base64,')
+          ? profileImg.split('base64,').last
+          : profileImg;
+      final bytes = base64Decode(cleanBase64);
       return Image.memory(
         bytes,
         width: 100,

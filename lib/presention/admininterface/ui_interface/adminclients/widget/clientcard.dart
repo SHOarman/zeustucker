@@ -57,6 +57,8 @@ class ClientCard extends StatelessWidget {
               children: [
                 Text(
                   name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 13,
@@ -189,7 +191,10 @@ class ClientCard extends StatelessWidget {
     }
 
     try {
-      final bytes = base64Decode(url);
+      final String cleanBase64 = url.startsWith('data:image') && url.contains('base64,')
+          ? url.split('base64,').last
+          : url;
+      final bytes = base64Decode(cleanBase64);
       return Image.memory(
         bytes,
         width: 50,

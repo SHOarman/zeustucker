@@ -79,6 +79,8 @@ class ClientProgressCard extends StatelessWidget {
                     children: [
                       Text(
                         name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w700,
@@ -182,7 +184,10 @@ class ClientProgressCard extends StatelessWidget {
     }
 
     try {
-      final bytes = base64Decode(url);
+      final String cleanBase64 = url.startsWith('data:image') && url.contains('base64,')
+          ? url.split('base64,').last
+          : url;
+      final bytes = base64Decode(cleanBase64);
       return Image.memory(
         bytes,
         width: 70,

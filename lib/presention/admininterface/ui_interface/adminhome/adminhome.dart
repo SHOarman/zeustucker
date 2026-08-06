@@ -7,6 +7,7 @@ import 'package:zeustucker/presention/admininterface/ui_interface/adminhome/home
 import 'package:zeustucker/presention/admininterface/ui_interface/adminhome/homewidget/storycard.dart';
 import 'package:zeustucker/presention/admininterface/widget/customnevadminbutton.dart';
 import '../../../../core/services/controller/adminpenelcontroller/clientcontoller.dart';
+import '../../../../core/services/api_services/api_services.dart';
 
 import 'homewidget/CoachPortalCard.dart';
 
@@ -30,14 +31,21 @@ class Adminhome extends StatelessWidget {
               const SizedBox(height: 70),
 
               Obx(() {
-                if (controller.generatingStorybookClientName.value.isEmpty) return const SizedBox.shrink();
+                if (controller.generatingStorybookClientName.value.isEmpty)
+                  return const SizedBox.shrink();
                 return Container(
                   margin: const EdgeInsets.only(bottom: 20),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFE0F2F1),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFF00A37B), width: 1),
+                    border: Border.all(
+                      color: const Color(0xFF00A37B),
+                      width: 1,
+                    ),
                   ),
                   child: Row(
                     children: [
@@ -69,84 +77,89 @@ class Adminhome extends StatelessWidget {
               CoachPortalCard(),
 
               const SizedBox(height: 30),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    "Pending Stories",
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF2D292E),
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      debugPrint("done");
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.black,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        "3 New",
-                        style: GoogleFonts.plusJakartaSans(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
+              Obx(() {
+                if (controller.pendingStoriesList.isEmpty)
+                  return const SizedBox.shrink();
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Story Not Created",
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF2D292E),
+                          ),
                         ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.black,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            "${controller.pendingStoriesList.length} New",
+                            style: GoogleFonts.plusJakartaSans(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    //==================================storycard================================
+                    const SizedBox(height: 20),
+
+                    SizedBox(
+                      height: 310,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: controller.pendingStoriesList.length,
+                        itemBuilder: (context, index) {
+                          final pendingStory =
+                              controller.pendingStoriesList[index];
+                          final String profileName =
+                              pendingStory['profile_name'] ?? 'Client';
+                          final String profileImage =
+                              (pendingStory['profile_image'] != null &&
+                                  pendingStory['profile_image']
+                                      .toString()
+                                      .isNotEmpty &&
+                                  pendingStory['profile_image'].toString() !=
+                                      'string')
+                              ? pendingStory['profile_image']
+                              : "assets/image/David Park.png";
+
+                          final normalizedImageUrl =
+                              profileImage.startsWith('http') ||
+                                  profileImage.startsWith('assets/')
+                              ? profileImage
+                              : ApiServices.normalizeImageUrl(profileImage);
+
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 16.0),
+                            child: StoryCard(
+                              onTap: () {},
+                              imageUrl: normalizedImageUrl,
+                              author: '',
+                              title: profileName,
+                            ),
+                          );
+                        },
                       ),
                     ),
-                  ),
-                ],
-              ),
-
-              //==================================storycard================================
-              const SizedBox(height: 20),
-
-              SizedBox(
-                height: 310, // Ensure enough height for the card
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: 3,
-                  itemBuilder: (context, index) {
-                    final mockData = [
-                      {
-                        "image": "assets/image/Panel 2.png",
-                        "title": "Morning Routine.",
-                        "author": "Sarah J",
-                      },
-                      {
-                        "image": "assets/image/Marcus.png",
-                        "title": "Bedtime Comic.",
-                        "author": "Marcus C.",
-                      },
-                      {
-                        "image": "assets/image/Marcus.png",
-                        "title": "Jane D.",
-                        "author": "Bedtime Comic",
-                      },
-                    ];
-
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 16.0),
-                      child: StoryCard(
-                        onTap: () {
-                          debugPrint("Tapped on ${mockData[index]['title']}");
-                        },
-                        imageUrl: mockData[index]["image"]!,
-                        author: mockData[index]["author"]!,
-                        title: mockData[index]["title"]!,
-                      ),
-                    );
-                  },
-                ),
-              ),
+                  ],
+                );
+              }),
 
               const SizedBox(height: 30),
               Row(
@@ -176,16 +189,18 @@ class Adminhome extends StatelessWidget {
                 ],
               ),
 
-
               //=============================UserStoryTile======================================================
               const SizedBox(height: 10),
 
               Obx(() {
-                if (controller.isLoading.value && controller.clientList.isEmpty) {
-                  return const Center(child: Padding(
-                    padding: EdgeInsets.all(20.0),
-                    child: CircularProgressIndicator(),
-                  ));
+                if (controller.isLoading.value &&
+                    controller.clientList.isEmpty) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(20.0),
+                      child: CircularProgressIndicator(),
+                    ),
+                  );
                 }
 
                 if (controller.clientList.isEmpty) {
@@ -194,25 +209,34 @@ class Adminhome extends StatelessWidget {
                       padding: const EdgeInsets.all(20.0),
                       child: Text(
                         "No clients managed by this coach",
-                        style: GoogleFonts.plusJakartaSans(color: Colors.grey, fontSize: 14),
+                        style: GoogleFonts.plusJakartaSans(
+                          color: Colors.grey,
+                          fontSize: 14,
+                        ),
                       ),
                     ),
                   );
                 }
 
-                // Show only the 3 newest clients
-                final homeClients = controller.clientList.reversed.take(3).toList();
+                final homeClients = controller.clientList.reversed
+                    .take(3)
+                    .toList();
 
                 return ListView.separated(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   padding: EdgeInsets.zero,
                   itemCount: homeClients.length,
-                  separatorBuilder: (context, index) => const SizedBox(height: 5),
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(height: 5),
                   itemBuilder: (context, index) {
                     final client = homeClients[index];
-                    final String name = client['name'] ?? client['email'] ?? 'Client';
-                    final String imageUrl = (client['profile_image'] != null && client['profile_image'].toString().isNotEmpty && client['profile_image'] != 'string')
+                    final String name =
+                        client['name'] ?? client['email'] ?? 'Client';
+                    final String imageUrl =
+                        (client['profile_image'] != null &&
+                            client['profile_image'].toString().isNotEmpty &&
+                            client['profile_image'] != 'string')
                         ? client['profile_image']
                         : "assets/image/David Park.png";
 
@@ -227,13 +251,17 @@ class Adminhome extends StatelessWidget {
                   },
                 );
               }),
-              
+
               const SizedBox(height: 30),
-              
-              CustomIconButton(title: "Add New Client", iconPath: "assets/icon/Container (6).png", onTap: (){
-                Get.toNamed(AppRoutes.addnewclient);
-              }),
-              
+
+              CustomIconButton(
+                title: "Add New Client",
+                iconPath: "assets/icon/Container (6).png",
+                onTap: () {
+                  Get.toNamed(AppRoutes.addnewclient);
+                },
+              ),
+
               const SizedBox(height: 30),
             ],
           ),

@@ -136,7 +136,10 @@ class EditRoutineHeader extends StatelessWidget {
     }
 
     try {
-      final bytes = base64Decode(url);
+      final String cleanBase64 = url.startsWith('data:image') && url.contains('base64,')
+          ? url.split('base64,').last
+          : url;
+      final bytes = base64Decode(cleanBase64);
       return Image.memory(
         bytes,
         width: 36,

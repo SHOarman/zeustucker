@@ -25,7 +25,7 @@ mixin AuthLoginMixin on AuthBaseStateMixin {
         url,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(requestBody),
-      ).timeout(const Duration(seconds: 10));
+      ).timeout(const Duration(seconds: 30));
 
       print("Login Response Status: ${response.statusCode}");
       print("Login Response Body: ${response.body}");
@@ -56,7 +56,7 @@ mixin AuthLoginMixin on AuthBaseStateMixin {
                 'accept': 'application/json',
                 'Authorization': 'Bearer $token',
               },
-            ).timeout(const Duration(seconds: 10));
+            ).timeout(const Duration(seconds: 30));
             print("Login Profile Fetch Response Status: ${profileResponse.statusCode}");
             print("Login Profile Fetch Response Body: ${profileResponse.body}");
 

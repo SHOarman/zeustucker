@@ -42,6 +42,7 @@ static const String forgot_password ="$baseUrl/password/forgot";
   static String get storybookBase => '${baseUrl.replaceAll(':8000', ':8004')}/api/v1';
 
   static String get executeStorybookGeneration => "$baseUrl/storybook/generate/execute";
+  static const String coachClientsStorybookStatus = "$baseUrl/storybook/coach/clients/status";
   static String storybookStatus(String storybookId) => "$baseUrl/storybook/$storybookId/status";
   static String storybookDetail(String storybookId) => "$baseUrl/storybook/$storybookId";
   static String storybookPage(String storybookId, int pageNumber) => "$baseUrl/storybook/$storybookId/page/$pageNumber";
@@ -71,6 +72,7 @@ static const String forgot_password ="$baseUrl/password/forgot";
 
   static String normalizeImageUrl(String url) {
     if (url.isEmpty) return '';
+    if (url.startsWith('data:image')) return url;
     if (url.startsWith('http')) {
       return url.replaceAll(':8000', ':8004');
     }

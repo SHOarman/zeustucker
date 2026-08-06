@@ -18,11 +18,13 @@ class DependencyInjection {
 
     Get.lazyPut(()=>LoginController());
     //==========home controller=============================
-    Get.lazyPut(()=>HomeController(), fenix: true);
-    Get.lazyPut(()=>StorybookController(), fenix: true);
+    // Controllers will be initialized with Get.put(..., permanent: true) in their respective screens
+    // to prevent GetX from disposing them during Get.offAllNamed navigation.
+    // Get.lazyPut(()=>HomeController(), fenix: true);
+    // Get.lazyPut(()=>StorybookController(), fenix: true);
 
     //======================macro controller===========================
-    Get.lazyPut(()=>MacroController());
+    // Get.lazyPut(()=>MacroController());
 
     //========================profilecontroller===============
     Get.lazyPut(()=>EditProfileController());

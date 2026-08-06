@@ -82,6 +82,8 @@ class UserStoryTile extends StatelessWidget {
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                   color: const Color(0xFF1A1C1E),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 2),
                 CustomText(
@@ -89,6 +91,8 @@ class UserStoryTile extends StatelessWidget {
                   fontSize: 12,
                   color: Colors.grey.shade500,
                   fontWeight: FontWeight.w500,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
@@ -194,7 +198,10 @@ class UserStoryTile extends StatelessWidget {
     }
 
     try {
-      final bytes = base64Decode(url);
+      final String cleanBase64 = url.startsWith('data:image') && url.contains('base64,')
+          ? url.split('base64,').last
+          : url;
+      final bytes = base64Decode(cleanBase64);
       return Image.memory(
         bytes,
         width: 60,

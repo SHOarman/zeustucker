@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
@@ -28,6 +29,8 @@ class ClientController extends GetxController {
   var isLoading = false.obs;
   var pendingRequestsCount = 0.obs;
   var generatingStorybookClientName = "".obs;
+  var pendingStoriesList = <Map<String, dynamic>>[].obs;
+  var finishedStoriesList = <Map<String, dynamic>>[].obs;
 
   List<Map<String, dynamic>> get filteredClients {
     if (searchText.value.trim().isEmpty) {
@@ -55,6 +58,12 @@ class ClientController extends GetxController {
     super.onInit();
     fetchClients();
     fetchPendingRequests();
+    fetchPendingStories();
+  }
+
+  @override
+  void onClose() {
+    super.onClose();
   }
 
   final Map<String, String> clientStorybookMap = {};
@@ -183,6 +192,33 @@ class ClientController extends GetxController {
       }
     } catch (e) {
       debugPrint("Error fetching sent client requests: $e");
+    }
+  }
+
+  Future<void> fetchPendingStories() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token');
+    if (token == null) return;
+
+    try {
+      final url = Uri.parse(ApiServices.coachClientsStorybookStatus);
+      final response = await http.get(
+        url,
+        headers: {
+          'accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        if (decoded is List) {
+          final allStories = List<Map<String, dynamic>>.from(decoded);
+          pendingStoriesList.value = allStories.where((story) => story['needs_regeneration'] == true || story['is_valid_now'] == false).toList();
+          finishedStoriesList.value = allStories.where((story) => story['needs_regeneration'] == false && story['is_valid_now'] == true).toList();
+        }
+      }
+    } catch (e) {
+      debugPrint("Error fetching pending stories: $e");
     }
   }
 
@@ -647,6 +683,39 @@ class ClientController extends GetxController {
     return '';
   }
 
+  Future<String?> fetchClientCoverImage(String clientId) async {
+    if (clientId.isEmpty) return null;
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token');
+    if (token == null) return null;
+
+    try {
+      final url = Uri.parse("${ApiServices.baseUrl}/storybook");
+      final response = await http.get(
+        url,
+        headers: {
+          'accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        if (decoded is List) {
+          final clientMatch = decoded.firstWhere(
+            (item) => item is Map && item['user_id']?.toString() == clientId,
+            orElse: () => null,
+          );
+          if (clientMatch != null && clientMatch['cover_image_url'] != null) {
+            return ApiServices.normalizeImageUrl(clientMatch['cover_image_url'].toString());
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint("Error fetching cover image: $e");
+    }
+    return null;
+  }
+
   Future<void> fetchAndOpenClientStorybook(Map<String, dynamic> client) async {
     debugPrint(">>> [FETCH STORYBOOK] Client Map: $client");
     final prefs = await SharedPreferences.getInstance();
@@ -786,17 +855,12 @@ class ClientController extends GetxController {
     debugPrint(">>> [FETCH STORYBOOK] API storybookId: '$storybookId', clientId: '$clientId'");
 
     if (storybookId.isEmpty) {
-      Get.defaultDialog(
-        title: "No Storybook",
-        middleText: "No storybook has been generated for $clientName yet. Would you like to generate one now?",
-        textConfirm: "Generate Now",
-        textCancel: "Cancel",
-        confirmTextColor: Colors.white,
-        buttonColor: const Color(0xFF00A37B),
-        onConfirm: () {
-          Get.back();
-          generateStorybookForClient(client);
-        },
+      Get.snackbar(
+        "No Storybook",
+        "No storybook has been generated for $clientName yet.",
+        backgroundColor: Colors.redAccent,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
       );
       return;
     }

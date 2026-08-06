@@ -5,13 +5,20 @@ import 'package:zeustucker/core/routes/app_routes.dart';
 import 'package:zeustucker/presention/admininterface/ui_interface/adminstory/widget/panelcard.dart';
 import 'package:zeustucker/presention/admininterface/ui_interface/adminstory/widget/routine_needs_review_card.dart';
 import 'package:zeustucker/presention/admininterface/ui_interface/adminstory/widget/stories_management_card.dart';
+import '../../../../core/services/controller/adminpenelcontroller/clientcontoller.dart';
 import '../../widget/customnevadminbutton.dart';
+import 'package:zeustucker/presention/admininterface/ui_interface/adminhome/homewidget/storycard.dart';
+import 'package:zeustucker/core/services/api_services/api_services.dart';
 
 class Adminstory extends StatelessWidget {
   const Adminstory({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final ClientController controller = Get.isRegistered<ClientController>() 
+        ? Get.find<ClientController>() 
+        : Get.put(ClientController());
+
     return Scaffold(
       bottomNavigationBar: const Customnevadminbutton(selectIndex: 2),
       body: SingleChildScrollView(
@@ -40,7 +47,7 @@ class Adminstory extends StatelessWidget {
                       color: const Color(0xFF2D292E),
                     ),
                   ),
-                  GestureDetector(
+                  Obx(() => GestureDetector(
                     onTap: () {},
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
@@ -49,7 +56,7 @@ class Adminstory extends StatelessWidget {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        "8 Active Reviews",
+                        "${controller.pendingStoriesList.length} Active Reviews",
                         style: GoogleFonts.plusJakartaSans(
                           color: Colors.white,
                           fontSize: 14,
@@ -57,182 +64,111 @@ class Adminstory extends StatelessWidget {
                         ),
                       ),
                     ),
-                  ),
+                  )),
                 ],
               ),
               const SizedBox(height: 20),
-              const RoutineNeedsReviewCard(
-                name: "Sarah Jenkins",
-                routineName: "MORNING ROUTINE V2",
-                imageUrl: "assets/image/Panel 2.png",
-                buttonText: 'NEEDS REVIEW',
-                buttonColor: Color(0xffA16207),
-              ),
-              const SizedBox(height: 15),
-              SizedBox(
-                height: 195,
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  physics: const BouncingScrollPhysics(),
-                  child: Row(
-                    children: const [
-                      Panelcard(
-                        imageUrl: 'assets/image/Panel 1.png',
-                        panelName: 'Panel 1',
-                        showTick: false,
-                      ),
-                      SizedBox(width: 10),
-                      Panelcard(
-                        imageUrl: 'assets/image/Panel 2.png',
-                        showTick: false,
-                        panelName: "panel 2",
-                      ),
-                      SizedBox(width: 10),
-                      Panelcard(
-                        imageUrl: 'assets/image/Thumbnail.png',
-                        panelName: 'Panel 3',
-                        showTick: false,
-                      ),
-                      SizedBox(width: 10),
+              
+              Obx(() {
+                if (controller.pendingStoriesList.isEmpty && controller.finishedStoriesList.isEmpty) {
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 40),
+                    child: Center(
+                      child: Text("No stories found.", style: TextStyle(color: Colors.grey)),
+                    ),
+                  );
+                }
 
-                      Panelcard(
-                        imageUrl: 'assets/image/Panel 2.png',
-                        showTick: false,
-                        panelName: "panel 4",
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 15),
+                return Column(
+                  children: [
+                    // Pending Stories (Horizontal Scroll)
+                    if (controller.pendingStoriesList.isNotEmpty) ...[
+                      SizedBox(
+                        height: 310,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          physics: const BouncingScrollPhysics(),
+                          itemCount: controller.pendingStoriesList.length,
+                          itemBuilder: (context, index) {
+                            final story = controller.pendingStoriesList[index];
+                            final name = story['profile_name'] ?? 'Client';
+                            final profileImage = (story['profile_image'] != null && story['profile_image'].toString().isNotEmpty && story['profile_image'].toString() != 'string')
+                                ? story['profile_image']
+                                : "assets/image/David Park.png";
+                            
+                            final normalizedImageUrl = profileImage.toString().startsWith('http') || profileImage.toString().startsWith('assets/') 
+                                ? profileImage.toString() 
+                                : ApiServices.normalizeImageUrl(profileImage.toString());
 
-
-              //========================button=======================================================
-
-              Row(
-                children: [
-                  // 1. REGENERATE ALL Button
-                  Expanded(
-                    flex: 3,
-                    child: Material(
-                      elevation: 2,
-                      shadowColor: Colors.black26,
-                      color: const Color(0xff00A97D),
-                      borderRadius: BorderRadius.circular(30),
-                      child: InkWell(
-                        onTap: () {
-                          Get.toNamed(AppRoutes.regenerateall);
-                        },
-                        borderRadius: BorderRadius.circular(30),
-                        child: Container(
-                          height: 48,
-                          alignment: Alignment.center,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(
-                                Icons.refresh,
-                                color: Colors.white,
-                                size: 20,
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 16.0),
+                              child: StoryCard(
+                                onTap: () {},
+                                imageUrl: normalizedImageUrl,
+                                author: '', 
+                                title: name,
                               ),
-                              const SizedBox(width: 8),
-                              Text(
-                                "REGENERATE ALL",
-                                style: GoogleFonts.plusJakartaSans(
-                                  color: Colors.white,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                            ],
-                          ),
+                            );
+                          },
                         ),
                       ),
-                    ),
-                  ),
+                    ],
 
-                  const SizedBox(width: 12),
-
-                  // 2. EDIT Button
-                  Expanded(
-                    flex: 1,
-                    child: Material(
-                      elevation: 2,
-                      shadowColor: Colors.black12,
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(30),
-                      child: InkWell(
-                        onTap: () {
-                          debugPrint("Edit Tap");
-                        },
-                        borderRadius: BorderRadius.circular(30),
-                        child: Container(
-                          height: 48,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(30),
-                            border: Border.all(color: const Color(0xffE5E7EB), width: 1),
-                          ),
-                          child: Text(
-                            "EDIT",
+                    if (controller.finishedStoriesList.isNotEmpty) ...[
+                      const SizedBox(height: 20),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "Finished Stories",
                             style: GoogleFonts.plusJakartaSans(
-                              color: const Color(0xff374151),
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w800,
+                              color: const Color(0xFF2D292E),
                             ),
                           ),
+                        ],
+                      ),
+                      const SizedBox(height: 15),
+                    ],
+
+                    // Finished Stories (Horizontal Scroll)
+                    if (controller.finishedStoriesList.isNotEmpty) ...[
+                      SizedBox(
+                        height: 310,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          physics: const BouncingScrollPhysics(),
+                          itemCount: controller.finishedStoriesList.length,
+                          itemBuilder: (context, index) {
+                            final story = controller.finishedStoriesList[index];
+                            final name = story['profile_name'] ?? 'Client';
+                            final profileImage = (story['profile_image'] != null && story['profile_image'].toString().isNotEmpty && story['profile_image'].toString() != 'string')
+                                ? story['profile_image']
+                                : "assets/image/David Park.png";
+                            
+                            final normalizedImageUrl = profileImage.toString().startsWith('http') || profileImage.toString().startsWith('assets/') 
+                                ? profileImage.toString() 
+                                : ApiServices.normalizeImageUrl(profileImage.toString());
+
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 16.0),
+                              child: StoryCard(
+                                onTap: () {
+                                  controller.fetchAndOpenClientStorybook(story);
+                                },
+                                imageUrl: normalizedImageUrl,
+                                author: '', 
+                                title: name,
+                              ),
+                            );
+                          },
                         ),
                       ),
-                    ),
-                  ),
-                ],
-              ),
-
-
-
-
-              const RoutineNeedsReviewCard(
-                name: "Marcus Chen",
-                routineName: "Gym Flow Comic",
-                imageUrl: "assets/image/Panel 1.png",
-                buttonText: 'FINISHED',
-                buttonColor: Color(0xff15803D),
-              ),
-              const SizedBox(height: 10),
-
-              SizedBox(
-                height: 195,
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  physics: const BouncingScrollPhysics(),
-                  child: Row(
-                    children: const [
-                      Panelcard(
-                        imageUrl: 'assets/image/Panel 1.png',
-
-                        showTick: true,
-                      ),
-                      SizedBox(width: 10),
-                      Panelcard(
-                        imageUrl: 'assets/image/Panel 2.png',
-                        showTick: true,
-                      ),
-                      SizedBox(width: 10),
-                      Panelcard(
-                        imageUrl: 'assets/image/Thumbnail.png',
-                        showTick: true,
-                      ),
-                      SizedBox(width: 10),
-
-                      Panelcard(
-                        imageUrl: 'assets/image/Panel 2.png',
-                        showTick: true,
-                      ),
                     ],
-                  ),
-                ),
-              ),
+                  ],
+                );
+              }),
 
 
 
